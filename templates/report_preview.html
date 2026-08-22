@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview do Relatório - Mol.Sim</title>
+    <style>
+        :root {
+            --report-title-size: 24px;
+            --report-text-size: 12px;
+            --molecule-box-height: 240px;
+            --molecule-box-gap: 16px;
+            --molecule-title-size: 13px;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: #eef2f7;
+            color: #0f172a;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .designer-controls {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: #0f172a;
+            color: #ffffff;
+            padding: 12px 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .designer-controls label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .designer-controls input[type="range"] { width: 120px; }
+
+        .designer-controls button {
+            border: 0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .btn-primary { background: #0ea5e9; color: #ffffff; }
+        .btn-light { background: #e2e8f0; color: #0f172a; }
+        .btn-success { background: #10b981; color: #ffffff; }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 16px auto;
+            background: #ffffff;
+            padding: 12mm;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
+        }
+        body.batch-report .page {
+            width: 297mm;
+            min-height: 210mm;
+            padding: 10mm;
+        }
+
+        .report-title {
+            margin: 0;
+            text-align: center;
+            font-size: var(--report-title-size);
+        }
+
+        .report-subtitle {
+            margin: 8px 0 0;
+            text-align: center;
+            font-size: var(--report-text-size);
+            color: #475569;
+        }
+
+        .section {
+            margin-top: 16px;
+            font-size: var(--report-text-size);
+        }
+
+        .section h2 {
+            margin: 0 0 8px;
+            font-size: 16px;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 4px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1.7fr 1fr;
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        .summary-box {
+            border: 1px solid #dbe3ee;
+            border-radius: 14px;
+            padding: 14px 16px;
+            background: #f8fafc;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .summary-box strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #64748b;
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        .reference-card {
+            background: #e8edf4;
+            border: 1px solid #d4deeb;
+            border-radius: 12px;
+            padding: 16px 18px;
+            min-height: 92px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .reference-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 12px;
+        }
+
+        .reference-smiles {
+            font-family: "Courier New", monospace;
+            font-size: 18px;
+            line-height: 1.4;
+            color: #0f172a;
+            word-break: break-word;
+        }
+
+        .summary-box--similarity {
+            background: linear-gradient(180deg, #effcf7 0%, #dcfce7 100%);
+            border: 1px solid #9ae6b4;
+            box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.08);
+            justify-content: center;
+        }
+
+        .similarity-score {
+            display: block;
+            font-size: 34px;
+            font-weight: 800;
+            line-height: 1.1;
+            color: #0f766e;
+            letter-spacing: -0.04em;
+        }
+
+        .similarity-badge {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(15, 118, 110, 0.12);
+            color: #0f766e;
+            width: fit-content;
+        }
+
+        .molecule-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--molecule-box-gap);
+        }
+
+                .fingerprint-mini-box {
+                    border: 1px solid #dbe3ee;
+                    border-radius: 8px;
+                    background: #ffffff;
+                    min-height: 90px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 6px;
+                }
+
+                .fingerprint-mini-box img {
+                    max-width: 100%;
+                    max-height: 90px;
+                    display: block;
+                }
+
+        .molecule-card {
+            border: 1px solid #dbe3ee;
+            border-radius: 10px;
+            padding: 8px;
+            background: #ffffff;
+            break-inside: avoid;
+        }
+
+        .molecule-name {
+            margin: 0 0 6px;
+            text-align: center;
+            font-weight: 700;
+            font-size: var(--molecule-title-size);
+        }
+
+        .molecule-box {
+            height: var(--molecule-box-height);
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .molecule-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--report-text-size);
+        }
+
+        th, td {
+            border: 1px solid #dbe3ee;
+            padding: 6px 8px;
+            text-align: left;
+        }
+
+        th { background: #f1f5f9; }
+        .center { text-align: center; }
+        .batch-report-table {
+            font-size: 10px;
+            table-layout: fixed;
+        }
+        .batch-report-table th {
+            text-align: center;
+            vertical-align: middle;
+            white-space: normal;
+            line-height: 1.2;
+            font-size: 9px;
+            letter-spacing: 0.04em;
+        }
+        .batch-report-table td {
+            vertical-align: middle;
+        }
+        .batch-table-wrap {
+            border: 1px solid #dbe3ee;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #ffffff;
+        }
+        .batch-molecule-cell {
+            width: 160px;
+        }
+        .batch-molecule-report {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .batch-molecule-name {
+            font-size: 11px;
+            font-weight: 700;
+            color: #0f172a;
+            text-align: center;
+        }
+        .batch-structure-thumb {
+            width: 104px;
+            height: 76px;
+            border: 1px solid #dbe3ee;
+            border-radius: 10px;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+            margin: 0 auto;
+        }
+        .batch-structure-thumb img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        .batch-structure-placeholder {
+            font-size: 10px;
+            text-align: center;
+            color: #94a3b8;
+        }
+        .batch-status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            background: #e2e8f0;
+            color: #334155;
+        }
+        .batch-status-badge--success {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .batch-status-badge--error {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .batch-value-strong {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .page-break {
+            break-before: page;
+            page-break-before: always;
+        }
+
+        @media print {
+            body { background: #ffffff; }
+            .designer-controls { display: none !important; }
+            .page {
+                width: auto;
+                min-height: auto;
+                margin: 0;
+                box-shadow: none;
+                padding: 10mm;
+            }
+            {% if report.get('mode') == 'batch' %}
+            @page { size: A4 landscape; margin: 10mm; }
+            {% else %}
+            @page { size: A4; margin: 10mm; }
+            {% endif %}
+        }
+    </style>
+</head>
+<body class="{% if report.get('mode') == 'batch' %}batch-report{% endif %}">
+    <div class="designer-controls">
+        <label>Título
+            <input id="titleSize" type="range" min="18" max="34" value="24">
+        </label>
+        <label>Texto
+            <input id="textSize" type="range" min="10" max="15" value="12">
+        </label>
+        <label>Altura Caixa
+            <input id="boxHeight" type="range" min="180" max="340" value="240">
+        </label>
+        <label>Gap Caixas
+            <input id="boxGap" type="range" min="8" max="36" value="16">
+        </label>
+        <button class="btn-success" onclick="window.print()">Imprimir / Salvar PDF</button>
+        <button class="btn-primary" onclick="saveLayout()">Salvar Layout</button>
+        <button class="btn-light" onclick="resetLayout()">Resetar</button>
+    </div>
+
+    <div class="page{% if report.get('mode') == 'batch' %} page--batch{% endif %}">
+        <h1 class="report-title">Relatório de Similaridade Molecular</h1>
+        <p class="report-subtitle">
+            {% if report.get('mode') == 'batch' %}
+                Comparação em lote | Método: {{ report.get('fp_type', '-') }} | Métrica: {{ report.get('metric', '-') }} | Gerado em {{ report.get('generated_at', '-') }}
+            {% else %}
+                Método: {{ report.get('fp_type', '-') }} | Métrica: {{ report.get('metric', '-') }} | Gerado em {{ report.get('generated_at', '-') }}
+            {% endif %}
+        </p>
+
+        {% if report.get('mode') == 'batch' %}
+            <section class="section">
+                <h2>Resumo</h2>
+                <div class="summary-grid" style="grid-template-columns: 2fr 1fr;">
+                    <div class="summary-box">
+                        <strong>Referência</strong>
+                        <div class="reference-card">
+                            <div class="reference-name">{{ report.get('ref_name', '-') }}</div>
+                            <div class="reference-smiles">{{ report.get('ref_smiles', '-') }}</div>
+                        </div>
+                    </div>
+                    <div class="summary-box summary-box--similarity">
+                        <strong>Resultados</strong>
+                        <span class="similarity-score">{{ report.get('results', [])|length }}</span>
+                        <span class="similarity-badge">moléculas avaliadas</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Resultado de Similaridade</h2>
+                <div class="batch-table-wrap">
+                    <table class="batch-report-table">
+                        <colgroup>
+                            <col style="width: 52%;">
+                            <col style="width: 16%;">
+                            <col style="width: 32%;">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>Molécula</th>
+                                <th class="center">Similaridade</th>
+                                <th class="center">Classificação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in report.get('results', []) %}
+                            <tr>
+                                <td class="batch-molecule-cell">
+                                    <div class="batch-molecule-report">
+                                        <div class="batch-structure-thumb">
+                                            {% if item.get('png') %}
+                                            <img src="data:image/png;base64,{{ item.get('png') }}" alt="Estrutura 2D de {{ item.get('name', 'molécula') }}">
+                                            {% else %}
+                                            <span class="batch-structure-placeholder">Estrutura indisponível</span>
+                                            {% endif %}
+                                        </div>
+                                        <span class="batch-molecule-name">{{ item.get('name', '-') }}</span>
+                                    </div>
+                                </td>
+                                <td class="center batch-value-strong">{{ '%.4f'|format(item.get('similarity', 0.0)) if item.get('similarity') is not none else '-' }}</td>
+                                <td class="center">
+                                    {% if item.get('error') %}
+                                    <span class="batch-status-badge batch-status-badge--error">Erro</span>
+                                    {% elif item.get('classification') %}
+                                    <span class="batch-status-badge batch-status-badge--success">{{ item.get('classification') }}</span>
+                                    {% else %}
+                                    <span class="batch-status-badge">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Propriedades Físico-Químicas</h2>
+                <div class="batch-table-wrap">
+                    <table class="batch-report-table">
+                        <colgroup>
+                            <col style="width: 22%;">
+                            <col style="width: 9.75%;">
+                            <col style="width: 8.75%;">
+                            <col style="width: 10%;">
+                            <col style="width: 8.75%;">
+                            <col style="width: 8.75%;">
+                            <col style="width: 8%;">
+                            <col style="width: 8%;">
+                            <col style="width: 14%;">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>Molécula</th>
+                                <th class="center">Massa Molecular<br>(g/mol)</th>
+                                <th class="center">Coef. Partição<br>(LogP)</th>
+                                <th class="center">Área Superfície<br>Polar (Å²)</th>
+                                <th class="center">pKa<br>ácido</th>
+                                <th class="center">pKa<br>básico</th>
+                                <th class="center">Doadores H<br>(HBD)</th>
+                                <th class="center">Receptores H<br>(HBA)</th>
+                                <th class="center">Ligações<br>Rotacionais</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in report.get('results', []) %}
+                            <tr>
+                                <td class="batch-molecule-cell">
+                                    <div class="batch-molecule-report">
+                                        <div class="batch-structure-thumb">
+                                            {% if item.get('png') %}
+                                            <img src="data:image/png;base64,{{ item.get('png') }}" alt="Estrutura 2D de {{ item.get('name', 'molécula') }}">
+                                            {% else %}
+                                            <span class="batch-structure-placeholder">Estrutura indisponível</span>
+                                            {% endif %}
+                                        </div>
+                                        <span class="batch-molecule-name">{{ item.get('name', '-') }}</span>
+                                    </div>
+                                </td>
+                                <td class="center">{{ item.get('properties', {}).get('Massa Molecular (g/mol)', '-') if item.get('properties') else '-' }}</td>
+                                <td class="center">{{ item.get('properties', {}).get('Coeficiente de Partição (LogP)', '-') if item.get('properties') else '-' }}</td>
+                                <td class="center">{{ item.get('properties', {}).get('Área de Superfície Polar (Å²)', '-') if item.get('properties') else '-' }}</td>
+                                <td class="center">{{ item.get('properties', {}).get('pKa ácido', '-') if item.get('properties') else '-' }}</td>
+                                <td class="center">{{ item.get('properties', {}).get('pKa básico', '-') if item.get('properties') else '-' }}</td>
+                                <td class="center">{{ item.get('properties', {}).get('Doadores de H (HBD)', '-') if item.get('properties') else '-' }}</td>
+                                <td class="center">{{ item.get('properties', {}).get('Receptores de H (HBA)', '-') if item.get('properties') else '-' }}</td>
+                                <td class="center">{{ item.get('properties', {}).get('Ligações Rotacionais', '-') if item.get('properties') else '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        {% else %}
+            <section class="section">
+                <h2>Resumo</h2>
+                <div class="summary-grid">
+                    <div class="summary-box">
+                        <strong>Referência</strong>
+                        <div class="reference-card">
+                            <div class="reference-name">{{ report.get('name_ref', '-') }}</div>
+                            <div class="reference-smiles">{{ report.get('smiles_ref', '-') }}</div>
+                        </div>
+                    </div>
+                    <div class="summary-box summary-box--similarity">
+                        <strong>Resultado</strong>
+                        <span class="similarity-score">{{ '%.4f'|format(report.get('similarity', 0.0)) }}</span>
+                        <span class="similarity-badge">{{ report.get('classification', '-') }}</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Estruturas Moleculares</h2>
+                <div class="molecule-grid">
+                    <article class="molecule-card">
+                        <p class="molecule-name">{{ report.get('name_ref', 'Referência') }}</p>
+                        <div class="molecule-box">
+                            {% if report.get('png_ref') %}
+                            <img src="data:image/png;base64,{{ report.get('png_ref') }}" alt="Estrutura referência">
+                            {% else %}
+                            <span>Imagem não disponível</span>
+                            {% endif %}
+                        </div>
+                    </article>
+                    <article class="molecule-card">
+                        <p class="molecule-name">{{ report.get('name_test', 'Teste') }}</p>
+                        <div class="molecule-box">
+                            {% if report.get('png_test') %}
+                            <img src="data:image/png;base64,{{ report.get('png_test') }}" alt="Estrutura teste">
+                            {% else %}
+                            <span>Imagem não disponível</span>
+                            {% endif %}
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Propriedades Físico-Químicas</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Propriedade</th>
+                            <th class="center">Referência</th>
+                            <th class="center">Teste</th>
+                            <th class="center">Diferença</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prop in report.get('properties', []) %}
+                        <tr>
+                            <td>{{ prop.get('Propriedade', '-') }}</td>
+                            <td class="center">{{ prop.get('Referência', '-') }}</td>
+                            <td class="center">{{ prop.get('Teste', '-') }}</td>
+                            <td class="center">{{ prop.get('Diferença', '-') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+        {% endif %}
+    </div>
+
+    <script>
+        const controls = {
+            titleSize: document.getElementById('titleSize'),
+            textSize: document.getElementById('textSize'),
+            boxHeight: document.getElementById('boxHeight'),
+            boxGap: document.getElementById('boxGap'),
+        };
+
+        function applyLayoutFromControls() {
+            document.documentElement.style.setProperty('--report-title-size', controls.titleSize.value + 'px');
+            document.documentElement.style.setProperty('--report-text-size', controls.textSize.value + 'px');
+            document.documentElement.style.setProperty('--molecule-box-height', controls.boxHeight.value + 'px');
+            document.documentElement.style.setProperty('--molecule-box-gap', controls.boxGap.value + 'px');
+        }
+
+        function saveLayout() {
+            const layout = {
+                titleSize: controls.titleSize.value,
+                textSize: controls.textSize.value,
+                boxHeight: controls.boxHeight.value,
+                boxGap: controls.boxGap.value,
+            };
+            localStorage.setItem('molsim_report_layout', JSON.stringify(layout));
+            alert('Layout salvo para os próximos relatórios.');
+        }
+
+        function resetLayout() {
+            localStorage.removeItem('molsim_report_layout');
+            controls.titleSize.value = 24;
+            controls.textSize.value = 12;
+            controls.boxHeight.value = 240;
+            controls.boxGap.value = 16;
+            applyLayoutFromControls();
+        }
+
+        function loadLayout() {
+            const raw = localStorage.getItem('molsim_report_layout');
+            if (!raw) {
+                applyLayoutFromControls();
+                return;
+            }
+            try {
+                const layout = JSON.parse(raw);
+                if (layout.titleSize) controls.titleSize.value = layout.titleSize;
+                if (layout.textSize) controls.textSize.value = layout.textSize;
+                if (layout.boxHeight) controls.boxHeight.value = layout.boxHeight;
+                if (layout.boxGap) controls.boxGap.value = layout.boxGap;
+            } catch (err) {
+                localStorage.removeItem('molsim_report_layout');
+            }
+            applyLayoutFromControls();
+        }
+
+        Object.values(controls).forEach((control) => {
+            control.addEventListener('input', applyLayoutFromControls);
+        });
+
+        loadLayout();
+    </script>
+</body>
+</html>
