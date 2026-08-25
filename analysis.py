@@ -683,8 +683,6 @@ def _chemical_space_descriptor_vector(properties: Dict[str, Any]) -> List[Option
         "Massa Molecular (g/mol)",
         "Coeficiente de Partição (LogP)",
         "Área de Superfície Polar (Å²)",
-        "pKa ácido",
-        "pKa básico",
         "Doadores de H (HBD)",
         "Receptores de H (HBA)",
         "Ligações rotacionáveis (RotB)",
@@ -807,8 +805,8 @@ def build_chemical_space(
         "method": "MDS clássico sobre distância composta",
         "distance_formula": "0,6 × (1 − similaridade MACCS/fingerprint) + 0,4 × Dist.FQ normalizada",
         "weights": {"structural": 0.6, "physicochemical": 0.4},
-        "descriptors": ["Massa Molecular", "LogP", "TPSA", "pKa ácido", "pKa básico", "HBD", "HBA", "RotB"],
-        "normalization": "Z-score populacional no conjunto referência + lote; Dist.FQ = norma Euclidiana dos seis/sete descritores; divisor = maior Dist.FQ em relação à referência",
+        "descriptors": ["Massa Molecular", "LogP", "TPSA", "HBD", "HBA", "RotB"],
+        "normalization": "Z-score populacional no conjunto referência + lote; Dist.FQ = norma Euclidiana dos seis descritores; divisor = maior Dist.FQ em relação à referência",
         "reference_included": True,
     }
 

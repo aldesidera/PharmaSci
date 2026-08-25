@@ -1850,7 +1850,7 @@
                 },
             });
             document.getElementById('chemical-space-method').textContent = safeText(space.method, 'MDS clássico');
-            document.getElementById('chemical-space-note').textContent = `${points.length} pontos válidos, incluindo a referência. Dist.FQ = norma Euclidiana dos Z-scores de MM, LogP, TPSA, pKa ácido, pKa básico, HBD, HBA e RotB; a distância global usa 60% estrutural e 40% Dist.FQ normalizada. A projeção serve para triagem e não substitui análise estrutural detalhada.`;
+            document.getElementById('chemical-space-note').textContent = `${points.length} pontos válidos, incluindo a referência. Dist.FQ = norma Euclidiana dos Z-scores de MM, LogP, TPSA, HBD, HBA e RotB; a distância global usa 60% estrutural e 40% Dist.FQ normalizada. A projeção serve para triagem e não substitui análise estrutural detalhada.`;
             panel.classList.remove('hidden');
         }
 
