@@ -1,0 +1,10 @@
+{
+  "entry": "main.typ",
+  "metadata": {
+    "author": "Manus AI",
+    "subtitle": "Mol.Sim — comparação molecular em lote",
+    "title": "Racional estatístico do espaço químico 2D"
+  },
+  "mode": "report",
+  "theme": "report-theme.typ"
+}

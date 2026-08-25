@@ -11,6 +11,7 @@ import logging
 from functools import lru_cache
 from typing import Tuple, Dict, Optional, List, Any
 import base64
+import numpy as np
 
 from rdkit import Chem
 from rdkit.Chem import AllChem, Descriptors, DataStructs, rdMolDescriptors, Crippen, MACCSkeys
@@ -182,6 +183,7 @@ def _compute_property_payload(smiles_key: str) -> Optional[Dict[str, Any]]:
         tpsa = Descriptors.TPSA(mol_work)
         hbd = Descriptors.NumHDonors(mol_work)
         hba = Descriptors.NumHAcceptors(mol_work)
+        rotatable_bonds = Descriptors.NumRotatableBonds(mol_work)
         pka = estimate_pka(mol_work)
 
         return {
@@ -192,6 +194,7 @@ def _compute_property_payload(smiles_key: str) -> Optional[Dict[str, Any]]:
             "pKa básico": round(pka["pKa básico"], 2) if pka and pka.get("pKa básico") is not None else "N/A",
             "Doadores de H (HBD)": int(hbd),
             "Receptores de H (HBA)": int(hba),
+            "Ligações rotacionáveis (RotB)": int(rotatable_bonds),
         }
     except Exception:
         return None
@@ -673,6 +676,139 @@ def compare(
         "warnings": warnings,
     }
     return result, None
+
+
+def _chemical_space_descriptor_vector(properties: Dict[str, Any]) -> List[Optional[float]]:
+    keys = [
+        "Massa Molecular (g/mol)",
+        "Coeficiente de Partição (LogP)",
+        "Área de Superfície Polar (Å²)",
+        "Doadores de H (HBD)",
+        "Receptores de H (HBA)",
+        "Ligações rotacionáveis (RotB)",
+    ]
+    vector = []
+    for key in keys:
+        value = properties.get(key)
+        try:
+            vector.append(float(value) if value not in (None, "", "N/A") else None)
+        except (TypeError, ValueError):
+            vector.append(None)
+    return vector
+
+
+def build_chemical_space(
+    ref_smiles: str,
+    smiles_list: List[str],
+    names_list: Optional[List[str]],
+    results: List[Dict[str, Any]],
+    fp_type: str = "Morgan2",
+    metric: str = "Tanimoto",
+) -> Dict[str, Any]:
+    """Build a reproducible 2D chemical-space map from structural and physicochemical distances."""
+    entries = [{"name": "Referência", "smiles": ref_smiles, "role": "reference"}]
+    for index, item in enumerate(results):
+        if item and not item.get("error") and item.get("smiles"):
+            entries.append({
+                "name": item.get("name") or f"Mol_{index + 1}",
+                "smiles": item["smiles"],
+                "role": "test",
+                "similarity_to_reference": item.get("similarity"),
+                "properties": item.get("properties") or {},
+            })
+
+    molecules = []
+    fingerprints = []
+    property_vectors = []
+    valid_entries = []
+    for entry in entries:
+        mol, error = get_mol(entry["smiles"])
+        fp = get_fingerprint(mol, fp_type) if mol else None
+        properties = entry.get("properties") or (get_properties(mol) if mol else None) or {}
+        if error or mol is None or fp is None:
+            continue
+        molecules.append(mol)
+        fingerprints.append(fp)
+        property_vectors.append(_chemical_space_descriptor_vector(properties))
+        valid_entries.append({**entry, "properties": properties})
+
+    count = len(valid_entries)
+    if count == 0:
+        return {"points": [], "method": "MDS clássico", "weights": {"structural": 0.6, "physicochemical": 0.4}}
+
+    matrix = np.asarray(property_vectors, dtype=float)
+    for column in range(matrix.shape[1]):
+        values = matrix[:, column]
+        finite = np.isfinite(values)
+        fill = float(np.median(values[finite])) if finite.any() else 0.0
+        values[~finite] = fill
+        matrix[:, column] = values
+    std = matrix.std(axis=0)
+    std[std == 0] = 1.0
+    standardized = (matrix - matrix.mean(axis=0)) / std
+
+    fq_distances = np.zeros((count, count), dtype=float)
+    for left in range(count):
+        for right in range(left + 1, count):
+            fq = float(np.linalg.norm(standardized[left] - standardized[right]))
+            fq_distances[left, right] = fq_distances[right, left] = fq
+
+    reference_fq = fq_distances[0].copy()
+    fq_normalizer = float(np.max(reference_fq[1:])) if count > 1 else 0.0
+    if fq_normalizer <= 0:
+        fq_normalizer = 1.0
+    normalized_fq = np.clip(fq_distances / fq_normalizer, 0.0, 1.0)
+
+    distances = np.zeros((count, count), dtype=float)
+    structural_to_reference = []
+    global_to_reference = []
+    for left in range(count):
+        structural_to_reference.append(1.0 - float(calc_similarity(fingerprints[0], fingerprints[left], metric)))
+        global_to_reference.append(0.6 * structural_to_reference[left] + 0.4 * normalized_fq[0, left])
+        for right in range(left + 1, count):
+            structural = 1.0 - float(calc_similarity(fingerprints[left], fingerprints[right], metric))
+            distances[left, right] = distances[right, left] = 0.6 * structural + 0.4 * normalized_fq[left, right]
+
+    if count == 1:
+        coordinates = np.zeros((1, 2), dtype=float)
+    else:
+        squared = distances ** 2
+        centering = np.eye(count) - np.ones((count, count)) / count
+        gram = -0.5 * centering @ squared @ centering
+        eigenvalues, eigenvectors = np.linalg.eigh(gram)
+        order = np.argsort(eigenvalues)[::-1]
+        eigenvalues = np.maximum(eigenvalues[order[:2]], 0.0)
+        eigenvectors = eigenvectors[:, order[:2]]
+        coordinates = eigenvectors * np.sqrt(eigenvalues)
+        if coordinates.shape[1] == 1:
+            coordinates = np.column_stack([coordinates, np.zeros(count)])
+        elif coordinates.shape[1] == 0:
+            coordinates = np.zeros((count, 2))
+
+    points = []
+    for index, entry in enumerate(valid_entries):
+        point = {
+            "name": entry["name"],
+            "smiles": entry["smiles"],
+            "role": entry["role"],
+            "x": round(float(coordinates[index, 0]), 6),
+            "y": round(float(coordinates[index, 1]), 6),
+            "similarity_to_reference": entry.get("similarity_to_reference"),
+            "physicochemical_distance": round(float(normalized_fq[0, index]), 6),
+            "global_distance": round(float(global_to_reference[index]), 6),
+            "rotatable_bonds": valid_entries[index]["properties"].get("Ligações rotacionáveis (RotB)"),
+        }
+        points.append(point)
+
+    return {
+        "points": points,
+        "method": "MDS clássico sobre distância composta",
+        "distance_formula": "0,6 × (1 − similaridade MACCS/fingerprint) + 0,4 × Dist.FQ normalizada",
+        "weights": {"structural": 0.6, "physicochemical": 0.4},
+        "descriptors": ["Massa Molecular", "LogP", "TPSA", "HBD", "HBA", "RotB"],
+        "normalization": "Z-score populacional no conjunto referência + lote; Dist.FQ = norma Euclidiana dos seis descritores; divisor = maior Dist.FQ em relação à referência",
+        "reference_included": True,
+    }
 
 
 def bulk_compare(

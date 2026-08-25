@@ -24,7 +24,7 @@ from flask_cors import CORS
 from fpdf import FPDF
 from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
 
-from analysis import compare, bulk_compare, validate_fingerprint_type, validate_metric
+from analysis import compare, bulk_compare, build_chemical_space, validate_fingerprint_type, validate_metric
 from chemo_suite.apps.mol_sim.pairwise import run_pairwise_compare
 from chemo_suite.apps.mol_sim.batch import run_batch_compare
 from chemo_suite.apps.nitro_ra.cpca import calculate_cpca
@@ -404,6 +404,10 @@ def validate_bulk_compare_request(data: Dict[str, Any]) -> Tuple[bool, str, Opti
     if not validate_fingerprint_type(fp_type):
         return False, f"Tipo de fingerprint inválido: {fp_type}", "fp_type"
 
+    show_chemical_space_error = _validate_optional_bool(data, "show_chemical_space")
+    if show_chemical_space_error:
+        return False, show_chemical_space_error, "show_chemical_space"
+
     data["ref_smiles"] = ref_smiles
     data["smiles_list"] = normalized_smiles
     data["metric"] = metric
@@ -494,7 +498,17 @@ def api_bulk_compare():
         if error:
             return _error_response(400, error, "smiles")
 
-        return jsonify({"results": results}), 200
+        payload = {"results": results}
+        if data.get("show_chemical_space", False):
+            payload["chemical_space"] = build_chemical_space(
+                data["ref_smiles"],
+                data["smiles_list"],
+                data.get("names_list"),
+                results or [],
+                data.get("fp_type", "Morgan2"),
+                data["metric"],
+            )
+        return jsonify(payload), 200
     except Exception:
         logger.error("Erro não tratado em /bulk-compare: %s", traceback.format_exc())
         return _error_response(500, "Erro interno do servidor.", code="internal_error")
