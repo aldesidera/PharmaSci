@@ -981,9 +981,9 @@
                                 <p class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Módulos para este SMILES</p>
                                 <div class="nitro-module-checks">
                                     <label class="nitro-module-check"><input type="checkbox" data-nitro-module="cpca" checked><span><strong>cPCA</strong><small>Limite AI</small></span></label>
+                                    <label class="nitro-module-check"><input type="checkbox" data-nitro-module="nitrosamine_space"><span><strong>Espaço Químico N-nitroso</strong><small>PubChem e espaço químico</small></span></label>
                                     <label class="nitro-module-check"><input type="checkbox" data-nitro-module="quantum"><span><strong>Quantum</strong><small>HOMO / LUMO</small></span></label>
                                     <label class="nitro-module-check"><input type="checkbox" data-nitro-module="metabolism"><span><strong>Metabolism</strong><small>CYP450</small></span></label>
-                                    <label class="nitro-module-check"><input type="checkbox" data-nitro-module="nitrosamine_space"><span><strong>Incluir busca e comparação de Nitrosaminas</strong><small>PubChem e espaço químico</small></span></label>
                                 </div>
                             </div>
                             <p class="text-xs leading-5 text-slate-500">Selecione uma ou mais análises. Os resultados serão organizados em abas independentes; módulos ainda em desenvolvimento serão identificados sem gerar dados fictícios.</p>
@@ -1009,9 +1009,9 @@
                         <div class="card-glass p-8">
                             <div class="nitro-tabs" role="tablist" aria-label="Resultados Nitro.RA">
                                 <button type="button" class="nitro-tab active" data-nitro-tab="cpca" role="tab" aria-selected="true">cPCA</button>
+                                <button type="button" class="nitro-tab" data-nitro-tab="nitrosamine_space" role="tab" aria-selected="false">Nitrosaminas e Espaço Químico</button>
                                 <button type="button" class="nitro-tab" data-nitro-tab="quantum" role="tab" aria-selected="false">Quantum</button>
                                 <button type="button" class="nitro-tab" data-nitro-tab="metabolism" role="tab" aria-selected="false">Metabolism</button>
-                                <button type="button" class="nitro-tab" data-nitro-tab="nitrosamine_space" role="tab" aria-selected="false">Nitrosaminas e Espaço Químico</button>
                             </div>
                             <div id="nitro-panel-cpca" class="nitro-tab-panel" role="tabpanel">
                                 <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -1639,7 +1639,7 @@
         }
 
         function activateNitroTab(tabName) {
-            const allowed = ['cpca', 'quantum', 'metabolism', 'nitrosamine_space'];
+            const allowed = ['cpca', 'nitrosamine_space', 'quantum', 'metabolism'];
             const activeTab = allowed.includes(tabName) ? tabName : 'cpca';
             activeNitroTab = activeTab;
             document.querySelectorAll('.nitro-tab').forEach(tab => {
