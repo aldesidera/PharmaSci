@@ -28,6 +28,7 @@ DEFAULT_TIMEOUT = float(os.getenv("MOLSIM_PUBCHEM_SPACE_TIMEOUT", "12"))
 DEFAULT_CACHE_TTL = float(os.getenv("MOLSIM_PUBCHEM_SPACE_CACHE_TTL_SECONDS", "3600"))
 
 N_NITROSO_PATTERN = Chem.MolFromSmarts("[N;X3][N;X2]=O")
+SPACE_FINGERPRINT = "MACCS"
 DESCRIPTOR_KEYS = (
     "Massa Molecular (g/mol)",
     "Coeficiente de Partição (LogP)",
@@ -249,7 +250,7 @@ def search_nitrosamine_space(
         result.update({"target": target, "search": {"threshold": threshold, "max_records": max_records, "retrieved_cids": len(cids), "n_nitroso_candidates": 0, "selected_candidates": 0}, "candidates": [], "points": []})
         return result
 
-    target_fp = get_fingerprint(target_mol, "Morgan2")
+    target_fp = get_fingerprint(target_mol, SPACE_FINGERPRINT)
     candidates: List[Dict[str, Any]] = []
     raw_properties = ((properties_payload or {}).get("PropertyTable") or {}).get("Properties") or []
     for item in raw_properties:
@@ -267,7 +268,7 @@ def search_nitrosamine_space(
         canonical = _canonical(candidate_mol)
         if canonical == target_canonical:
             continue
-        candidate_fp = get_fingerprint(candidate_mol, "Morgan2")
+        candidate_fp = get_fingerprint(candidate_mol, SPACE_FINGERPRINT)
         if target_fp is None or candidate_fp is None:
             continue
         similarity = calc_similarity(target_fp, candidate_fp, "Tanimoto")
@@ -280,6 +281,7 @@ def search_nitrosamine_space(
             "smiles": candidate_smiles,
             "canonical_smiles": canonical,
             "is_n_nitroso": True,
+            "fingerprint": SPACE_FINGERPRINT,
             "similarity": similarity,
             "classification": classify_similarity(similarity, "Tanimoto"),
             "svg": mol_to_svg(candidate_mol, size=220),
@@ -311,7 +313,8 @@ def search_nitrosamine_space(
             "n_nitroso_candidates": len(candidates),
             "selected_candidates": len(candidates),
             "search_url": search_url,
-            "selection_method": "Filtro SMARTS [N;X3][N;X2]=O + Morgan2/Tanimoto + distância euclidiana normalizada dos descritores",
+            "fingerprint": SPACE_FINGERPRINT,
+            "selection_method": "Filtro SMARTS [N;X3][N;X2]=O + MACCS/Tanimoto + distância euclidiana normalizada dos descritores",
         },
         "descriptor_keys": list(DESCRIPTOR_KEYS),
         "candidates": candidates,

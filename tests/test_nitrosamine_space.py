@@ -32,6 +32,14 @@ def test_search_filters_n_nitroso_and_builds_space(monkeypatch):
         }, None
 
     monkeypatch.setattr(nitrosamine_space, "_get_json", fake_get_json)
+    fingerprint_types = []
+    original_get_fingerprint = nitrosamine_space.get_fingerprint
+
+    def tracked_get_fingerprint(mol, fp_type):
+        fingerprint_types.append(fp_type)
+        return original_get_fingerprint(mol, fp_type)
+
+    monkeypatch.setattr(nitrosamine_space, "get_fingerprint", tracked_get_fingerprint)
     result = nitrosamine_space.search_nitrosamine_space(
         "O=NN1CCCCC1", threshold=70, max_records=50, max_candidates=10
     )
@@ -46,6 +54,10 @@ def test_search_filters_n_nitroso_and_builds_space(monkeypatch):
     assert all(candidate["global_distance"] is not None for candidate in result["candidates"])
     assert result["points"][0]["is_target"] is True
     assert result["target"]["svg"].startswith("<?xml")
+    assert fingerprint_types and set(fingerprint_types) == {"MACCS"}
+    assert result["search"]["fingerprint"] == "MACCS"
+    assert all(candidate["fingerprint"] == "MACCS" for candidate in result["candidates"])
+    assert result["search"]["selection_method"].startswith("Filtro SMARTS [N;X3][N;X2]=O + MACCS/Tanimoto")
 
 
 def test_search_handles_pubchem_failure(monkeypatch):
