@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "pdf": "/home/ubuntu/PharmaSci/docs/statistical-rationale/main.pdf",
+  "mode": "standard",
+  "page_count": 6,
+  "selected_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "rendered_pages": [
+    "/home/ubuntu/PharmaSci/docs/statistical-rationale/review-figure/pages/page-0001.png",
+    "/home/ubuntu/PharmaSci/docs/statistical-rationale/review-figure/pages/page-0002.png",
+    "/home/ubuntu/PharmaSci/docs/statistical-rationale/review-figure/pages/page-0003.png",
+    "/home/ubuntu/PharmaSci/docs/statistical-rationale/review-figure/pages/page-0004.png",
+    "/home/ubuntu/PharmaSci/docs/statistical-rationale/review-figure/pages/page-0005.png",
+    "/home/ubuntu/PharmaSci/docs/statistical-rationale/review-figure/pages/page-0006.png"
+  ],
+  "contact_sheets": [
+    "/home/ubuntu/PharmaSci/docs/statistical-rationale/review-figure/sheets/sheet-01.jpg"
+  ],
+  "settings": {
+    "dpi": 110,
+    "columns": 3,
+    "max_sheet_pages": 12,
+    "thumbnail_width": 320
+  }
+}

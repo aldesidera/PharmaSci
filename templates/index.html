@@ -1077,7 +1077,7 @@
                             <div class="mb-4 flex items-start justify-between gap-3">
                                 <div>
                                     <h3 class="section-title mb-1"><i class="fas fa-project-diagram text-sky-500"></i> Espaço químico 2D</h3>
-                                    <p class="batch-card-caption">Projeção MDS baseada em 60% de distância estrutural e 40% de Dist.FQ normalizada, incluindo ligações rotacionáveis.</p>
+                                    <p class="batch-card-caption">MDS (*Multidimensional Scaling*): transforma a matriz de distâncias em uma projeção 2D. Base: 60% estrutural + 40% Dist.FQ normalizada, incluindo ligações rotacionáveis.</p>
                                 </div>
                                 <span id="chemical-space-method" class="batch-header-pill">MDS</span>
                             </div>
@@ -1877,7 +1877,7 @@
                 },
             });
             document.getElementById('chemical-space-method').textContent = safeText(space.method, 'MDS clássico');
-            document.getElementById('chemical-space-note').textContent = `${points.length} pontos válidos, incluindo a referência. Dist.FQ = norma Euclidiana dos Z-scores de MM, LogP, TPSA, HBD, HBA e RotB; a distância global usa 60% estrutural e 40% Dist.FQ normalizada. A projeção serve para triagem e não substitui análise estrutural detalhada.`;
+            document.getElementById('chemical-space-note').textContent = `${points.length} pontos válidos, incluindo a referência. MDS (*Multidimensional Scaling*) posiciona os pontos em 2D para aproximar as distâncias globais; X/Y são coordenadas relativas e podem ser positivas ou negativas. Dist.FQ = norma Euclidiana dos Z-scores de MM, LogP, TPSA, HBD, HBA e RotB; a distância global usa 60% estrutural e 40% Dist.FQ normalizada. A projeção serve para triagem e não substitui análise estrutural detalhada.`;
             panel.classList.remove('hidden');
         }
 

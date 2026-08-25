@@ -1,0 +1,15 @@
+{
+  "task_kind": "new-document",
+  "output": "pdf",
+  "signals": [],
+  "hard_constraints": ["Português brasileiro", "documentar o racional estatístico do mol.sim", "incluir referências literárias", "explicar MDS no gráfico"],
+  "content_features": {
+    "code_blocks": 4,
+    "defined_terms": 8,
+    "portrait_images": 0,
+    "landscape_images": 1,
+    "mathematical_equations": 6,
+    "tables": 4,
+    "bibliography": true
+  }
+}
