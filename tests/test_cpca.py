@@ -81,3 +81,35 @@ def test_cpca_api_reports_invalid_smiles_as_bad_request():
 
     assert response.status_code == 400
     assert response.get_json()["status"] == "invalid_smiles"
+
+
+def test_nitro_ra_analyze_returns_one_result_per_selected_module():
+    client = app.test_client()
+    response = client.post(
+        "/nitro-ra/analyze",
+        json={
+            "smiles": "O=NN1CCCCC1",
+            "mdd_mg": 10,
+            "modules": ["cpca", "quantum", "metabolism"],
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["module"] == "nitro_ra"
+    assert payload["modules"] == ["cpca", "quantum", "metabolism"]
+    assert payload["results"]["cpca"]["potency_category"] == 3
+    assert payload["results"]["quantum"]["status"] == "not_implemented"
+    assert payload["results"]["metabolism"]["status"] == "not_implemented"
+
+
+def test_nitro_ra_analyze_rejects_missing_or_invalid_modules():
+    client = app.test_client()
+    missing = client.post("/nitro-ra/analyze", json={"smiles": "O=NN1CCCCC1"})
+    invalid = client.post(
+        "/nitro-ra/analyze",
+        json={"smiles": "O=NN1CCCCC1", "modules": ["unknown"]},
+    )
+
+    assert missing.status_code == 400
+    assert invalid.status_code == 400

@@ -30,7 +30,8 @@ Esta documentação reflete o estado atual do projeto em desenvolvimento: funcio
 - ✅ Fallback de nomes via PubChem quando o campo está vazio
 - ✅ Health check /healthz
 - ✅ Interface responsiva e melhor consistência do estado do cliente
-- ✅ Nitro.RA: triagem estrutural cPCA com categoria de potência, AI e conversão opcional para ppm
+- ✅ Nitro.RA: seleção de cPCA, Quantum e Metabolism para o mesmo SMILES
+- ✅ Nitro.RA: três abas de resultados independentes; cPCA funcional e Quantum/Metabolism preparados para evolução
 
 ---
 
@@ -115,7 +116,8 @@ MolSim_ver10/
 ├── tests/
 │   ├── test_phase1_app.py
 │   ├── test_modular_structure.py
-│   └── test_cpca.py
+│   ├── test_cpca.py
+│   └── test_main_cli.py
 ├── README.md
 └── ...
 ```
@@ -131,7 +133,9 @@ MolSim_ver10/
 5. Visualize o score, classificação, mapa e propriedades.
 6. Use o preview de relatório para revisar o conteúdo e exportar para PDF.
 7. No modo batch, informe a referência e a lista de moléculas.
-8. Para o Nitro.RA, ative o módulo, informe o SMILES da nitrosamina e, opcionalmente, a dose diária máxima em mg/dia para obter a conversão do AI para ppm.
+8. Para o Nitro.RA, ative o módulo, informe um SMILES, marque um ou mais checkboxes e execute as análises.
+9. Navegue pelas abas cPCA, Quantum e Metabolism para consultar os resultados separadamente; módulos futuros ficam explicitamente identificados como em desenvolvimento.
+10. Informe a dose diária máxima em mg/dia quando desejar a conversão do AI para ppm.
 
 ---
 
@@ -194,6 +198,12 @@ Atenção:
 - Retorna evidências estruturais, contagem de centros N-nitroso, Potency Score, categoria e AI em ng/dia
 - Retorna `manual_review` ou `not_applicable` para estruturas fora do escopo suportado, sem inventar uma categoria
 - Usa a conversão `ppm = AI (ng/dia) / dose diária máxima (mg)` quando `mdd_mg` é informado
+
+### /nitro-ra/analyze
+- Requer JSON válido em `application/json`
+- Recebe `smiles`, uma lista `modules` com `cpca`, `quantum` e/ou `metabolism`, e `mdd_mg` opcional
+- Retorna um objeto `results` separado por módulo, preservando o resultado de cada análise para as abas da interface
+- Módulos ainda não implementados retornam `status: not_implemented`, sem produzir valores fictícios
 
 ### /report-preview
 - Gera o preview do relatório visual

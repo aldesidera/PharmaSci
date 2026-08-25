@@ -610,9 +610,79 @@
             color: var(--theme-accent-strong);
         }
         .theme-accent-text { color: var(--theme-accent-strong); }
-        .nitro-cpca-results {
+        .nitro-module-checks {
             display: grid;
-            gap: 1.5rem;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.75rem;
+        }
+        .nitro-module-check {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            min-width: 0;
+            cursor: pointer;
+            border: 1px solid var(--line-soft);
+            border-radius: 1rem;
+            padding: 0.75rem;
+            background: rgba(255,255,255,0.64);
+            transition: 0.2s ease;
+        }
+        .nitro-module-check:hover { border-color: var(--theme-panel-border); transform: translateY(-1px); }
+        .nitro-module-check input {
+            width: 1rem;
+            height: 1rem;
+            flex: 0 0 auto;
+            accent-color: var(--theme-accent-strong);
+        }
+        .nitro-module-check span { display: grid; gap: 0.15rem; min-width: 0; }
+        .nitro-module-check strong { color: var(--text-700); font-size: 0.75rem; font-weight: 900; }
+        .nitro-module-check small { color: var(--theme-muted-text); font-size: 0.62rem; font-weight: 700; }
+        .nitro-module-results { display: grid; gap: 1.5rem; }
+        .nitro-tabs {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            border-bottom: 1px solid var(--line-soft);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .nitro-tab {
+            flex: 1 0 8rem;
+            border: 1px solid var(--line-soft);
+            border-radius: 0.9rem;
+            padding: 0.75rem 1rem;
+            color: var(--theme-muted-text);
+            background: rgba(255,255,255,0.55);
+            font-size: 0.68rem;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            transition: 0.2s ease;
+        }
+        .nitro-tab:hover, .nitro-tab.active {
+            color: var(--theme-accent-strong);
+            border-color: var(--theme-panel-border);
+            background: var(--theme-accent-soft);
+        }
+        .nitro-tab-panel.hidden { display: none; }
+        .nitro-pending-state {
+            display: grid;
+            gap: 0.75rem;
+            min-height: 18rem;
+            place-items: center;
+            align-content: center;
+            border: 1px dashed var(--theme-panel-border);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            text-align: center;
+            background: color-mix(in srgb, var(--theme-accent-soft) 42%, white 58%);
+        }
+        .nitro-pending-state i { color: var(--theme-accent-strong); font-size: 2rem; }
+        .nitro-pending-state strong { color: var(--text-700); font-size: 1.1rem; }
+        .nitro-pending-state p { max-width: 32rem; color: var(--theme-muted-text); font-size: 0.86rem; line-height: 1.6; }
+        @media (max-width: 640px) {
+            .nitro-module-checks { grid-template-columns: 1fr; }
+            .nitro-tab { flex-basis: 7.5rem; }
         }
         .cpca-metric-grid {
             display: grid;
@@ -696,7 +766,7 @@
                                 <button type="button" class="module-chip active" data-app="molsim" data-tooltip="Ativar módulo Mol.Sim">
                                     <i class="fas fa-arrows-left-right"></i> Mol.Sim
                                 </button>
-                                <button type="button" class="module-chip" data-app="nitro" data-tooltip="Ativar módulo Nitro.RA (futuro)">
+                                <button type="button" class="module-chip" data-app="nitro" data-tooltip="Ativar módulo Nitro.RA">
                                     <i class="fas fa-flask-vial"></i> Nitro.RA
                                 </button>
                             </div>
@@ -793,27 +863,35 @@
                             <i class="fas fa-file-lines"></i> GERAR RELATÓRIO
                         </button>
                     </div>
-                    <div id="nitro-cpca-card" class="card-glass p-8 shadow-sm h-auto hidden">
+                    <div id="nitro-modules-card" class="card-glass p-8 shadow-sm h-auto hidden">
                         <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-8">
                             <div>
                                 <p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Nitro.RA</p>
-                                <h2 class="text-2xl font-black text-slate-800">Limite cPCA</h2>
+                                <h2 class="text-2xl font-black text-slate-800">Análises científicas</h2>
                             </div>
-                            <span class="cpca-status">FDA / cPCA</span>
+                            <span class="cpca-status">3 módulos</span>
                         </div>
                         <div class="space-y-6">
                             <div>
-                                <label for="nitro-cpca-smiles" class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">SMILES da nitrosamina</label>
-                                <textarea id="nitro-cpca-smiles" rows="3" placeholder="Ex.: O=NN1CCCCC1" class="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl font-mono text-sm focus:ring-2 focus:ring-sky-300 focus:border-sky-300 outline-none transition-all resize-none"></textarea>
+                                <label for="nitro-smiles" class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">SMILES da nitrosamina</label>
+                                <textarea id="nitro-smiles" rows="3" placeholder="Ex.: O=NN1CCCCC1" class="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl font-mono text-sm focus:ring-2 focus:ring-sky-300 focus:border-sky-300 outline-none transition-all resize-none"></textarea>
                             </div>
                             <div>
-                                <label for="nitro-cpca-mdd" class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Dose diária máxima (mg/dia, opcional)</label>
-                                <input id="nitro-cpca-mdd" type="number" min="0.000001" step="any" placeholder="Usada para converter AI em ppm" class="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-sky-300 focus:border-sky-300 outline-none transition-all">
+                                <label for="nitro-mdd" class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Dose diária máxima (mg/dia, opcional)</label>
+                                <input id="nitro-mdd" type="number" min="0.000001" step="any" placeholder="Usada para converter AI em ppm" class="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-sky-300 focus:border-sky-300 outline-none transition-all">
                             </div>
-                            <p class="text-xs leading-5 text-slate-500">O cálculo é uma triagem estrutural baseada na orientação FDA. Casos fora do escopo retornam revisão manual.</p>
+                            <div>
+                                <p class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Módulos para este SMILES</p>
+                                <div class="nitro-module-checks">
+                                    <label class="nitro-module-check"><input type="checkbox" data-nitro-module="cpca" checked><span><strong>cPCA</strong><small>Limite AI</small></span></label>
+                                    <label class="nitro-module-check"><input type="checkbox" data-nitro-module="quantum"><span><strong>Quantum</strong><small>HOMO / LUMO</small></span></label>
+                                    <label class="nitro-module-check"><input type="checkbox" data-nitro-module="metabolism"><span><strong>Metabolism</strong><small>CYP450</small></span></label>
+                                </div>
+                            </div>
+                            <p class="text-xs leading-5 text-slate-500">Selecione uma ou mais análises. Os resultados serão organizados em abas independentes; módulos ainda em desenvolvimento serão identificados sem gerar dados fictícios.</p>
                         </div>
-                        <button id="btn-cpca" data-tooltip="Calcula a categoria de potência e o AI cPCA" onclick="calculateNitroCpca()" class="mt-8 w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-5 rounded-2xl text-lg flex items-center justify-center gap-3 transition-all shadow-lg shadow-sky-500/30">
-                            <i class="fas fa-flask-vial"></i> CALCULAR LIMITE CPCA
+                        <button id="btn-nitro-analyze" data-tooltip="Executa os módulos Nitro.RA selecionados" onclick="calculateNitroModules()" class="mt-8 w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-5 rounded-2xl text-lg flex items-center justify-center gap-3 transition-all shadow-lg shadow-sky-500/30">
+                            <i class="fas fa-flask-vial"></i> EXECUTAR ANÁLISES
                         </button>
                     </div>
                 </div>
@@ -829,27 +907,40 @@
                         </div>
                     </div>
 
-                    <div id="nitro-cpca-results" class="hidden nitro-cpca-results">
+                    <div id="nitro-module-results" class="hidden nitro-module-results">
                         <div class="card-glass p-8">
-                            <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-                                <div>
-                                    <p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Avaliação Nitro.RA</p>
-                                    <h2 class="text-3xl font-black text-slate-800">Limite de nitrosamina por cPCA</h2>
+                            <div class="nitro-tabs" role="tablist" aria-label="Resultados Nitro.RA">
+                                <button type="button" class="nitro-tab active" data-nitro-tab="cpca" role="tab" aria-selected="true">cPCA</button>
+                                <button type="button" class="nitro-tab" data-nitro-tab="quantum" role="tab" aria-selected="false">Quantum</button>
+                                <button type="button" class="nitro-tab" data-nitro-tab="metabolism" role="tab" aria-selected="false">Metabolism</button>
+                            </div>
+                            <div id="nitro-panel-cpca" class="nitro-tab-panel" role="tabpanel">
+                                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                                    <div>
+                                        <p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Avaliação Nitro.RA</p>
+                                        <h2 class="text-3xl font-black text-slate-800">Limite de nitrosamina por cPCA</h2>
+                                    </div>
+                                    <span id="cpca-status-badge" class="cpca-status">—</span>
                                 </div>
-                                <span id="cpca-status-badge" class="cpca-status">—</span>
+                                <p id="cpca-message" class="text-sm leading-6 text-slate-600 mb-6"></p>
+                                <div class="cpca-metric-grid">
+                                    <div class="cpca-metric"><span class="cpca-metric-label">Categoria</span><strong id="cpca-category" class="cpca-metric-value">—</strong></div>
+                                    <div class="cpca-metric"><span class="cpca-metric-label">Potency score</span><strong id="cpca-score" class="cpca-metric-value">—</strong></div>
+                                    <div class="cpca-metric"><span class="cpca-metric-label">AI recomendado</span><strong id="cpca-ai" class="cpca-metric-value">—</strong></div>
+                                </div>
+                                <div id="cpca-ppm-row" class="hidden mt-4 rounded-2xl border border-slate-100 bg-white/70 px-5 py-4 text-sm text-slate-600"><strong class="theme-accent-text">Conversão para ppm:</strong> <span id="cpca-ppm"></span></div>
+                                <div class="mt-6 rounded-2xl border border-slate-100 bg-white/55 p-5">
+                                    <h3 class="section-title mb-4"><i class="fas fa-list-check theme-accent-text"></i> Evidências estruturais</h3>
+                                    <div id="cpca-evidence-list" class="cpca-evidence-list"></div>
+                                </div>
+                                <div id="cpca-warnings" class="mt-6 rounded-2xl border border-amber-200 bg-amber-50/60 p-5 text-sm leading-6 text-amber-800"></div>
                             </div>
-                            <p id="cpca-message" class="text-sm leading-6 text-slate-600 mb-6"></p>
-                            <div class="cpca-metric-grid">
-                                <div class="cpca-metric"><span class="cpca-metric-label">Categoria</span><strong id="cpca-category" class="cpca-metric-value">—</strong></div>
-                                <div class="cpca-metric"><span class="cpca-metric-label">Potency score</span><strong id="cpca-score" class="cpca-metric-value">—</strong></div>
-                                <div class="cpca-metric"><span class="cpca-metric-label">AI recomendado</span><strong id="cpca-ai" class="cpca-metric-value">—</strong></div>
+                            <div id="nitro-panel-quantum" class="nitro-tab-panel hidden" role="tabpanel">
+                                <div class="nitro-pending-state"><i class="fas fa-atom"></i><strong>Quantum em desenvolvimento</strong><p>O resultado desta aba ficará reservado para a futura análise HOMO/LUMO. Nenhum valor é estimado nesta etapa.</p></div>
                             </div>
-                            <div id="cpca-ppm-row" class="hidden mt-4 rounded-2xl border border-slate-100 bg-white/70 px-5 py-4 text-sm text-slate-600"><strong class="theme-accent-text">Conversão para ppm:</strong> <span id="cpca-ppm"></span></div>
-                        </div>
-                        <div class="card-glass p-8">
-                            <h3 class="section-title mb-5"><i class="fas fa-list-check theme-accent-text"></i> Evidências estruturais</h3>
-                            <div id="cpca-evidence-list" class="cpca-evidence-list"></div>
-                            <div id="cpca-warnings" class="mt-6 rounded-2xl border border-amber-200 bg-amber-50/60 p-5 text-sm leading-6 text-amber-800"></div>
+                            <div id="nitro-panel-metabolism" class="nitro-tab-panel hidden" role="tabpanel">
+                                <div class="nitro-pending-state"><i class="fas fa-dna"></i><strong>Metabolism em desenvolvimento</strong><p>O resultado desta aba ficará reservado para a futura predição CYP450. Nenhum valor é estimado nesta etapa.</p></div>
+                            </div>
                         </div>
                     </div>
 
@@ -978,6 +1069,8 @@
         let activePreviewController = null;
         let activeCpcaController = null;
         let activeCpcaRequestId = 0;
+        let currentNitroResults = null;
+        let activeNitroTab = 'cpca';
 
         function fetchWithTimeout(url, options = {}, timeoutMs = 15000, requestController = null) {
             const controller = requestController || new AbortController();
@@ -1099,7 +1192,7 @@
             document.getElementById('batch-result-panel').classList.add('hidden');
             document.getElementById('batch-properties-panel').classList.add('hidden');
             document.getElementById('result-content').classList.add('hidden');
-            document.getElementById('nitro-cpca-results')?.classList.add('hidden');
+            document.getElementById('nitro-module-results')?.classList.add('hidden');
             document.getElementById('bottom-results').classList.add('hidden');
             document.getElementById('placeholder-results').classList.remove('hidden');
             updateReportAvailability();
@@ -1204,9 +1297,9 @@
             }
             applyModuleTheme(activeApp);
             document.getElementById('molsim-controls')?.classList.toggle('hidden', activeApp !== 'molsim');
-            document.getElementById('nitro-cpca-card')?.classList.toggle('hidden', activeApp !== 'nitro');
+            document.getElementById('nitro-modules-card')?.classList.toggle('hidden', activeApp !== 'nitro');
             document.getElementById('result-content')?.classList.add('hidden');
-            document.getElementById('nitro-cpca-results')?.classList.add('hidden');
+            document.getElementById('nitro-module-results')?.classList.add('hidden');
             document.getElementById('batch-result-panel')?.classList.add('hidden');
             document.getElementById('batch-properties-panel')?.classList.add('hidden');
             document.getElementById('bottom-results')?.classList.add('hidden');
@@ -1338,14 +1431,29 @@
             return labels[status] || 'Sem classificação';
         }
 
-        function renderCpcaResults(result) {
-            document.getElementById('placeholder-results')?.classList.add('hidden');
-            document.getElementById('result-content')?.classList.add('hidden');
-            document.getElementById('bottom-results')?.classList.add('hidden');
-            document.getElementById('batch-result-panel')?.classList.add('hidden');
-            document.getElementById('batch-properties-panel')?.classList.add('hidden');
-            document.getElementById('nitro-cpca-results')?.classList.remove('hidden');
+        function getSelectedNitroModules() {
+            return Array.from(document.querySelectorAll('[data-nitro-module]:checked')).map(item => item.dataset.nitroModule);
+        }
 
+        function activateNitroTab(tabName) {
+            const allowed = ['cpca', 'quantum', 'metabolism'];
+            const activeTab = allowed.includes(tabName) ? tabName : 'cpca';
+            activeNitroTab = activeTab;
+            document.querySelectorAll('.nitro-tab').forEach(tab => {
+                const isActive = tab.dataset.nitroTab === activeTab;
+                tab.classList.toggle('active', isActive);
+                tab.setAttribute('aria-selected', String(isActive));
+            });
+            document.querySelectorAll('.nitro-tab-panel').forEach(panel => {
+                panel.classList.toggle('hidden', panel.id !== `nitro-panel-${activeTab}`);
+            });
+        }
+
+        document.querySelectorAll('.nitro-tab').forEach(tab => {
+            tab.addEventListener('click', () => activateNitroTab(tab.dataset.nitroTab));
+        });
+
+        function renderCpcaResults(result) {
             const status = safeText(result.status, 'manual_review');
             const badge = document.getElementById('cpca-status-badge');
             if (badge) badge.textContent = cpcaStatusLabel(status);
@@ -1365,9 +1473,7 @@
                 ppmRow.classList.add('hidden');
             }
 
-            const evidence = [];
-            evidence.push(['SMILES analisado', safeText(result.smiles)]);
-            evidence.push(['Centros N-nitroso', safeText(result.center_count, '0')]);
+            const evidence = [['SMILES analisado', safeText(result.smiles)], ['Centros N-nitroso', safeText(result.center_count, '0')]];
             (result.centers || []).forEach((center, index) => {
                 evidence.push([`Centro ${index + 1} — H alfa`, safeText(center.alpha_hydrogen_counts)]);
                 evidence.push([`Centro ${index + 1} — score alfa-H`, safeText(center.alpha_hydrogen_score)]);
@@ -1379,36 +1485,78 @@
             document.getElementById('cpca-warnings').innerHTML = warnings.length ? `<strong>Avisos:</strong><br>${warnings.map(escapeHtml).join('<br>')}` : '';
         }
 
-        async function calculateNitroCpca() {
-            const smiles = document.getElementById('nitro-cpca-smiles').value.trim();
-            const mddValue = document.getElementById('nitro-cpca-mdd').value.trim();
+        function renderCpcaNotSelected() {
+            renderCpcaResults({
+                status: 'not_selected',
+                message: 'cPCA não foi selecionado para esta análise.',
+                smiles: '',
+                center_count: 0,
+                centers: [],
+                warnings: []
+            });
+        }
+
+        function renderNitroModuleState(moduleName, result) {
+            const labels = { quantum: 'Quantum', metabolism: 'Metabolism' };
+            const icons = { quantum: 'fa-atom', metabolism: 'fa-dna' };
+            const label = labels[moduleName] || moduleName;
+            const isSelected = Boolean(result);
+            const message = safeText(result?.message, `${label} não foi selecionado para esta análise.`);
+            const title = !isSelected ? `${label} não selecionado` : (result?.status === 'not_implemented' ? `${label} em desenvolvimento` : `${label}: ${cpcaStatusLabel(result?.status)}`);
+            return `<div class="nitro-pending-state"><i class="fas ${icons[moduleName] || 'fa-flask'}"></i><strong>${escapeHtml(title)}</strong><p>${escapeHtml(message)}</p></div>`;
+        }
+
+        function renderNitroResults(payload) {
+            document.getElementById('placeholder-results')?.classList.add('hidden');
+            document.getElementById('result-content')?.classList.add('hidden');
+            document.getElementById('bottom-results')?.classList.add('hidden');
+            document.getElementById('batch-result-panel')?.classList.add('hidden');
+            document.getElementById('batch-properties-panel')?.classList.add('hidden');
+            document.getElementById('nitro-module-results')?.classList.remove('hidden');
+
+            const selectedModules = Array.isArray(payload.modules) ? payload.modules : [];
+            const results = payload.results || {};
+            if (selectedModules.includes('cpca')) renderCpcaResults(results.cpca || { status: 'manual_review', message: 'Resultado cPCA indisponível.' });
+            else renderCpcaNotSelected();
+            document.getElementById('nitro-panel-quantum').innerHTML = renderNitroModuleState('quantum', selectedModules.includes('quantum') ? results.quantum : null);
+            document.getElementById('nitro-panel-metabolism').innerHTML = renderNitroModuleState('metabolism', selectedModules.includes('metabolism') ? results.metabolism : null);
+            const firstTab = selectedModules.includes(activeNitroTab) ? activeNitroTab : (selectedModules[0] || 'cpca');
+            activateNitroTab(firstTab);
+        }
+
+        async function calculateNitroModules() {
+            const smiles = document.getElementById('nitro-smiles').value.trim();
+            const mddValue = document.getElementById('nitro-mdd').value.trim();
+            const selectedModules = getSelectedNitroModules();
             if (!smiles) return showToast('Informe o SMILES da nitrosamina.', 'error');
+            if (!selectedModules.length) return showToast('Selecione ao menos um módulo Nitro.RA.', 'error');
             if (mddValue && (!Number.isFinite(Number(mddValue)) || Number(mddValue) <= 0)) {
                 return showToast('A dose diária máxima deve ser um número maior que zero.', 'error');
             }
             if (activeCpcaController) activeCpcaController.abort();
             activeCpcaController = new AbortController();
             const requestId = ++activeCpcaRequestId;
-            const btn = document.getElementById('btn-cpca');
+            const btn = document.getElementById('btn-nitro-analyze');
             const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-circle-notch animate-spin"></i> CALCULANDO...';
+            btn.innerHTML = '<i class="fas fa-circle-notch animate-spin"></i> ANALISANDO...';
             btn.disabled = true;
             try {
-                const body = { smiles };
+                const body = { smiles, modules: selectedModules };
                 if (mddValue) body.mdd_mg = Number(mddValue);
-                const response = await fetchWithTimeout('/nitro-ra/cpca', {
+                const response = await fetchWithTimeout('/nitro-ra/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body)
-                }, 20000, activeCpcaController);
+                }, 30000, activeCpcaController);
                 const payload = await response.json();
                 if (requestId !== activeCpcaRequestId) return;
-                if (!response.ok && payload?.status !== 'invalid_smiles') throw new Error(getErrorMessage(payload, `Falha no cálculo cPCA (${response.status})`));
-                renderCpcaResults(payload);
-                showToast(payload.status === 'ok' ? 'Cálculo cPCA concluído!' : 'cPCA requer revisão.', payload.status === 'ok' ? 'success' : 'info');
+                if (!response.ok && payload?.status !== 'invalid_smiles') throw new Error(getErrorMessage(payload, `Falha nas análises Nitro.RA (${response.status})`));
+                currentNitroResults = payload;
+                renderNitroResults(payload);
+                showToast(payload.status === 'ok' ? 'Análises Nitro.RA concluídas!' : 'A análise requer revisão.', payload.status === 'ok' ? 'success' : 'info');
             } catch (error) {
                 if (requestId !== activeCpcaRequestId) return;
-                showToast(error.message || 'Erro ao calcular cPCA.', 'error');
+                showToast(error.message || 'Erro ao executar análises Nitro.RA.', 'error');
             } finally {
                 if (requestId === activeCpcaRequestId) {
                     btn.innerHTML = originalHtml;
@@ -1416,6 +1564,10 @@
                     activeCpcaController = null;
                 }
             }
+        }
+
+        function calculateNitroCpca() {
+            return calculateNitroModules();
         }
 
         async function compareMolecules() {
@@ -1735,7 +1887,7 @@
         function setScreenStateForNoData() {
             document.getElementById('placeholder-results').classList.remove('hidden');
             document.getElementById('result-content').classList.add('hidden');
-            document.getElementById('nitro-cpca-results')?.classList.add('hidden');
+            document.getElementById('nitro-module-results')?.classList.add('hidden');
             document.getElementById('bottom-results').classList.add('hidden');
             document.getElementById('batch-result-panel').classList.add('hidden');
             document.getElementById('batch-properties-panel').classList.add('hidden');
