@@ -301,6 +301,28 @@
         .batch-molecule-cell {
             width: 160px;
         }
+        .chemical-space-report-card {
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            background: #f8fbff;
+            padding: 12px;
+        }
+        .chemical-space-report-svg {
+            display: block;
+            width: 100%;
+            height: 205px;
+            border: 1px solid #dbeafe;
+            border-radius: 10px;
+            background: #ffffff;
+        }
+        .chemical-space-report-table {
+            margin-top: 10px;
+            font-size: 9px;
+        }
+        .chemical-space-report-table th, .chemical-space-report-table td {
+            padding: 4px 6px;
+        }
+        .space-legend { font-size: 10px; color: #475569; margin-top: 6px; }
         .batch-molecule-report {
             display: flex;
             flex-direction: column;
@@ -430,6 +452,43 @@
                 </div>
             </section>
 
+            {% if report.get('chemical_space') and report.get('chemical_space', {}).get('points') %}
+            <section class="section">
+                <h2>Espaço Químico 2D</h2>
+                {% set points = report.get('chemical_space', {}).get('points', []) %}
+                {% set bounds = namespace(max_abs=0.25) %}
+                {% for point in points %}
+                    {% set bounds.max_abs = [bounds.max_abs, (point.get('x', 0) or 0)|abs, (point.get('y', 0) or 0)|abs]|max %}
+                {% endfor %}
+                <div class="chemical-space-report-card">
+                    <p><strong>Projeção:</strong> {{ report.get('chemical_space', {}).get('method', 'MDS clássico sobre distância composta') }}.</p>
+                    <p><strong>Fórmula:</strong> 60% de distância estrutural + 40% de Dist.FQ normalizada. A Dist.FQ reproduz o Excel com Z-scores de MM, LogP, TPSA, HBD, HBA e RotB.</p>
+                    <svg class="chemical-space-report-svg" viewBox="0 0 920 410" role="img" aria-label="Espaço químico 2D">
+                        <line x1="460" y1="15" x2="460" y2="395" stroke="#cbd5e1" stroke-width="1" />
+                        <line x1="20" y1="205" x2="900" y2="205" stroke="#cbd5e1" stroke-width="1" />
+                        <text x="870" y="198" font-size="11" fill="#64748b">X</text>
+                        <text x="467" y="28" font-size="11" fill="#64748b">Y</text>
+                        {% for point in points %}
+                            {% set px = 460 + ((point.get('x', 0) or 0) / bounds.max_abs) * 405 %}
+                            {% set py = 205 - ((point.get('y', 0) or 0) / bounds.max_abs) * 175 %}
+                            {% set color = '#f97316' if point.get('role') == 'reference' else '#2563eb' %}
+                            <circle cx="{{ '%.2f'|format(px) }}" cy="{{ '%.2f'|format(py) }}" r="{{ 6 if point.get('role') == 'reference' else 4 }}" fill="{{ color }}" stroke="#ffffff" stroke-width="1.5" />
+                            <text x="{{ '%.2f'|format(px + 8) }}" y="{{ '%.2f'|format(py - 7) }}" font-size="9" fill="#1e293b">{{ point.get('name', '-')|truncate(24, True, '…') }}</text>
+                        {% endfor %}
+                    </svg>
+                    <div class="space-legend"><span style="color:#f97316;">●</span> Referência &nbsp;&nbsp; <span style="color:#2563eb;">●</span> Moléculas do lote. A projeção é uma ferramenta de triagem visual.</div>
+                    <table class="chemical-space-report-table">
+                        <thead><tr><th>Molécula</th><th>Dist.FQ normalizada</th><th>Distância global</th><th>RotB</th></tr></thead>
+                        <tbody>
+                        {% for point in points if point.get('role') != 'reference' %}
+                            <tr><td>{{ point.get('name', '-') }}</td><td>{{ '%.4f'|format(point.get('physicochemical_distance', 0)) }}</td><td>{{ '%.4f'|format(point.get('global_distance', 0)) }}</td><td>{{ point.get('rotatable_bonds', '-') }}</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            {% endif %}
+
             <section class="section">
                 <h2>Resultado de Similaridade</h2>
                 <div class="batch-table-wrap">
@@ -528,7 +587,7 @@
                                 <td class="center">{{ item.get('properties', {}).get('pKa básico', '-') if item.get('properties') else '-' }}</td>
                                 <td class="center">{{ item.get('properties', {}).get('Doadores de H (HBD)', '-') if item.get('properties') else '-' }}</td>
                                 <td class="center">{{ item.get('properties', {}).get('Receptores de H (HBA)', '-') if item.get('properties') else '-' }}</td>
-                                <td class="center">{{ item.get('properties', {}).get('Ligações Rotacionais', '-') if item.get('properties') else '-' }}</td>
+                                <td class="center">{{ item.get('properties', {}).get('Ligações rotacionáveis (RotB)', '-') if item.get('properties') else '-' }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>

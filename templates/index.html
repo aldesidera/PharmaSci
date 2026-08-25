@@ -1160,6 +1160,7 @@
         let currentResult = null;
         let currentMode = 'pair';
         let currentBatchResults = [];
+        let currentBatchChemicalSpace = null;
         let activePairRequestId = 0;
         let activeBatchRequestId = 0;
         let activePairController = null;
@@ -1272,6 +1273,7 @@
             }
             currentResult = null;
             currentBatchResults = [];
+            currentBatchChemicalSpace = null;
 
             const tabs = document.querySelectorAll('.mode-tab');
             tabs.forEach(tab => {
@@ -1408,6 +1410,7 @@
             document.getElementById('placeholder-results')?.classList.remove('hidden');
             currentResult = null;
             currentBatchResults = [];
+            currentBatchChemicalSpace = null;
             updateReportAvailability();
             if (activeApp === 'molsim') setComparisonMode(currentMode);
         }
@@ -1903,6 +1906,7 @@
 
                 const sortedResults = sortBatchResults(payload.results || []);
                 currentBatchResults = sortedResults;
+                currentBatchChemicalSpace = payload.chemical_space || null;
                 const validResults = sortedResults.filter(item => item && !item.error);
                 const structureHtml = validResults.map((item) => {
                     const structureSvg = item.svg || '';
@@ -1936,6 +1940,7 @@
             } catch (e) {
                 if (requestId !== activeBatchRequestId) return;
                 currentBatchResults = [];
+                currentBatchChemicalSpace = null;
                 updateReportAvailability();
                 showToast(e.message, 'error');
             } finally {
@@ -2012,6 +2017,7 @@
                     ref_name: document.getElementById('batch-ref-name').value || 'Referência',
                     ref_smiles: document.getElementById('batch-ref-smiles').value || '',
                     results: currentBatchResults || [],
+                    chemical_space: currentBatchChemicalSpace,
                     fp_type: document.getElementById('batch-fp-type').value,
                     metric: document.getElementById('batch-metric').value,
                     generated_at: new Date().toLocaleString('pt-BR')

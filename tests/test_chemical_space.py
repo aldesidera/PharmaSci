@@ -43,3 +43,25 @@ def test_bulk_endpoint_conditionally_returns_chemical_space():
     })
     assert legacy.status_code == 200
     assert "chemical_space" not in legacy.get_json()
+
+
+def test_batch_report_preview_includes_chemical_space_section():
+    results, error = bulk_compare("CCO", ["CCN", "CCCl"], ["Amina", "Clorado"], "MACCS", "Tanimoto")
+    assert error is None
+    space = build_chemical_space("CCO", ["CCN", "CCCl"], ["Amina", "Clorado"], results, "MACCS", "Tanimoto")
+    client = app.test_client()
+    response = client.post("/report-preview", json={
+        "mode": "batch",
+        "ref_name": "Referência",
+        "ref_smiles": "CCO",
+        "results": results,
+        "chemical_space": space,
+        "fp_type": "MACCS",
+        "metric": "Tanimoto",
+    })
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert "Espaço Químico 2D" in html
+    assert "60% de distância estrutural + 40% de Dist.FQ normalizada" in html
+    assert "RotB" in html
+    assert "chemical-space-report-svg" in html
