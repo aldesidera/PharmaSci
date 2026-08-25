@@ -582,7 +582,8 @@
 
         body #btn-compare,
         body #btn-bulk-compare,
-        body #btn-batch-report {
+        body #btn-batch-report,
+        body #btn-cpca {
             background: linear-gradient(135deg, var(--theme-accent), var(--theme-accent-strong));
             color: var(--theme-button-text);
             border-color: var(--theme-panel-border);
@@ -590,7 +591,8 @@
         }
         body #btn-compare:hover,
         body #btn-bulk-compare:hover,
-        body #btn-batch-report:hover {
+        body #btn-batch-report:hover,
+        body #btn-cpca:hover {
             background: linear-gradient(135deg, var(--theme-accent-strong), var(--theme-accent-secondary));
             box-shadow: 0 16px 28px var(--theme-panel-glow);
         }
@@ -606,6 +608,71 @@
         body.theme-nitro .empty-state .placeholder-content i,
         body.theme-nitro .empty-state .placeholder-content p:first-of-type {
             color: var(--theme-accent-strong);
+        }
+        .theme-accent-text { color: var(--theme-accent-strong); }
+        .nitro-cpca-results {
+            display: grid;
+            gap: 1.5rem;
+        }
+        .cpca-metric-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+        }
+        .cpca-metric {
+            border: 1px solid var(--theme-panel-border);
+            border-radius: 1.25rem;
+            padding: 1.15rem;
+            background: color-mix(in srgb, var(--theme-accent-soft) 62%, white 38%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+        }
+        .cpca-metric-label {
+            display: block;
+            color: var(--theme-muted-text);
+            font-size: 0.65rem;
+            font-weight: 900;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+        .cpca-metric-value {
+            display: block;
+            margin-top: 0.45rem;
+            color: var(--theme-accent-strong);
+            font-size: 1.45rem;
+            font-weight: 900;
+        }
+        .cpca-status {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid var(--theme-panel-border);
+            border-radius: 999px;
+            padding: 0.5rem 0.85rem;
+            color: var(--theme-accent-strong);
+            background: var(--theme-accent-soft);
+            font-size: 0.65rem;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+        .cpca-evidence-list {
+            display: grid;
+            gap: 0.75rem;
+        }
+        .cpca-evidence-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 1rem;
+            border-bottom: 1px solid var(--line-soft);
+            padding: 0.75rem 0;
+        }
+        .cpca-evidence-row:last-child { border-bottom: 0; }
+        .cpca-evidence-row strong { color: var(--text-700); }
+        .cpca-evidence-row span { color: var(--theme-accent-strong); font-weight: 900; text-align: right; }
+        @media (max-width: 640px) {
+            .cpca-metric-grid { grid-template-columns: 1fr; }
+            .cpca-evidence-row { align-items: flex-start; flex-direction: column; gap: 0.25rem; }
+            .cpca-evidence-row span { text-align: left; }
         }
     </style>
 </head>
@@ -639,7 +706,7 @@
                 </div>
 
                 <div class="action-column">
-                    <div class="card-glass p-8 shadow-sm h-auto">
+                    <div id="molsim-controls" class="card-glass p-8 shadow-sm h-auto">
                         <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-8">
                             <h2 class="text-2xl font-black text-slate-800">Moléculas</h2>
                             <div class="inline-flex rounded-2xl bg-slate-100 p-1">
@@ -726,6 +793,29 @@
                             <i class="fas fa-file-lines"></i> GERAR RELATÓRIO
                         </button>
                     </div>
+                    <div id="nitro-cpca-card" class="card-glass p-8 shadow-sm h-auto hidden">
+                        <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-8">
+                            <div>
+                                <p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Nitro.RA</p>
+                                <h2 class="text-2xl font-black text-slate-800">Limite cPCA</h2>
+                            </div>
+                            <span class="cpca-status">FDA / cPCA</span>
+                        </div>
+                        <div class="space-y-6">
+                            <div>
+                                <label for="nitro-cpca-smiles" class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">SMILES da nitrosamina</label>
+                                <textarea id="nitro-cpca-smiles" rows="3" placeholder="Ex.: O=NN1CCCCC1" class="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl font-mono text-sm focus:ring-2 focus:ring-sky-300 focus:border-sky-300 outline-none transition-all resize-none"></textarea>
+                            </div>
+                            <div>
+                                <label for="nitro-cpca-mdd" class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Dose diária máxima (mg/dia, opcional)</label>
+                                <input id="nitro-cpca-mdd" type="number" min="0.000001" step="any" placeholder="Usada para converter AI em ppm" class="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-sky-300 focus:border-sky-300 outline-none transition-all">
+                            </div>
+                            <p class="text-xs leading-5 text-slate-500">O cálculo é uma triagem estrutural baseada na orientação FDA. Casos fora do escopo retornam revisão manual.</p>
+                        </div>
+                        <button id="btn-cpca" data-tooltip="Calcula a categoria de potência e o AI cPCA" onclick="calculateNitroCpca()" class="mt-8 w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-5 rounded-2xl text-lg flex items-center justify-center gap-3 transition-all shadow-lg shadow-sky-500/30">
+                            <i class="fas fa-flask-vial"></i> CALCULAR LIMITE CPCA
+                        </button>
+                    </div>
                 </div>
 
                 <div class="visual-column">
@@ -735,7 +825,31 @@
                                 <i class="fas fa-microscope text-4xl text-slate-300"></i>
                             </div>
                             <p class="text-xl font-black text-slate-700 tracking-[0.08em] uppercase">Aguardando análise</p>
-                            <p class="text-sm text-slate-500 mt-2 text-center max-w-md">Insira os SMILES à esquerda e pressione comparar para gerar a similaridade, o score e o resumo visual.</p>
+                            <p class="text-sm text-slate-500 mt-2 text-center max-w-md">Insira os SMILES à esquerda e pressione comparar para gerar a similaridade, o score ou a avaliação cPCA.</p>
+                        </div>
+                    </div>
+
+                    <div id="nitro-cpca-results" class="hidden nitro-cpca-results">
+                        <div class="card-glass p-8">
+                            <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                                <div>
+                                    <p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Avaliação Nitro.RA</p>
+                                    <h2 class="text-3xl font-black text-slate-800">Limite de nitrosamina por cPCA</h2>
+                                </div>
+                                <span id="cpca-status-badge" class="cpca-status">—</span>
+                            </div>
+                            <p id="cpca-message" class="text-sm leading-6 text-slate-600 mb-6"></p>
+                            <div class="cpca-metric-grid">
+                                <div class="cpca-metric"><span class="cpca-metric-label">Categoria</span><strong id="cpca-category" class="cpca-metric-value">—</strong></div>
+                                <div class="cpca-metric"><span class="cpca-metric-label">Potency score</span><strong id="cpca-score" class="cpca-metric-value">—</strong></div>
+                                <div class="cpca-metric"><span class="cpca-metric-label">AI recomendado</span><strong id="cpca-ai" class="cpca-metric-value">—</strong></div>
+                            </div>
+                            <div id="cpca-ppm-row" class="hidden mt-4 rounded-2xl border border-slate-100 bg-white/70 px-5 py-4 text-sm text-slate-600"><strong class="theme-accent-text">Conversão para ppm:</strong> <span id="cpca-ppm"></span></div>
+                        </div>
+                        <div class="card-glass p-8">
+                            <h3 class="section-title mb-5"><i class="fas fa-list-check theme-accent-text"></i> Evidências estruturais</h3>
+                            <div id="cpca-evidence-list" class="cpca-evidence-list"></div>
+                            <div id="cpca-warnings" class="mt-6 rounded-2xl border border-amber-200 bg-amber-50/60 p-5 text-sm leading-6 text-amber-800"></div>
                         </div>
                     </div>
 
@@ -862,6 +976,8 @@
         let activePairController = null;
         let activeBatchController = null;
         let activePreviewController = null;
+        let activeCpcaController = null;
+        let activeCpcaRequestId = 0;
 
         function fetchWithTimeout(url, options = {}, timeoutMs = 15000, requestController = null) {
             const controller = requestController || new AbortController();
@@ -983,6 +1099,7 @@
             document.getElementById('batch-result-panel').classList.add('hidden');
             document.getElementById('batch-properties-panel').classList.add('hidden');
             document.getElementById('result-content').classList.add('hidden');
+            document.getElementById('nitro-cpca-results')?.classList.add('hidden');
             document.getElementById('bottom-results').classList.add('hidden');
             document.getElementById('placeholder-results').classList.remove('hidden');
             updateReportAvailability();
@@ -1077,18 +1194,35 @@
             document.body.classList.toggle('theme-nitro', appName === 'nitro');
         }
 
-        applyModuleTheme('molsim');
+        function activateModule(appName) {
+            const activeApp = appName === 'nitro' ? 'nitro' : 'molsim';
+            document.querySelectorAll('.module-chip').forEach(item => item.classList.toggle('active', item.dataset.app === activeApp));
+            const brandVisual = document.querySelector('.brand-visual');
+            if (brandVisual) {
+                brandVisual.classList.toggle('is-molsim', activeApp === 'molsim');
+                brandVisual.classList.toggle('is-nitro', activeApp === 'nitro');
+            }
+            applyModuleTheme(activeApp);
+            document.getElementById('molsim-controls')?.classList.toggle('hidden', activeApp !== 'molsim');
+            document.getElementById('nitro-cpca-card')?.classList.toggle('hidden', activeApp !== 'nitro');
+            document.getElementById('result-content')?.classList.add('hidden');
+            document.getElementById('nitro-cpca-results')?.classList.add('hidden');
+            document.getElementById('batch-result-panel')?.classList.add('hidden');
+            document.getElementById('batch-properties-panel')?.classList.add('hidden');
+            document.getElementById('bottom-results')?.classList.add('hidden');
+            document.getElementById('placeholder-results')?.classList.remove('hidden');
+            currentResult = null;
+            currentBatchResults = [];
+            updateReportAvailability();
+            if (activeApp === 'molsim') setComparisonMode(currentMode);
+        }
+
+        activateModule('molsim');
 
         document.querySelectorAll('.module-chip').forEach((chip) => {
             chip.addEventListener('click', () => {
-                document.querySelectorAll('.module-chip').forEach(item => item.classList.toggle('active', item === chip));
                 const appName = chip.dataset.app || 'molsim';
-                const brandVisual = document.querySelector('.brand-visual');
-                if (brandVisual) {
-                    brandVisual.classList.toggle('is-molsim', appName === 'molsim');
-                    brandVisual.classList.toggle('is-nitro', appName === 'nitro');
-                }
-                applyModuleTheme(appName);
+                activateModule(appName);
                 showToast(appName === 'nitro' ? 'Nitro.RA ativado' : 'Mol.Sim ativado', 'success');
             });
         });
@@ -1173,6 +1307,115 @@
             if (typeof payload?.error === 'string') return payload.error;
             if (payload?.message) return payload.message;
             return fallback;
+        }
+
+        function cpcaFeatureLabel(feature) {
+            const labels = {
+                pyrrolidine_ring: 'Anel de pirrolidina',
+                six_membered_sulfur_ring: 'Anel de seis membros com enxofre',
+                morpholine_ring: 'Anel de morfolina',
+                five_or_six_membered_ring: 'Anel de cinco ou seis membros',
+                seven_membered_ring: 'Anel de sete membros',
+                carboxylic_acid: 'Ácido carboxílico',
+                alpha_electron_withdrawing_group: 'Grupo retirador de elétrons no alfa',
+                beta_hydroxyl: 'Hidroxila no beta',
+                long_chains_both_sides: 'Cadeias longas nos dois lados',
+                alpha_aryl: 'Grupo aril no alfa',
+                beta_methyl: 'Metil no beta'
+            };
+            return labels[feature?.name] || feature?.detail || feature?.name || 'Feature não identificada';
+        }
+
+        function cpcaStatusLabel(status) {
+            const labels = {
+                ok: 'Concluído',
+                manual_review: 'Revisão manual',
+                not_applicable: 'Fora do escopo',
+                not_nitrosamine: 'Sem centro N-nitroso',
+                invalid_smiles: 'SMILES inválido',
+                invalid_input: 'Entrada inválida'
+            };
+            return labels[status] || 'Sem classificação';
+        }
+
+        function renderCpcaResults(result) {
+            document.getElementById('placeholder-results')?.classList.add('hidden');
+            document.getElementById('result-content')?.classList.add('hidden');
+            document.getElementById('bottom-results')?.classList.add('hidden');
+            document.getElementById('batch-result-panel')?.classList.add('hidden');
+            document.getElementById('batch-properties-panel')?.classList.add('hidden');
+            document.getElementById('nitro-cpca-results')?.classList.remove('hidden');
+
+            const status = safeText(result.status, 'manual_review');
+            const badge = document.getElementById('cpca-status-badge');
+            if (badge) badge.textContent = cpcaStatusLabel(status);
+            const message = document.getElementById('cpca-message');
+            if (message) message.textContent = safeText(result.message, 'Nenhuma mensagem disponível.');
+            const category = result.potency_category == null ? '—' : `Categoria ${result.potency_category}`;
+            const score = result.potency_score == null ? '—' : safeText(result.potency_score);
+            const ai = result.ai_ng_day == null ? '—' : `${Number(result.ai_ng_day).toLocaleString('pt-BR')} ng/dia`;
+            document.getElementById('cpca-category').textContent = category;
+            document.getElementById('cpca-score').textContent = score;
+            document.getElementById('cpca-ai').textContent = ai;
+            const ppmRow = document.getElementById('cpca-ppm-row');
+            if (result.ppm_limit != null) {
+                ppmRow.classList.remove('hidden');
+                document.getElementById('cpca-ppm').textContent = `${Number(result.ppm_limit).toLocaleString('pt-BR')} ppm (${safeText(result.ppm_formula)})`;
+            } else {
+                ppmRow.classList.add('hidden');
+            }
+
+            const evidence = [];
+            evidence.push(['SMILES analisado', safeText(result.smiles)]);
+            evidence.push(['Centros N-nitroso', safeText(result.center_count, '0')]);
+            (result.centers || []).forEach((center, index) => {
+                evidence.push([`Centro ${index + 1} — H alfa`, safeText(center.alpha_hydrogen_counts)]);
+                evidence.push([`Centro ${index + 1} — score alfa-H`, safeText(center.alpha_hydrogen_score)]);
+                evidence.push([`Centro ${index + 1} — features`, (center.features || []).map(feature => `${cpcaFeatureLabel(feature)} (${feature.score > 0 ? '+' : ''}${feature.score})`).join(', ') || 'Nenhuma']);
+                if (center.excluded_reasons?.length) evidence.push([`Centro ${index + 1} — exclusão`, center.excluded_reasons.join(' ')]);
+            });
+            document.getElementById('cpca-evidence-list').innerHTML = evidence.map(([label, value]) => `<div class="cpca-evidence-row"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(value)}</span></div>`).join('');
+            const warnings = Array.isArray(result.warnings) ? result.warnings : [];
+            document.getElementById('cpca-warnings').innerHTML = warnings.length ? `<strong>Avisos:</strong><br>${warnings.map(escapeHtml).join('<br>')}` : '';
+        }
+
+        async function calculateNitroCpca() {
+            const smiles = document.getElementById('nitro-cpca-smiles').value.trim();
+            const mddValue = document.getElementById('nitro-cpca-mdd').value.trim();
+            if (!smiles) return showToast('Informe o SMILES da nitrosamina.', 'error');
+            if (mddValue && (!Number.isFinite(Number(mddValue)) || Number(mddValue) <= 0)) {
+                return showToast('A dose diária máxima deve ser um número maior que zero.', 'error');
+            }
+            if (activeCpcaController) activeCpcaController.abort();
+            activeCpcaController = new AbortController();
+            const requestId = ++activeCpcaRequestId;
+            const btn = document.getElementById('btn-cpca');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-circle-notch animate-spin"></i> CALCULANDO...';
+            btn.disabled = true;
+            try {
+                const body = { smiles };
+                if (mddValue) body.mdd_mg = Number(mddValue);
+                const response = await fetchWithTimeout('/nitro-ra/cpca', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                }, 20000, activeCpcaController);
+                const payload = await response.json();
+                if (requestId !== activeCpcaRequestId) return;
+                if (!response.ok && payload?.status !== 'invalid_smiles') throw new Error(getErrorMessage(payload, `Falha no cálculo cPCA (${response.status})`));
+                renderCpcaResults(payload);
+                showToast(payload.status === 'ok' ? 'Cálculo cPCA concluído!' : 'cPCA requer revisão.', payload.status === 'ok' ? 'success' : 'info');
+            } catch (error) {
+                if (requestId !== activeCpcaRequestId) return;
+                showToast(error.message || 'Erro ao calcular cPCA.', 'error');
+            } finally {
+                if (requestId === activeCpcaRequestId) {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                    activeCpcaController = null;
+                }
+            }
         }
 
         async function compareMolecules() {
@@ -1492,6 +1735,7 @@
         function setScreenStateForNoData() {
             document.getElementById('placeholder-results').classList.remove('hidden');
             document.getElementById('result-content').classList.add('hidden');
+            document.getElementById('nitro-cpca-results')?.classList.add('hidden');
             document.getElementById('bottom-results').classList.add('hidden');
             document.getElementById('batch-result-panel').classList.add('hidden');
             document.getElementById('batch-properties-panel').classList.add('hidden');

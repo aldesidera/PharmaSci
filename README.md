@@ -1,6 +1,6 @@
 # 🧪 MolSim v10 — build estabilizado
 
-Versão ativa de trabalho do MolSim/MolSim_ver10, com foco em estabilização de API, validação de payloads, segurança operacional e consistência do fluxo pair/batch/report/export.
+Versão ativa de trabalho do MolSim/MolSim_ver10, com foco em estabilização de API, validação de payloads, segurança operacional, consistência do fluxo pair/batch/report/export e evolução incremental do Nitro.RA.
 
 Esta documentação reflete o estado atual do projeto em desenvolvimento: funcional, mais resiliente e com contratos de erro padronizados, sem reescrever a lógica científica principal.
 
@@ -30,6 +30,7 @@ Esta documentação reflete o estado atual do projeto em desenvolvimento: funcio
 - ✅ Fallback de nomes via PubChem quando o campo está vazio
 - ✅ Health check /healthz
 - ✅ Interface responsiva e melhor consistência do estado do cliente
+- ✅ Nitro.RA: triagem estrutural cPCA com categoria de potência, AI e conversão opcional para ppm
 
 ---
 
@@ -113,7 +114,8 @@ MolSim_ver10/
 │   └── report_preview.html
 ├── tests/
 │   ├── test_phase1_app.py
-│   └── test_modular_structure.py
+│   ├── test_modular_structure.py
+│   └── test_cpca.py
 ├── README.md
 └── ...
 ```
@@ -129,6 +131,7 @@ MolSim_ver10/
 5. Visualize o score, classificação, mapa e propriedades.
 6. Use o preview de relatório para revisar o conteúdo e exportar para PDF.
 7. No modo batch, informe a referência e a lista de moléculas.
+8. Para o Nitro.RA, ative o módulo, informe o SMILES da nitrosamina e, opcionalmente, a dose diária máxima em mg/dia para obter a conversão do AI para ppm.
 
 ---
 
@@ -145,6 +148,16 @@ Itens reforçados nesta etapa:
 - tratamento explícito de rotas JSON e requisições problemáticas;
 - health check com suporte a `HEAD` para diagnósticos e monitoramento leve;
 - documentação de critérios operacionais para continuidade do roadmap.
+
+---
+
+## Nitro.RA — cPCA
+
+O primeiro módulo científico funcional do Nitro.RA implementa uma triagem estrutural baseada na [orientação RAIL da FDA](https://www.fda.gov/media/170794/download), usando o fluxo da Figura 1 e as pontuações do Appendix A. O motor registra a versão da regra, a fonte regulatória, os centros N-nitroso detectados, os carbonos alfa, os hidrogênios alfa, as features estruturais e a justificativa do resultado.
+
+A implementação é deliberadamente conservadora. Estruturas sem centro N-nitroso retornam `not_nitrosamine`; estruturas inválidas retornam `invalid_smiles`; estruturas fora do escopo cPCA ou com padrão não mapeado retornam `manual_review` ou `not_applicable`. A [EMA mantém orientação própria e documentos atualizados para nitrosaminas](https://www.ema.europa.eu/en/human-regulatory-overview/post-authorisation/pharmacovigilance-post-authorisation/referral-procedures-human-medicines/nitrosamine-impurities/nitrosamine-impurities-guidance-marketing-authorisation-holders), portanto o resultado não deve ser tratado como limite universal entre jurisdições.
+
+O cPCA é uma estimativa de triagem para apoio técnico e não substitui avaliação toxicológica, dados composto-específicos, read-across ou decisão regulatória final.
 
 ---
 
@@ -174,6 +187,13 @@ Atenção:
 ### /bulk-compare
 - Valida `ref_smiles`, `smiles_list`, `names_list`, métricas e limites
 - Aplica limites configuráveis para batch e payload
+
+### /nitro-ra/cpca
+- Requer JSON válido em `application/json`
+- Recebe `smiles` e aceita `mdd_mg` opcional
+- Retorna evidências estruturais, contagem de centros N-nitroso, Potency Score, categoria e AI em ng/dia
+- Retorna `manual_review` ou `not_applicable` para estruturas fora do escopo suportado, sem inventar uma categoria
+- Usa a conversão `ppm = AI (ng/dia) / dose diária máxima (mg)` quando `mdd_mg` é informado
 
 ### /report-preview
 - Gera o preview do relatório visual

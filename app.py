@@ -27,6 +27,7 @@ from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
 from analysis import compare, bulk_compare, validate_fingerprint_type, validate_metric
 from chemo_suite.apps.mol_sim.pairwise import run_pairwise_compare
 from chemo_suite.apps.mol_sim.batch import run_batch_compare
+from chemo_suite.apps.nitro_ra.cpca import calculate_cpca
 from molsim_runtime import get_env_int, parse_cors_origins, make_error_payload
 
 logging.basicConfig(
@@ -65,7 +66,7 @@ def _is_api_route(path: str) -> bool:
     return path in API_JSON_ROUTES
 
 
-API_JSON_ROUTES = {"/compare", "/bulk-compare", "/report-preview", "/export-pdf", "/lookup-name"}
+API_JSON_ROUTES = {"/compare", "/bulk-compare", "/report-preview", "/export-pdf", "/lookup-name", "/nitro-ra/cpca"}
 
 
 @app.before_request
@@ -494,6 +495,33 @@ def api_bulk_compare():
     except Exception:
         logger.error("Erro não tratado em /bulk-compare: %s", traceback.format_exc())
         return _error_response(500, "Erro interno do servidor.", code="internal_error")
+
+
+@app.route('/nitro-ra/cpca', methods=['POST'])
+def api_nitro_ra_cpca():
+    try:
+        data, parse_error = _parse_json_object_payload()
+        if parse_error:
+            return parse_error
+
+        smiles, smiles_error = _validate_required_string(data, "smiles", MAX_SMILES_LENGTH)
+        if smiles_error:
+            return _error_response(400, smiles_error, "smiles")
+
+        mdd_error = _validate_optional_finite_number(data, "mdd_mg")
+        if mdd_error:
+            return _error_response(400, mdd_error, "mdd_mg")
+        mdd_mg = data.get("mdd_mg")
+        if mdd_mg is not None and float(mdd_mg) <= 0:
+            return _error_response(400, "mdd_mg deve ser maior que zero.", "mdd_mg")
+
+        result = calculate_cpca(smiles, mdd_mg=mdd_mg)
+        if result.get("status") == "invalid_smiles":
+            return jsonify(result), 400
+        return jsonify(result), 200
+    except Exception:
+        logger.error("Erro não tratado em /nitro-ra/cpca: %s", traceback.format_exc())
+        return _error_response(500, "Erro interno ao calcular cPCA.", code="internal_error")
 
 
 @app.route('/report-preview', methods=['POST'])
