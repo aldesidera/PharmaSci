@@ -42,7 +42,10 @@
             font-weight: 700;
         }
 
-        .designer-controls input[type="range"] { width: 120px; }
+        .designer-controls input[type="range"] {
+            width: 120px;
+            accent-color: #0ea5e9;
+        }
 
         .designer-controls button {
             border: 0;
@@ -50,11 +53,40 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: 700;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+        }
+
+        .designer-controls button:hover { transform: translateY(-1px); }
+        .designer-controls button:focus-visible {
+            outline: 3px solid rgba(14, 165, 233, 0.5);
+            outline-offset: 2px;
         }
 
         .btn-primary { background: #0ea5e9; color: #ffffff; }
         .btn-light { background: #e2e8f0; color: #0f172a; }
         .btn-success { background: #10b981; color: #ffffff; }
+
+        .status-banner {
+            width: 100%;
+            min-height: 22px;
+            margin-top: 6px;
+            font-size: 12px;
+            color: #dbeafe;
+        }
+
+        @media (max-width: 640px) {
+            .designer-controls {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+            .designer-controls label {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .designer-controls input[type="range"] {
+                width: min(100%, 180px);
+            }
+        }
 
         .page {
             width: 210mm;
@@ -350,22 +382,23 @@
     </style>
 </head>
 <body class="{% if report.get('mode') == 'batch' %}batch-report{% endif %}">
-    <div class="designer-controls">
-        <label>Título
-            <input id="titleSize" type="range" min="18" max="34" value="24">
+    <div class="designer-controls" aria-label="Controles do preview do relatório">
+        <label for="titleSize">Título
+            <input id="titleSize" type="range" min="18" max="34" value="24" aria-label="Tamanho do título do relatório">
         </label>
-        <label>Texto
-            <input id="textSize" type="range" min="10" max="15" value="12">
+        <label for="textSize">Texto
+            <input id="textSize" type="range" min="10" max="15" value="12" aria-label="Tamanho do texto do relatório">
         </label>
-        <label>Altura Caixa
-            <input id="boxHeight" type="range" min="180" max="340" value="240">
+        <label for="boxHeight">Altura Caixa
+            <input id="boxHeight" type="range" min="180" max="340" value="240" aria-label="Altura da caixa de molécula">
         </label>
-        <label>Gap Caixas
-            <input id="boxGap" type="range" min="8" max="36" value="16">
+        <label for="boxGap">Gap Caixas
+            <input id="boxGap" type="range" min="8" max="36" value="16" aria-label="Espaçamento entre caixas de molécula">
         </label>
-        <button class="btn-success" onclick="window.print()">Imprimir / Salvar PDF</button>
-        <button class="btn-primary" onclick="saveLayout()">Salvar Layout</button>
-        <button class="btn-light" onclick="resetLayout()">Resetar</button>
+        <button type="button" class="btn-success" id="printBtn">Imprimir / Salvar PDF</button>
+        <button type="button" class="btn-primary" id="saveLayoutBtn">Salvar Layout</button>
+        <button type="button" class="btn-light" id="resetLayoutBtn">Resetar</button>
+        <div id="layoutStatus" class="status-banner" aria-live="polite" role="status"></div>
     </div>
 
     <div class="page{% if report.get('mode') == 'batch' %} page--batch{% endif %}">
@@ -580,6 +613,12 @@
             boxHeight: document.getElementById('boxHeight'),
             boxGap: document.getElementById('boxGap'),
         };
+        const statusBanner = document.getElementById('layoutStatus');
+
+        function showStatus(message) {
+            if (!statusBanner) return;
+            statusBanner.textContent = message;
+        }
 
         function applyLayoutFromControls() {
             document.documentElement.style.setProperty('--report-title-size', controls.titleSize.value + 'px');
@@ -590,13 +629,13 @@
 
         function saveLayout() {
             const layout = {
-                titleSize: controls.titleSize.value,
-                textSize: controls.textSize.value,
-                boxHeight: controls.boxHeight.value,
-                boxGap: controls.boxGap.value,
+                titleSize: Number(controls.titleSize.value),
+                textSize: Number(controls.textSize.value),
+                boxHeight: Number(controls.boxHeight.value),
+                boxGap: Number(controls.boxGap.value),
             };
             localStorage.setItem('molsim_report_layout', JSON.stringify(layout));
-            alert('Layout salvo para os próximos relatórios.');
+            showStatus('Layout salvo para os próximos relatórios.');
         }
 
         function resetLayout() {
@@ -606,6 +645,7 @@
             controls.boxHeight.value = 240;
             controls.boxGap.value = 16;
             applyLayoutFromControls();
+            showStatus('Layout restaurado para o padrão.');
         }
 
         function loadLayout() {
@@ -616,10 +656,10 @@
             }
             try {
                 const layout = JSON.parse(raw);
-                if (layout.titleSize) controls.titleSize.value = layout.titleSize;
-                if (layout.textSize) controls.textSize.value = layout.textSize;
-                if (layout.boxHeight) controls.boxHeight.value = layout.boxHeight;
-                if (layout.boxGap) controls.boxGap.value = layout.boxGap;
+                if (Number.isFinite(Number(layout.titleSize))) controls.titleSize.value = Number(layout.titleSize);
+                if (Number.isFinite(Number(layout.textSize))) controls.textSize.value = Number(layout.textSize);
+                if (Number.isFinite(Number(layout.boxHeight))) controls.boxHeight.value = Number(layout.boxHeight);
+                if (Number.isFinite(Number(layout.boxGap))) controls.boxGap.value = Number(layout.boxGap);
             } catch (err) {
                 localStorage.removeItem('molsim_report_layout');
             }
@@ -629,6 +669,10 @@
         Object.values(controls).forEach((control) => {
             control.addEventListener('input', applyLayoutFromControls);
         });
+
+        document.getElementById('saveLayoutBtn').addEventListener('click', saveLayout);
+        document.getElementById('resetLayoutBtn').addEventListener('click', resetLayout);
+        document.getElementById('printBtn').addEventListener('click', () => window.print());
 
         loadLayout();
     </script>

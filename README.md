@@ -1,268 +1,235 @@
-# 🧪 MolSim Final v2.2
+# 🧪 MolSim v10 — build estabilizado
 
-Versão única simplificada para análise de similaridade molecular com Flask backend e HTML/CSS/JS frontend profissional.
+Versão ativa de trabalho do MolSim/MolSim_ver10, com foco em estabilização de API, validação de payloads, segurança operacional e consistência do fluxo pair/batch/report/export.
 
----
-
-## 📋 Características
-
-- ✅ **Fingerprints:** Morgan2 ECFP, Morgan2 FCFP, RDKit, MACCS
-- ✅ **Métricas:** Tanimoto, Dice
-- ✅ **Propriedades:** 7 propriedades físico-químicas principais
-- ✅ **Exportação:** Preview HTML/CSS + impressão para PDF com ajuste visual
-- ✅ **Interface:** Dark mode profissional com acentos vibrantes
-- ✅ **Backend:** Flask puro
-- ✅ **SMILES:** Campos vazios (sem exemplos pré-carregados)
-- ✅ **Design:** Inspirado em softwares científicos profissionais
+Esta documentação reflete o estado atual do projeto em desenvolvimento: funcional, mais resiliente e com contratos de erro padronizados, sem reescrever a lógica científica principal.
 
 ---
 
-## 🚀 Instalação Rápida
+## ✅ Estado atual
 
-### Linux/Mac
+- Backend Flask com validação centralizada de JSON
+- Contrato de erro padronizado: `{"error":{"code":"invalid_request","message":"...","field":"..."}}`
+- Rotas críticas protegidas contra payload malformado
+- `/healthz` disponível
+- CORS restrito por variável de ambiente
+- limites de conteúdo configuráveis por ambiente
+- export PDF validado com base64/PNG/dimensões/tamanho
+- suporte temporário para `show_logd` e compatibilidade com `show_similarity_map`
+- cliente mais consistente em pair/batch/preview/export
+
+---
+
+## 📋 Funcionalidades principais
+
+- ✅ Comparação individual entre duas moléculas
+- ✅ Comparação em lote (batch)
+- ✅ Validação de fingerprint e métrica
+- ✅ Preview de relatório visual
+- ✅ Export para PDF via preview
+- ✅ Fallback de nomes via PubChem quando o campo está vazio
+- ✅ Health check /healthz
+- ✅ Interface responsiva e melhor consistência do estado do cliente
+
+---
+
+## 🚀 Instalação e execução
+
+> Entrypoint oficial único: `main.py`  
+> Não execute `app.py` diretamente.
+
+### Windows (PowerShell)
+
+```powershell
+cd C:\caminho\para\MolSim_ver10
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python main.py
+```
+
+Abra no navegador:
+
+```text
+http://127.0.0.1:5000
+```
+
+### Linux/macOS
 
 ```bash
-# 1. Extrair arquivo
-tar -xzf molsim_final.tar.gz
-cd molsim_final
-
-# 2. Instalar dependências
+cd /caminho/para/MolSim_ver10
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-
-# 3. Executar
-python app.py
-
-# 4. Abrir no navegador
-http://localhost:5000
-```
-
-### Windows
-
-```bash
-# 1. Extrair arquivo
-# Use WinRAR, 7-Zip ou similar para extrair molsim_final.tar.gz
-
-# 2. Abrir PowerShell e navegar para a pasta
-cd molsim_final
-
-# 3. Instalar dependências
-pip install -r requirements.txt
-
-# 4. Executar
-python app.py
-
-# 5. Abrir navegador
-http://localhost:5000
+python main.py
 ```
 
 ---
 
-## 📁 Estrutura de Arquivos
+## 🔧 Variáveis de ambiente úteis
 
+```bash
+MOLSIM_CORS_ORIGINS=http://127.0.0.1:3000,http://localhost:3000
+MOLSIM_MAX_CONTENT_LENGTH=2097152
+MOLSIM_MAX_BATCH_ITEMS=100
+MOLSIM_MAX_SMILES_LENGTH=4096
+MOLSIM_MAX_NAME_LENGTH=256
+MOLSIM_MAX_BATCH_REQUEST_BYTES=524288
+MOLSIM_MAX_EXPORT_IMAGE_BYTES=2097152
+MOLSIM_MAX_EXPORT_IMAGE_WIDTH=4096
+MOLSIM_MAX_EXPORT_IMAGE_HEIGHT=4096
 ```
-molsim_final/
-├── app.py                 # Backend Flask (endpoints REST)
-├── analysis.py            # Lógica de análise molecular
-├── requirements.txt       # Dependências Python
+
+Observações:
+- Se `MOLSIM_CORS_ORIGINS` não for informado, o app restringe o acesso aos domínios locais padrão (`127.0.0.1` e `localhost`).
+- O app não abre em `0.0.0.0` por padrão em execução local.
+
+---
+
+## 📁 Estrutura relevante
+
+```text
+MolSim_ver10/
+├── main.py
+├── app.py
+├── analysis.py
+├── chemo_suite/
+│   ├── main.py
+│   ├── core/
+│   │   ├── parser.py
+│   │   └── conformer.py
+│   └── apps/
+│       ├── mol_sim/
+│       │   ├── pairwise.py
+│       │   └── batch.py
+│       └── nitro_ra/
+│           ├── cpca.py
+│           ├── quantum.py
+│           └── metabolism.py
+├── requirements.txt
+├── static/
 ├── templates/
-│   ├── index.html        # Frontend (dark mode profissional)
-│   └── report_preview.html # Template de relatório imprimível
-├── run.sh                # Script de inicialização (Linux/Mac)
-└── README.md             # Este arquivo
+│   ├── index.html
+│   └── report_preview.html
+├── tests/
+│   ├── test_phase1_app.py
+│   └── test_modular_structure.py
+├── README.md
+└── ...
 ```
 
 ---
 
-## 🔧 Como Usar
+## 🧪 Como usar o app
 
-1. **Insira SMILES** das duas moléculas (campos vazios)
-2. **Digite nomes** (opcional) para identificar as moléculas
-3. **Escolha Fingerprint:**
-   - **Morgan2 ECFP:** Extended Connectivity (sem features)
-   - **Morgan2 FCFP:** Feature-based (com features)
-   - **RDKit:** Topológico padrão
-   - **MACCS:** Keys estruturais (166 bits)
-4. **Escolha Métrica:** Tanimoto ou Dice
-5. **Clique "Analisar"**
-6. **Veja os resultados:**
-   - Similaridade e classificação
-   - Estruturas moleculares (sem H)
-   - Tabela de propriedades
-   - Propriedades físico-químicas e pKa aproximado
-7. **Abra o preview de relatório**, ajuste layout com sliders e use **Imprimir / Salvar PDF**
+1. Insira os SMILES da referência e de comparação.
+2. Opcionalmente preencha nomes para as moléculas.
+3. Escolha fingerprint e métrica.
+4. Clique em comparar.
+5. Visualize o score, classificação, mapa e propriedades.
+6. Use o preview de relatório para revisar o conteúdo e exportar para PDF.
+7. No modo batch, informe a referência e a lista de moléculas.
 
 ---
 
-## 📊 Propriedades Físico-Químicas Calculadas
+## Fase 6 — Operação e manutenção
 
-| Propriedade | Descrição | Unidade |
-|------------|-----------|---------|
-| Peso Molecular | Massa molar da molécula | g/mol |
-| LogP | Coeficiente de partição (lipofilicidade) | - |
-| Classe de Lipofilicidade | Classificação: Hidrofílica, Baixa, Moderada, Alta | - |
-| LogS | Solubilidade (modelo ESOL) | log(mol/L) |
-| Classe de Solubilidade | Classificação: Muito Solúvel, Solúvel, Pouco Solúvel, Insolúvel | - |
-| TPSA | Área de Superfície Polar | Ų |
-| Lipinski Ro5 | Passa no Rule of Five? | Sim/Não |
+Objetivos desta etapa:
+- reduzir risco operacional em rotas críticas e no ciclo de erro do cliente/servidor;
+- manter o app seguro em produção local com limites e headers consistentes;
+- preservar compatibilidade com a API já estabilizada;
+- seguir sem reescrever a lógica científica principal.
 
----
-
-## 🧬 Fingerprints Disponíveis
-
-### Morgan2 ECFP (Extended Connectivity)
-- **Raio:** 2
-- **Bits:** 2048
-- **Features:** Não (apenas conectividade)
-- **Uso:** Análise geral de similaridade estrutural
-- **Melhor para:** Comparações rápidas e genéricas
-
-### Morgan2 FCFP (Feature-based)
-- **Raio:** 2
-- **Bits:** 2048
-- **Features:** Sim (aromáticos, H-donors, H-acceptors, etc)
-- **Uso:** Análise de propriedades farmacofóricas
-- **Melhor para:** Descoberta de fármacos e QSAR
-
-### RDKit Topológico
-- **Bits:** 2048
-- **Tipo:** Topológico
-- **Uso:** Referência padrão RDKit
-- **Melhor para:** Validação e comparação com literatura
-
-### MACCS Keys
-- **Bits:** 166
-- **Tipo:** Chaves estruturais predefinidas
-- **Uso:** Análise de padrões estruturais
-- **Melhor para:** Classificação de compostos
+Itens reforçados nesta etapa:
+- respostas internas de erro sem vazar stack trace ao cliente;
+- tratamento explícito de rotas JSON e requisições problemáticas;
+- health check com suporte a `HEAD` para diagnósticos e monitoramento leve;
+- documentação de critérios operacionais para continuidade do roadmap.
 
 ---
 
-## 📊 Propriedades atuais do relatório
+## Fase 7 — Critérios finais e validação
 
-O relatório reúne propriedades relevantes para comparação estrutural e físico-química, incluindo:
+Critérios finais de pronto para a etapa de encerramento:
+- API com payloads malformados rejeitados sem 500;
+- contratos de erro estáveis em rotas críticas;
+- `healthz` funcional e sem dependência de PubChem;
+- CORS e host default em modo local seguro;
+- export PDF e preview protegidos contra entrada inválida;
+- validação automatizada de regressões em `tests/` e sem quebra de fluxos estabilizados.
 
-- Massa Molecular (g/mol)
-- pKa aproximado
-- LogP
-- TPSA
-- HBD/HBA
-- Ligações rotacionais
-
----
-
-## 🎨 Design Profissional
-
-Inspirado em softwares científicos profissionais como:
-- ChemComp MOE
-- DECTRIS Cloud
-- NanoLabo
-- PyMOL
-
-**Características:**
-- Dark mode com gradientes azul/preto
-- Acentos em ciano e verde fluorescente
-- Padrões geométricos de fundo
-- Tipografia grande e impactante
-- Animações suaves
-- Responsivo para desktop, tablet e mobile
+Atenção:
+- itens de refinamento de UX visual e RDKit mais aprofundado continuam como evolução futura fora do escopo da estabilização atual;
+- a base atual permanece priorizando compatibilidade e segurança operacional.
 
 ---
 
-## 🧪 Exemplos de SMILES
+## 📊 Fluxos de API principais
 
-```
-Aspirina:        CC(=O)OC1=CC=CC=C1C(=O)O
-Paracetamol:     CC(=O)NC1=CC=C(O)C=C1
-Ibuprofeno:      CC(C)Cc1ccc(cc1)C(C)C(=O)O
-Naproxeno:       COc1ccc2cc(ccc2c1)C(C)C(=O)O
-Diclofenaco:     OC(=O)Cc1ccccc1Nc1c(Cl)cccc1Cl
-```
+### /compare
+- Requer JSON válido em `application/json`
+- Valida `smiles_ref`, `smiles_test`, `fp_type`, `metric`
+- Rejeita payloads malformados com 400/415
 
----
+### /bulk-compare
+- Valida `ref_smiles`, `smiles_list`, `names_list`, métricas e limites
+- Aplica limites configuráveis para batch e payload
 
-## 🐛 Troubleshooting
+### /report-preview
+- Gera o preview do relatório visual
+- Não deve falhar em 500 para payload inválido
 
-### "Port already in use"
-```bash
-# Usar porta diferente
-python app.py --port 5001
-```
+### /export-pdf
+- Valida `similarity`, tipos, valores finitos, base64, PNG e limites
+- Rejeita erros de entrada antes da geração do PDF
 
-### "ModuleNotFoundError: rdkit"
-```bash
-# Reinstalar RDKit
-pip install rdkit-pypi numpy<2
-```
-
-### "Canvas is already in error state"
-- Isso foi corrigido na v2.1
-- Se persistir, limpe o cache do navegador (Ctrl+Shift+Delete)
-
-### "SMILES inválido"
-- Verifique a sintaxe SMILES em: https://www.chemspider.com/
-- Ou use: https://pubchem.ncbi.nlm.nih.gov/
+### /healthz
+- Retorna `200` e `{"status":"ok"}` sem depender de PubChem
 
 ---
 
-## 📥 Exportação PDF (via preview visual)
+## 🐛 Resolução de problemas comuns
 
-O preview de relatório permite ajustar via mouse (sliders) antes de salvar em PDF:
-- ✅ Tamanho de título e texto
-- ✅ Altura e espaçamento das caixas de moléculas
-- ✅ Salvamento local do layout para próximos relatórios
+### Content-Type inválido
+- Use `Content-Type: application/json` nas requisições.
 
-Depois, use o botão **Imprimir / Salvar PDF** no próprio preview.
+### JSON inválido
+- Verifique a sintaxe do corpo JSON.
 
-O conteúdo exportado contém:
-- ✅ Método (Fingerprint + Métrica)
-- ✅ Similaridade e classificação
-- ✅ Estruturas moleculares (sem H)
-- ✅ Tabela de propriedades
-- ✅ Gráfico LogD vs pH
+### 500 em payload malformado
+- Isso foi tratado na versão estabilizada; use o contrato padronizado de erro.
 
----
+### PubChem indisponível
+- O lookup de nome é tolerante a falha e não bloqueia o fluxo principal.
 
-## 🔗 Recursos Úteis
-
-- **RDKit:** https://www.rdkit.org/
-- **ChemSpider:** https://www.chemspider.com/
-- **PubChem:** https://pubchem.ncbi.nlm.nih.gov/
-- **SMILES Tutorial:** https://en.wikipedia.org/wiki/Simplified_molecular_input_line_entry_system
+### Preview/PDF não abre
+- Verifique popup blockers e use o botão de export diretamente no app.
 
 ---
 
-## 📝 Versão e Histórico
+## 🔗 Recursos úteis
 
-**Versão:** 2.2 | **Status:** ✅ Pronto para Produção | **Data:** Março 2026
-
-### Mudanças v2.2
-- ✅ Corrigido imports (rdMolDescriptors)
-- ✅ Adicionado Morgan2 ECFP e FCFP
-- ✅ Corrigido erro do Canvas
-- ✅ Botão PDF em posição correta
-- ✅ Gráfico LogD vs pH com Chart.js
-
-### Mudanças v2.1
-- ✅ Dark mode profissional
-- ✅ Acentos vibrantes (ciano + verde)
-- ✅ Padrões geométricos
-- ✅ Gráfico LogD vs pH interativo
-
-### Mudanças v2.0
-- ✅ Redesign completo
-- ✅ Interface profissional
-- ✅ Propriedades físico-químicas expandidas
+- RDKit: https://www.rdkit.org/
+- PubChem: https://pubchem.ncbi.nlm.nih.gov/
+- SMILES: https://en.wikipedia.org/wiki/Simplified_molecular_input_line_entry_system
 
 ---
 
-## 📧 Suporte
+## 📝 Status e histórico
 
-Se encontrar problemas:
-1. Verifique o arquivo `requirements.txt`
-2. Reinstale as dependências: `pip install -r requirements.txt --force-reinstall`
-3. Limpe o cache: `pip cache purge`
-4. Tente novamente: `python app.py`
+**Versão ativa:** v10
+**Status:** estabilizado e validado em fluxo principal
+**Escopo atual:** hardening de API, cliente e preview/export, sem reescrita da lógica científica principal
+
+### Evolução relevante na v10
+- validação centralizada de JSON
+- `/healthz`
+- CORS restringido
+- `MAX_CONTENT_LENGTH` por ambiente
+- export PDF validado
+- tratamento consistente de erros
+- UX/cliente mais resiliente
 
 ---
 
-**Desenvolvido com ❤️ para análise molecular profissional**
+**MolSim v10 — estabilizado para uso local e validação contínua.**

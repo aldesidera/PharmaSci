@@ -19,8 +19,8 @@ if [ $? -ne 0 ]; then
 fi
 
 echo ""
-echo "✅ Iniciando servidor..."
-echo "🌐 Acesse: http://localhost:5000"
+echo "✅ Iniciando servidor (entrypoint único: main.py)..."
+echo "🌐 Acesse: http://127.0.0.1:5000"
 echo ""
 
-python3 app.py
+python3 main.py
