@@ -32,6 +32,7 @@ Esta documentação reflete o estado atual do projeto em desenvolvimento: funcio
 - ✅ Interface responsiva e melhor consistência do estado do cliente
 - ✅ Nitro.RA: seleção de cPCA, Quantum e Metabolism para o mesmo SMILES
 - ✅ Nitro.RA: três abas de resultados independentes; cPCA funcional e Quantum/Metabolism preparados para evolução
+- ✅ Nitro.RA cPCA: estrutura química, limite FDA, motivos do resultado e lookup do AI EMA Appendix 1
 
 ---
 
@@ -118,6 +119,8 @@ MolSim_ver10/
 │   ├── test_modular_structure.py
 │   ├── test_cpca.py
 │   └── test_main_cli.py
+├── chemo_suite/apps/nitro_ra/data/ema_appendix1.json
+
 ├── README.md
 └── ...
 ```
@@ -204,6 +207,9 @@ Atenção:
 - Recebe `smiles`, uma lista `modules` com `cpca`, `quantum` e/ou `metabolism`, e `mdd_mg` opcional
 - Retorna um objeto `results` separado por módulo, preservando o resultado de cada análise para as abas da interface
 - Módulos ainda não implementados retornam `status: not_implemented`, sem produzir valores fictícios
+- Quando cPCA é selecionado, o resultado inclui `structure_svg`, `canonical_smiles` e o objeto `ema`
+- O objeto `ema` consulta o snapshot `EMA/42261/2025 Rev.13`, atualizado em 24/06/2026, por SMILES canônico
+- Uma estrutura ausente do Appendix 1 retorna `ema.status: not_listed`; o sistema não infere AI EMA a partir da categoria FDA
 
 ### /report-preview
 - Gera o preview do relatório visual

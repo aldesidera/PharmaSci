@@ -113,3 +113,25 @@ def test_nitro_ra_analyze_rejects_missing_or_invalid_modules():
 
     assert missing.status_code == 400
     assert invalid.status_code == 400
+
+
+def test_cpca_includes_structure_svg_and_ema_appendix_match():
+    result = evaluate_cpca("O=NN1CCCCC1", mdd_mg=10)
+
+    assert result["structure_svg"].startswith("<?xml")
+    assert result["canonical_smiles"] == "O=NN1CCCCC1"
+    assert result["ema"]["listed"] is True
+    assert result["ema"]["status"] == "listed"
+    assert result["ema"]["name"] == "N-nitroso-piperidine"
+    assert result["ema"]["ai_ng_day"] == 1300
+    assert result["ema"]["ppm_limit"] == 130.0
+    assert result["ema"]["reference_number"] == "EMA/42261/2025 Rev.13"
+
+
+def test_cpca_reports_when_structure_is_not_in_ema_appendix():
+    result = evaluate_cpca("O=NN1CCCCC1C")
+
+    assert result["ema"]["listed"] is False
+    assert result["ema"]["status"] == "not_listed"
+    assert result["ema"].get("ai_ng_day") is None
+    assert "não foi localizada" in result["ema"]["message"]

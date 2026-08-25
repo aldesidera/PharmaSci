@@ -8,13 +8,21 @@ scope return ``manual_review`` instead of an invented category.
 
 from __future__ import annotations
 
+import json
+from functools import lru_cache
+from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from rdkit import Chem
+from rdkit.Chem.Draw import rdMolDraw2D
 
 
 CPCA_RULE_VERSION = "FDA-RAIL-2023-Appendix-A"
 CPCA_SOURCE_URL = "https://www.fda.gov/media/170794/download"
+EMA_APPENDIX_VERSION = "EMA/42261/2025 Rev.13"
+EMA_APPENDIX_UPDATED = "2026-06-24"
+EMA_APPENDIX_URL = "https://www.ema.europa.eu/en/documents/other/appendix-1-acceptable-intakes-established-n-nitrosamines_en.xlsx"
+EMA_APPENDIX_PATH = Path(__file__).resolve().parent / "data" / "ema_appendix1.json"
 
 AI_LIMITS_NG_DAY: Dict[int, float] = {
     1: 26.5,
@@ -33,6 +41,90 @@ ALPHA_HYDROGEN_SCORES: Dict[Tuple[int, int], int] = {
     (2, 2): 1,
     (2, 3): 1,
 }
+
+
+@lru_cache(maxsize=1)
+def _ema_index() -> Dict[str, Dict[str, Any]]:
+    try:
+        payload = json.loads(EMA_APPENDIX_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    index: Dict[str, Dict[str, Any]] = {}
+    for record in payload.get("records", []):
+        canonical = record.get("canonical_smiles")
+        if canonical and canonical not in index:
+            index[canonical] = record
+    return index
+
+
+def _canonical_smiles(mol: Chem.Mol) -> str:
+    return Chem.MolToSmiles(mol, canonical=True, isomericSmiles=True)
+
+
+def _structure_svg(mol: Chem.Mol, width: int = 460, height: int = 280) -> str:
+    try:
+        mol_no_h = Chem.RemoveHs(mol)
+        drawer = rdMolDraw2D.MolDraw2DSVG(width, height)
+        options = drawer.drawOptions()
+        options.addStereoAnnotation = True
+        options.prepareMolsBeforeDrawing = True
+        options.bondLineWidth = 2.2
+        options.minFontSize = 14
+        options.annotationFontScale = 0.85
+        drawer.DrawMolecule(mol_no_h)
+        drawer.FinishDrawing()
+        svg = drawer.GetDrawingText()
+        return svg.replace(f'width="{width}px"', 'width="100%"').replace(f'height="{height}px"', 'height="100%"')
+    except Exception:
+        return ""
+
+
+def _ema_lookup(mol: Chem.Mol, mdd_mg: Optional[float] = None) -> Dict[str, Any]:
+    canonical = _canonical_smiles(mol)
+    record = _ema_index().get(canonical)
+    base = {
+        "listed": bool(record),
+        "status": "listed" if record else "not_listed",
+        "reference_number": EMA_APPENDIX_VERSION,
+        "last_updated": EMA_APPENDIX_UPDATED,
+        "source_url": EMA_APPENDIX_URL,
+        "canonical_smiles": canonical,
+        "ai_unit": "ng/day",
+    }
+    if not record:
+        base["message"] = "A estrutura não foi localizada no snapshot do Appendix 1 da EMA; nenhum AI EMA foi inferido."
+        return base
+
+    base.update(
+        {
+            "sheet": record.get("sheet"),
+            "name": record.get("name"),
+            "iupac_name": record.get("iupac_name"),
+            "listed_smiles": record.get("smiles"),
+            "cas_rn": record.get("cas_rn"),
+            "synonym_acronym": record.get("synonym_acronym"),
+            "source": record.get("source"),
+            "cpca_category": record.get("cpca_category"),
+            "ai_ng_day": record.get("ai_ng_day"),
+            "ai_ng_day_raw": record.get("ai_ng_day_raw"),
+            "note": record.get("note"),
+            "publication_date": record.get("publication_date"),
+            "message": "A estrutura foi localizada no snapshot do Appendix 1 da EMA.",
+        }
+    )
+    if record.get("ai_ng_day") is None:
+        base["status"] = "listed_no_numeric_ai"
+    if mdd_mg is not None and record.get("ai_ng_day") is not None:
+        base["ppm_limit"] = round(float(record["ai_ng_day"]) / float(mdd_mg), 6)
+        base["ppm_formula"] = "AI EMA (ng/dia) / dose diária máxima (mg)"
+    return base
+
+
+def _add_valid_structure_fields(result: Dict[str, Any], mol: Chem.Mol, mdd_mg: Optional[float]) -> Dict[str, Any]:
+    result["canonical_smiles"] = _canonical_smiles(mol)
+    result["structure_svg"] = _structure_svg(mol)
+    result["ema"] = _ema_lookup(mol, mdd_mg=mdd_mg)
+    return result
 
 
 def _base_result(smiles: str, status: str, message: str) -> Dict[str, Any]:
@@ -537,7 +629,7 @@ def evaluate_cpca(smiles: str, mdd_mg: Optional[float] = None) -> Dict[str, Any]
             "Nenhum centro N-nitroso suportado foi detectado no SMILES.",
         )
         result.update({"center_count": 0, "centers": []})
-        return result
+        return _add_valid_structure_fields(result, mol, mdd_mg)
 
     if len(centers) > 2:
         result = _base_result(
@@ -546,7 +638,7 @@ def evaluate_cpca(smiles: str, mdd_mg: Optional[float] = None) -> Dict[str, Any]
             "Foram detectados mais de dois grupos N-nitroso; a Figura 1 da FDA orienta buscar orientação adicional.",
         )
         result.update({"center_count": len(centers), "centers": []})
-        return result
+        return _add_valid_structure_fields(result, mol, mdd_mg)
 
     center_results = [_analyze_center(mol, *center) for center in centers]
     unsupported = [center for center in center_results if center.get("status") != "ok"]
@@ -557,7 +649,7 @@ def evaluate_cpca(smiles: str, mdd_mg: Optional[float] = None) -> Dict[str, Any]
             unsupported[0].get("message", "Pelo menos um centro nitroso requer revisão manual."),
         )
         result.update({"center_count": len(center_results), "centers": center_results})
-        return result
+        return _add_valid_structure_fields(result, mol, mdd_mg)
 
     selected = max(
         center_results,
@@ -585,7 +677,7 @@ def evaluate_cpca(smiles: str, mdd_mg: Optional[float] = None) -> Dict[str, Any]
         result["mdd_mg"] = float(mdd_mg)
         result["ppm_limit"] = round(float(selected["ai_ng_day"]) / float(mdd_mg), 6)
         result["ppm_formula"] = "AI (ng/dia) / dose diária máxima (mg)"
-    return result
+    return _add_valid_structure_fields(result, mol, mdd_mg)
 
 
 def calculate_cpca(smiles: str, mdd_mg: Optional[float] = None) -> Dict[str, Any]:

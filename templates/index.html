@@ -724,6 +724,51 @@
             letter-spacing: 0.12em;
             text-transform: uppercase;
         }
+        .cpca-structure-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+            gap: 1rem;
+        }
+        .cpca-structure-card, .cpca-ema-panel {
+            border: 1px solid var(--theme-panel-border);
+            border-radius: 1.5rem;
+            padding: 1.25rem;
+            background: color-mix(in srgb, var(--theme-accent-soft) 28%, white 72%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.82);
+        }
+        .cpca-structure-svg {
+            display: grid;
+            min-height: 15rem;
+            place-items: center;
+            overflow: hidden;
+            border-radius: 1.1rem;
+            background: rgba(255,255,255,0.7);
+        }
+        .cpca-structure-svg svg { width: 100%; height: 100%; min-height: 15rem; display: block; }
+        .cpca-structure-caption {
+            margin-top: 0.75rem;
+            color: var(--theme-muted-text);
+            font-size: 0.68rem;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+        .cpca-structure-caption code { color: var(--text-700); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+        .cpca-ema-panel { display: flex; flex-direction: column; }
+        .cpca-ema-name { margin-top: 1.5rem; color: var(--text-700); font-size: 1rem; font-weight: 900; line-height: 1.35; }
+        .cpca-ema-value-wrap { display: flex; align-items: baseline; gap: 0.45rem; margin-top: 1rem; }
+        .cpca-ema-value { color: var(--theme-accent-strong); font-size: 2rem; font-weight: 900; }
+        .cpca-ema-value-wrap span { color: var(--theme-muted-text); font-size: 0.75rem; font-weight: 900; }
+        .cpca-ema-meta { margin-top: 0.65rem; color: var(--theme-muted-text); font-size: 0.7rem; line-height: 1.5; }
+        .cpca-ema-note { margin-top: 1rem; border-left: 3px solid var(--theme-accent-strong); padding-left: 0.75rem; color: var(--text-700); font-size: 0.72rem; line-height: 1.55; }
+        .cpca-ema-link { margin-top: auto; padding-top: 1rem; color: var(--theme-accent-strong); font-size: 0.7rem; font-weight: 900; text-decoration: underline; }
+        .cpca-reasons-list { display: grid; gap: 0.7rem; }
+        .cpca-reason-row { display: grid; grid-template-columns: minmax(8rem, 0.35fr) minmax(0, 1fr); gap: 1rem; border-bottom: 1px solid var(--line-soft); padding: 0.75rem 0; }
+        .cpca-reason-row:last-child { border-bottom: 0; }
+        .cpca-reason-row strong { color: var(--text-700); font-size: 0.78rem; }
+        .cpca-reason-row span { color: var(--theme-muted-text); font-size: 0.78rem; line-height: 1.5; }
+        @media (max-width: 900px) {
+            .cpca-structure-grid { grid-template-columns: 1fr; }
+        }
         .cpca-evidence-list {
             display: grid;
             gap: 0.75rem;
@@ -924,11 +969,37 @@
                                 </div>
                                 <p id="cpca-message" class="text-sm leading-6 text-slate-600 mb-6"></p>
                                 <div class="cpca-metric-grid">
-                                    <div class="cpca-metric"><span class="cpca-metric-label">Categoria</span><strong id="cpca-category" class="cpca-metric-value">—</strong></div>
+                                    <div class="cpca-metric"><span class="cpca-metric-label">Categoria cPCA</span><strong id="cpca-category" class="cpca-metric-value">—</strong></div>
                                     <div class="cpca-metric"><span class="cpca-metric-label">Potency score</span><strong id="cpca-score" class="cpca-metric-value">—</strong></div>
-                                    <div class="cpca-metric"><span class="cpca-metric-label">AI recomendado</span><strong id="cpca-ai" class="cpca-metric-value">—</strong></div>
+                                    <div class="cpca-metric"><span class="cpca-metric-label">Limite cPCA (AI FDA)</span><strong id="cpca-ai" class="cpca-metric-value">—</strong></div>
                                 </div>
                                 <div id="cpca-ppm-row" class="hidden mt-4 rounded-2xl border border-slate-100 bg-white/70 px-5 py-4 text-sm text-slate-600"><strong class="theme-accent-text">Conversão para ppm:</strong> <span id="cpca-ppm"></span></div>
+                                <div class="cpca-structure-grid mt-6">
+                                    <div class="cpca-structure-card">
+                                        <h3 class="section-title mb-4"><i class="fas fa-atom theme-accent-text"></i> Estrutura química</h3>
+                                        <div id="cpca-structure-svg" class="cpca-structure-svg" aria-label="Estrutura química da molécula analisada"></div>
+                                        <p class="cpca-structure-caption">SMILES canônico: <code id="cpca-structure-caption">—</code></p>
+                                    </div>
+                                    <div id="ema-ai-panel" class="cpca-ema-panel">
+                                        <div class="flex items-start justify-between gap-3">
+                                            <div>
+                                                <p class="cpca-metric-label">Referência regulatória</p>
+                                                <h3 class="section-title mt-1 mb-0"><i class="fas fa-globe-europe theme-accent-text"></i> EMA — Acceptable Intake</h3>
+                                            </div>
+                                            <span id="ema-status" class="cpca-status">—</span>
+                                        </div>
+                                        <p id="ema-name" class="cpca-ema-name">—</p>
+                                        <div class="cpca-ema-value-wrap"><strong id="ema-ai" class="cpca-ema-value">—</strong><span id="ema-ai-unit">ng/dia</span></div>
+                                        <p id="ema-ai-meta" class="cpca-ema-meta"></p>
+                                        <p id="ema-source" class="cpca-ema-meta"></p>
+                                        <p id="ema-note" class="cpca-ema-note"></p>
+                                        <a id="ema-source-link" class="cpca-ema-link" href="https://www.ema.europa.eu/en/documents/other/appendix-1-acceptable-intakes-established-n-nitrosamines_en.xlsx" target="_blank" rel="noreferrer">Abrir Appendix 1 oficial da EMA</a>
+                                    </div>
+                                </div>
+                                <div class="mt-6 rounded-2xl border border-slate-100 bg-white/55 p-5">
+                                    <h3 class="section-title mb-4"><i class="fas fa-circle-info theme-accent-text"></i> Motivos do resultado</h3>
+                                    <div id="cpca-reasons-list" class="cpca-reasons-list"></div>
+                                </div>
                                 <div class="mt-6 rounded-2xl border border-slate-100 bg-white/55 p-5">
                                     <h3 class="section-title mb-4"><i class="fas fa-list-check theme-accent-text"></i> Evidências estruturais</h3>
                                     <div id="cpca-evidence-list" class="cpca-evidence-list"></div>
@@ -1426,9 +1497,25 @@
                 not_applicable: 'Fora do escopo',
                 not_nitrosamine: 'Sem centro N-nitroso',
                 invalid_smiles: 'SMILES inválido',
-                invalid_input: 'Entrada inválida'
+                invalid_input: 'Entrada inválida',
+                not_selected: 'Não selecionado'
             };
             return labels[status] || 'Sem classificação';
+        }
+
+        function emaStatusLabel(status) {
+            const labels = {
+                listed: 'Listado',
+                listed_no_numeric_ai: 'Listado sem AI numérico',
+                not_listed: 'Não listado'
+            };
+            return labels[status] || 'Sem correspondência';
+        }
+
+        function formatEmaDate(value) {
+            if (!value) return 'data não informada';
+            const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+            return match ? `${match[3]}/${match[2]}/${match[1]}` : String(value);
         }
 
         function getSelectedNitroModules() {
@@ -1453,6 +1540,35 @@
             tab.addEventListener('click', () => activateNitroTab(tab.dataset.nitroTab));
         });
 
+        function renderCpcaReasons(result) {
+            const reasons = [['Decisão do motor', safeText(result.message, 'Nenhuma mensagem disponível.')]];
+            if (result.category_basis) reasons.push(['Base da categoria', result.category_basis]);
+            (result.centers || []).forEach((center, index) => {
+                const features = (center.features || []).map(feature => `${cpcaFeatureLabel(feature)} (${feature.score > 0 ? '+' : ''}${feature.score})`).join(', ');
+                if (features) reasons.push([`Centro ${index + 1}`, features]);
+                if (center.excluded_reasons?.length) reasons.push([`Centro ${index + 1} — revisão`, center.excluded_reasons.join(' ')]);
+            });
+            if (result.status === 'manual_review') reasons.push(['Próxima ação', 'Revisar toxicologia, read-across ou dados experimentais antes de usar o resultado.']);
+            document.getElementById('cpca-reasons-list').innerHTML = reasons.map(([label, value]) => `<div class="cpca-reason-row"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(value)}</span></div>`).join('');
+        }
+
+        function renderEmaResult(ema) {
+            const status = safeText(ema?.status, 'not_listed');
+            document.getElementById('ema-status').textContent = emaStatusLabel(status);
+            const listed = Boolean(ema?.listed);
+            document.getElementById('ema-name').textContent = listed ? safeText(ema.name) : 'Estrutura não encontrada no Appendix 1';
+            const aiValue = listed && ema.ai_ng_day != null ? `${Number(ema.ai_ng_day).toLocaleString('pt-BR')}` : (listed ? safeText(ema.ai_ng_day_raw, '—') : '—');
+            document.getElementById('ema-ai').textContent = aiValue;
+            document.getElementById('ema-ai-unit').textContent = listed && ema.ai_ng_day != null ? 'ng/dia' : '';
+            const meta = listed
+                ? `${safeText(ema.reference_number)} · atualizado em ${formatEmaDate(ema.last_updated)}${ema.publication_date ? ` · entrada de ${formatEmaDate(ema.publication_date)}` : ''}`
+                : `${safeText(ema.reference_number, 'EMA Appendix 1')} · snapshot de ${formatEmaDate(ema.last_updated)}`;
+            document.getElementById('ema-ai-meta').textContent = meta;
+            const ppmText = ema?.ppm_limit != null ? `Conversão EMA para a dose informada: ${Number(ema.ppm_limit).toLocaleString('pt-BR')} ppm (${safeText(ema.ppm_formula)}).` : '';
+            document.getElementById('ema-source').textContent = listed ? `Fonte/relacionamento: ${safeText(ema.source, 'não informado')}${ema.cas_rn ? ` · CAS RN ${ema.cas_rn}` : ''}${ppmText ? ` · ${ppmText}` : ''}` : 'Nenhum AI EMA foi inferido para esta estrutura.';
+            document.getElementById('ema-note').textContent = listed ? safeText(ema.note, 'A entrada não possui nota adicional na planilha.') : safeText(ema.message);
+        }
+
         function renderCpcaResults(result) {
             const status = safeText(result.status, 'manual_review');
             const badge = document.getElementById('cpca-status-badge');
@@ -1465,6 +1581,9 @@
             document.getElementById('cpca-category').textContent = category;
             document.getElementById('cpca-score').textContent = score;
             document.getElementById('cpca-ai').textContent = ai;
+            const structure = document.getElementById('cpca-structure-svg');
+            structure.innerHTML = result.structure_svg || '<p class="text-sm text-slate-400">Estrutura não disponível para este SMILES.</p>';
+            document.getElementById('cpca-structure-caption').textContent = safeText(result.canonical_smiles || result.smiles);
             const ppmRow = document.getElementById('cpca-ppm-row');
             if (result.ppm_limit != null) {
                 ppmRow.classList.remove('hidden');
@@ -1481,6 +1600,8 @@
                 if (center.excluded_reasons?.length) evidence.push([`Centro ${index + 1} — exclusão`, center.excluded_reasons.join(' ')]);
             });
             document.getElementById('cpca-evidence-list').innerHTML = evidence.map(([label, value]) => `<div class="cpca-evidence-row"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(value)}</span></div>`).join('');
+            renderCpcaReasons(result);
+            renderEmaResult(result.ema || {});
             const warnings = Array.isArray(result.warnings) ? result.warnings : [];
             document.getElementById('cpca-warnings').innerHTML = warnings.length ? `<strong>Avisos:</strong><br>${warnings.map(escapeHtml).join('<br>')}` : '';
         }
