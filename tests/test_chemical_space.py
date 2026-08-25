@@ -10,10 +10,13 @@ from app import app
 def test_build_chemical_space_returns_reference_and_coordinates():
     results, error = bulk_compare("CCO", ["CCN", "CCCl"], ["Amina", "Clorado"], "Morgan2", "Tanimoto")
     assert error is None
+    assert "Ligações rotacionáveis (RotB)" in results[0]["properties"]
     space = build_chemical_space("CCO", ["CCN", "CCCl"], ["Amina", "Clorado"], results, "Morgan2", "Tanimoto")
     assert len(space["points"]) == 3
     assert any(point["role"] == "reference" for point in space["points"])
     assert all("x" in point and "y" in point for point in space["points"])
+    assert all("physicochemical_distance" in point and "global_distance" in point for point in space["points"])
+    assert "RotB" in space["descriptors"]
     assert space["weights"] == {"structural": 0.6, "physicochemical": 0.4}
 
 
