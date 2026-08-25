@@ -134,4 +134,4 @@ def test_cpca_reports_when_structure_is_not_in_ema_appendix():
     assert result["ema"]["listed"] is False
     assert result["ema"]["status"] == "not_listed"
     assert result["ema"].get("ai_ng_day") is None
-    assert "não foi localizada" in result["ema"]["message"]
+    assert result["ema"]["message"].startswith("Nitrosamina não listada no Apêndice I da EMA")

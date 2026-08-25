@@ -92,7 +92,7 @@ def _ema_lookup(mol: Chem.Mol, mdd_mg: Optional[float] = None) -> Dict[str, Any]
         "ai_unit": "ng/day",
     }
     if not record:
-        base["message"] = "A estrutura não foi localizada no snapshot do Appendix 1 da EMA; nenhum AI EMA foi inferido."
+        base["message"] = "Nitrosamina não listada no Apêndice I da EMA; nenhum AI EMA foi inferido."
         return base
 
     base.update(

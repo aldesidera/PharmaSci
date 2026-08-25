@@ -583,7 +583,8 @@
         body #btn-compare,
         body #btn-bulk-compare,
         body #btn-batch-report,
-        body #btn-cpca {
+        body #btn-cpca,
+        body #btn-nitro-analyze {
             background: linear-gradient(135deg, var(--theme-accent), var(--theme-accent-strong));
             color: var(--theme-button-text);
             border-color: var(--theme-panel-border);
@@ -592,7 +593,8 @@
         body #btn-compare:hover,
         body #btn-bulk-compare:hover,
         body #btn-batch-report:hover,
-        body #btn-cpca:hover {
+        body #btn-cpca:hover,
+        body #btn-nitro-analyze:hover {
             background: linear-gradient(135deg, var(--theme-accent-strong), var(--theme-accent-secondary));
             box-shadow: 0 16px 28px var(--theme-panel-glow);
         }
@@ -1142,6 +1144,7 @@
         let activeCpcaRequestId = 0;
         let currentNitroResults = null;
         let activeNitroTab = 'cpca';
+        let toastTimer = null;
 
         function fetchWithTimeout(url, options = {}, timeoutMs = 15000, requestController = null) {
             const controller = requestController || new AbortController();
@@ -1507,7 +1510,7 @@
             const labels = {
                 listed: 'Listado',
                 listed_no_numeric_ai: 'Listado sem AI numérico',
-                not_listed: 'Não listado'
+                not_listed: 'Não listada'
             };
             return labels[status] || 'Sem correspondência';
         }
@@ -1556,7 +1559,7 @@
             const status = safeText(ema?.status, 'not_listed');
             document.getElementById('ema-status').textContent = emaStatusLabel(status);
             const listed = Boolean(ema?.listed);
-            document.getElementById('ema-name').textContent = listed ? safeText(ema.name) : 'Estrutura não encontrada no Appendix 1';
+            document.getElementById('ema-name').textContent = listed ? safeText(ema.name) : 'Nitrosamina não listada no Apêndice I da EMA';
             const aiValue = listed && ema.ai_ng_day != null ? `${Number(ema.ai_ng_day).toLocaleString('pt-BR')}` : (listed ? safeText(ema.ai_ng_day_raw, '—') : '—');
             document.getElementById('ema-ai').textContent = aiValue;
             document.getElementById('ema-ai-unit').textContent = listed && ema.ai_ng_day != null ? 'ng/dia' : '';
@@ -2017,11 +2020,15 @@
 
         function showToast(msg, type) {
             const toast = document.getElementById('toast');
+            if (toastTimer) clearTimeout(toastTimer);
             toast.textContent = msg;
             const bgColor = type === 'success' ? 'bg-emerald-500' : type === 'error' ? 'bg-rose-500' : 'bg-sky-500';
             toast.className = `fixed bottom-8 right-8 px-8 py-5 rounded-2xl shadow-2xl text-white font-black z-50 transition-all ${bgColor}`;
             toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 4000);
+            toastTimer = setTimeout(() => {
+                toast.classList.add('hidden');
+                toastTimer = null;
+            }, 5000);
         }
     </script>
 </body>
