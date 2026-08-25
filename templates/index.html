@@ -31,7 +31,51 @@
             --radius-xl: 28px;
             --radius-lg: 20px;
             --radius-md: 16px;
-            --brand-panel-width: 460px;
+            --brand-panel-width: clamp(360px, 32vw, 460px);
+            --theme-accent: #2563eb;
+            --theme-accent-strong: #1d4ed8;
+            --theme-accent-secondary: #7c3aed;
+            --theme-accent-soft: #dbeafe;
+            --theme-panel-top: rgba(227, 240, 252, 0.94);
+            --theme-panel-bottom: rgba(239, 247, 255, 0.88);
+            --theme-panel-border: rgba(96, 165, 250, 0.38);
+            --theme-panel-glow: rgba(37, 99, 235, 0.16);
+            --theme-control-bg: rgba(255, 255, 255, 0.96);
+            --theme-control-border: rgba(96, 165, 250, 0.30);
+            --theme-control-text: #0f172a;
+            --theme-muted-text: #64748b;
+            --theme-focus-ring: rgba(37, 99, 235, 0.24);
+            --theme-button-text: #ffffff;
+        }
+        body.theme-molsim {
+            --theme-accent: #2563eb;
+            --theme-accent-strong: #1d4ed8;
+            --theme-accent-secondary: #7c3aed;
+            --theme-accent-soft: #dbeafe;
+            --theme-panel-top: rgba(227, 240, 252, 0.94);
+            --theme-panel-bottom: rgba(239, 247, 255, 0.88);
+            --theme-panel-border: rgba(96, 165, 250, 0.38);
+            --theme-panel-glow: rgba(37, 99, 235, 0.16);
+            --theme-control-bg: rgba(255, 255, 255, 0.96);
+            --theme-control-border: rgba(96, 165, 250, 0.30);
+            --theme-control-text: #0f172a;
+            --theme-muted-text: #64748b;
+            --theme-focus-ring: rgba(37, 99, 235, 0.24);
+        }
+        body.theme-nitro {
+            --theme-accent: #f97316;
+            --theme-accent-strong: #ea580c;
+            --theme-accent-secondary: #ff6f61;
+            --theme-accent-soft: #fff1eb;
+            --theme-panel-top: rgba(255, 247, 243, 0.96);
+            --theme-panel-bottom: rgba(255, 232, 224, 0.92);
+            --theme-panel-border: rgba(255, 111, 97, 0.42);
+            --theme-panel-glow: rgba(244, 114, 64, 0.18);
+            --theme-control-bg: rgba(255, 252, 250, 0.96);
+            --theme-control-border: rgba(255, 140, 110, 0.34);
+            --theme-control-text: #3d2020;
+            --theme-muted-text: #8f625b;
+            --theme-focus-ring: rgba(255, 111, 97, 0.25);
         }
         body {
             background-image: url('/static/background.svg');
@@ -115,21 +159,22 @@
         }
         .app-layout {
             display: grid;
-            grid-template-columns: minmax(360px, var(--brand-panel-width)) minmax(0, 1fr);
+            grid-template-columns: var(--brand-panel-width) minmax(0, 1fr);
+            grid-template-rows: auto minmax(0, 1fr);
             gap: 1.75rem;
-            align-items: stretch;
+            align-items: start;
         }
         .card-glass {
             background:
-                linear-gradient(180deg, rgba(227, 240, 252, 0.90), rgba(239, 247, 255, 0.86)),
-                radial-gradient(circle at top, rgba(14,165,233,0.12), transparent 40%);
+                linear-gradient(180deg, var(--theme-panel-top), var(--theme-panel-bottom)),
+                radial-gradient(circle at top, var(--theme-panel-glow), transparent 40%);
             backdrop-filter: blur(12px) saturate(1.15);
             border-radius: var(--radius-xl);
-            border: 1px solid rgba(148, 163, 184, 0.22);
+            border: 1px solid var(--theme-panel-border);
             box-shadow:
                 0 20px 40px rgba(15, 23, 42, 0.06),
                 inset 0 1px 0 rgba(255,255,255,0.92),
-                0 0 0 1px rgba(148,163,184,0.08);
+                0 0 0 1px var(--theme-panel-glow);
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -146,7 +191,7 @@
             justify-content: flex-start;
             align-items: center;
             width: 100%;
-            padding-left: 0.25rem;
+            padding-left: 0;
         }
         .brand-visual {
             position: relative;
@@ -154,16 +199,19 @@
             flex-direction: column;
             align-items: center;
             gap: 0.35rem;
-            width: min(32vw, var(--brand-panel-width));
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
             padding: 0;
         }
         .brand-collage {
             position: relative;
             width: 100%;
-            height: min(16vw, 180px);
+            aspect-ratio: 11 / 6;
+            height: auto;
             display: grid;
             place-items: center;
-            overflow: visible;
+            overflow: hidden;
         }
         .brand-logo-image {
             position: absolute;
@@ -171,9 +219,10 @@
             top: 50%;
             transform: translate(-50%, -50%);
             display: block;
-            width: 120%;
-            max-width: 120%;
+            width: 100%;
+            max-width: 100%;
             height: auto;
+            max-height: 100%;
             object-fit: contain;
             filter: drop-shadow(0 0 24px rgba(64, 201, 255, 0.28));
             border-radius: 22px;
@@ -189,7 +238,7 @@
         .brand-visual.is-molsim .brand-logo-image--molsim,
         .brand-visual.is-nitro .brand-logo-image--nitro {
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1.20);
+            transform: translate(-50%, -50%);
             filter: drop-shadow(0 0 34px rgba(40, 198, 255, 0.42));
             visibility: visible;
         }
@@ -257,9 +306,9 @@
             opacity: 1;
         }
         .module-chip.active {
-            background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(234,239,247,0.90));
-            color: var(--text-900);
-            border-color: rgba(255,255,255,0.90);
+            background: linear-gradient(180deg, rgba(255,255,255,0.96), var(--theme-accent-soft));
+            color: var(--theme-accent-strong);
+            border-color: var(--theme-panel-border);
             box-shadow:
                 0 0 0 1px rgba(255,255,255,0.40),
                 0 14px 24px rgba(15, 23, 42, 0.12),
@@ -290,18 +339,20 @@
         input:focus,
         select:focus,
         textarea:focus {
-            box-shadow: 0 0 0 4px rgba(14,165,233,0.10), 0 0 0 1px rgba(14,165,233,0.18);
+            border-color: var(--theme-accent);
+            box-shadow: 0 0 0 4px var(--theme-focus-ring), 0 0 0 1px var(--theme-accent);
         }
         .empty-state {
             position: relative;
             overflow: hidden;
-            background: linear-gradient(180deg, rgba(223, 240, 252, 0.82), rgba(242,248,255,0.76));
-            border: 1px solid rgba(125, 211, 252, 0.30);
+            background: linear-gradient(180deg, var(--theme-panel-top), var(--theme-panel-bottom));
+            border: 1px solid var(--theme-panel-border);
             box-shadow:
                 inset 0 1px 0 rgba(255,255,255,0.62),
-                0 18px 30px rgba(2,132,199,0.10),
-                0 0 0 1px rgba(125,211,252,0.12);
-            min-height: 840px;
+                0 18px 30px var(--theme-panel-glow),
+                0 0 0 1px var(--theme-panel-glow);
+            min-height: 0;
+            height: 100%;
             align-self: stretch;
             padding-top: 1.2rem;
             justify-content: flex-start;
@@ -319,39 +370,54 @@
             margin-inline: auto;
         }
         .brand-panel {
-            min-height: 230px;
+            grid-column: 1;
+            grid-row: 1;
+            min-height: 0;
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            width: min(100%, var(--brand-panel-width));
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            margin: 0;
         }
         .action-column {
+            grid-column: 1;
+            grid-row: 2;
             display: flex;
             flex-direction: column;
-            align-self: stretch;
+            align-self: start;
             gap: 1.25rem;
             min-height: 100%;
-            width: min(100%, var(--brand-panel-width));
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
         }
         .action-column .card-glass {
             min-height: 840px;
             height: 100%;
             justify-content: flex-start;
-            width: min(100%, var(--brand-panel-width));
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
             background:
-                linear-gradient(180deg, rgba(219, 236, 250, 0.98), rgba(236, 246, 255, 0.90)),
-                radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 32%);
-            border-color: rgba(125, 211, 252, 0.30);
+                linear-gradient(180deg, var(--theme-panel-top), var(--theme-panel-bottom)),
+                radial-gradient(circle at top left, var(--theme-panel-glow), transparent 32%);
+            border-color: var(--theme-panel-border);
             box-shadow:
-                0 18px 28px rgba(2, 132, 199, 0.10),
+                0 18px 28px var(--theme-panel-glow),
                 inset 0 1px 0 rgba(255,255,255,0.92),
-                0 0 0 1px rgba(125, 211, 252, 0.16);
+                0 0 0 1px var(--theme-panel-glow);
         }
         .visual-column {
+            grid-column: 2;
+            grid-row: 1 / span 2;
             display: flex;
             flex-direction: column;
             align-self: stretch;
             min-height: 100%;
+            min-width: 0;
+            width: 100%;
         }
         .empty-state::before {
             content: "";
@@ -373,10 +439,10 @@
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
         }
         .mode-tab.active {
-            background: linear-gradient(180deg, #ffffff, rgba(224, 242, 254, 0.95));
-            border-color: rgba(14, 165, 233, 0.2);
-            color: var(--sky-600);
-            box-shadow: 0 8px 20px rgba(56, 189, 248, 0.12), inset 0 1px 0 rgba(255,255,255,0.98);
+            background: linear-gradient(180deg, #ffffff, var(--theme-accent-soft));
+            border-color: var(--theme-panel-border);
+            color: var(--theme-accent-strong);
+            box-shadow: 0 8px 20px var(--theme-panel-glow), inset 0 1px 0 rgba(255,255,255,0.98);
         }
         .mode-panel {
             display: flex;
@@ -396,9 +462,9 @@
             display: block;
             width: 100%;
             border-radius: 18px;
-            border: 1px solid rgba(148, 163, 184, 0.30);
-            background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(240,245,249,0.94));
-            color: var(--text-900);
+            border: 1px solid var(--theme-control-border);
+            background: var(--theme-control-bg);
+            color: var(--theme-control-text);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.90), inset 0 -1px 0 rgba(148,163,184,0.05);
             transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
         }
@@ -494,19 +560,64 @@
             .batch-structure-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
         @media (max-width: 1024px) {
-            .app-layout { grid-template-columns: 1fr; }
+            .app-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+            .brand-panel,
+            .action-column,
+            .visual-column {
+                grid-column: 1;
+                grid-row: auto;
+            }
+            .visual-column {
+                min-height: 0;
+            }
+            .empty-state {
+                min-height: 560px;
+                height: auto;
+            }
             .batch-structure-grid { grid-template-columns: 1fr; }
+        }
+
+        body #btn-compare,
+        body #btn-bulk-compare,
+        body #btn-batch-report {
+            background: linear-gradient(135deg, var(--theme-accent), var(--theme-accent-strong));
+            color: var(--theme-button-text);
+            border-color: var(--theme-panel-border);
+            box-shadow: 0 12px 24px var(--theme-panel-glow);
+        }
+        body #btn-compare:hover,
+        body #btn-bulk-compare:hover,
+        body #btn-batch-report:hover {
+            background: linear-gradient(135deg, var(--theme-accent-strong), var(--theme-accent-secondary));
+            box-shadow: 0 16px 28px var(--theme-panel-glow);
+        }
+        body .module-chip.active,
+        body .mode-tab.active {
+            color: var(--theme-accent-strong);
+            border-color: var(--theme-panel-border);
+        }
+        body.theme-nitro .empty-state {
+            background: linear-gradient(180deg, var(--theme-panel-top), var(--theme-panel-bottom));
+            border-color: var(--theme-panel-border);
+        }
+        body.theme-nitro .empty-state .placeholder-content i,
+        body.theme-nitro .empty-state .placeholder-content p:first-of-type {
+            color: var(--theme-accent-strong);
         }
     </style>
 </head>
-<body class="py-12">
+<body class="py-12 theme-molsim">
     <button id="pdf-export-btn" class="pdf-export-btn hidden" type="button" onclick="downloadReport()" title="Baixar Relatório em PDF" aria-label="Exportar relatório em PDF">
         <i class="fas fa-file-pdf"></i>
     </button>
 
     <div class="max-w-[1700px] mx-auto px-2 md:px-4">
         <div class="main-container is-ghost p-8 md:p-12">
-            <div class="mb-12 brand-panel">
+            <div class="app-layout">
+                <div class="brand-panel">
                 <div class="brand-stack">
                     <div class="brand-bar">
                         <div class="brand-visual is-molsim">
@@ -525,9 +636,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
+                </div>
 
-            <div class="app-layout">
                 <div class="action-column">
                     <div class="card-glass p-8 shadow-sm h-auto">
                         <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-8">
@@ -962,6 +1072,13 @@
         bindNameAutofill('smiles-test', 'name-test');
         bindBatchReferenceAutofill();
 
+        function applyModuleTheme(appName) {
+            document.body.classList.toggle('theme-molsim', appName === 'molsim');
+            document.body.classList.toggle('theme-nitro', appName === 'nitro');
+        }
+
+        applyModuleTheme('molsim');
+
         document.querySelectorAll('.module-chip').forEach((chip) => {
             chip.addEventListener('click', () => {
                 document.querySelectorAll('.module-chip').forEach(item => item.classList.toggle('active', item === chip));
@@ -971,6 +1088,7 @@
                     brandVisual.classList.toggle('is-molsim', appName === 'molsim');
                     brandVisual.classList.toggle('is-nitro', appName === 'nitro');
                 }
+                applyModuleTheme(appName);
                 showToast(appName === 'nitro' ? 'Nitro.RA ativado' : 'Mol.Sim ativado', 'success');
             });
         });
