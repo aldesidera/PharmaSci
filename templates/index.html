@@ -614,7 +614,7 @@
         .theme-accent-text { color: var(--theme-accent-strong); }
         .nitro-module-checks {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 0.75rem;
         }
         .nitro-module-check {
@@ -685,6 +685,43 @@
         @media (max-width: 640px) {
             .nitro-module-checks { grid-template-columns: 1fr; }
             .nitro-tab { flex-basis: 7.5rem; }
+        }
+        .nitro-space-summary {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+        }
+        .nitro-space-summary-card {
+            border: 1px solid var(--theme-panel-border);
+            border-radius: 1.25rem;
+            padding: 1rem;
+            background: color-mix(in srgb, var(--theme-accent-soft) 42%, white 58%);
+        }
+        .nitro-space-summary-card strong { display: block; margin-top: 0.35rem; color: var(--theme-accent-strong); font-size: 1.35rem; font-weight: 900; }
+        .nitro-space-summary-card span { color: var(--theme-muted-text); font-size: 0.65rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; }
+        .nitro-space-chart-wrap {
+            border: 1px solid var(--theme-panel-border);
+            border-radius: 1.5rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.68);
+        }
+        .nitro-space-chart { width: 100%; height: 24rem; display: block; }
+        .nitro-space-chart text { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+        .nitro-space-legend { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; margin-top: 0.7rem; color: var(--theme-muted-text); font-size: 0.7rem; }
+        .nitro-space-legend span { display: inline-flex; align-items: center; gap: 0.45rem; }
+        .nitro-space-legend i { width: 0.7rem; height: 0.7rem; display: inline-block; border-radius: 999px; background: var(--theme-accent-strong); }
+        .nitro-space-legend i.target { background: var(--theme-accent-secondary); }
+        .nitro-space-table-wrap { overflow-x: auto; border: 1px solid var(--theme-panel-border); border-radius: 1.25rem; background: rgba(255,255,255,0.72); }
+        .nitro-space-table { width: 100%; min-width: 48rem; border-collapse: collapse; font-size: 0.72rem; }
+        .nitro-space-table th { padding: 0.8rem; color: var(--theme-muted-text); background: var(--theme-accent-soft); font-size: 0.62rem; font-weight: 900; letter-spacing: 0.12em; text-align: left; text-transform: uppercase; }
+        .nitro-space-table td { border-top: 1px solid var(--line-soft); padding: 0.7rem 0.8rem; color: var(--text-700); vertical-align: middle; }
+        .nitro-space-table td.numeric { color: var(--theme-accent-strong); font-weight: 900; }
+        .nitro-space-thumb { width: 7rem; height: 4rem; }
+        .nitro-space-thumb svg { width: 100%; height: 100%; display: block; }
+        .nitro-space-muted { color: var(--theme-muted-text); font-size: 0.75rem; line-height: 1.55; }
+        @media (max-width: 640px) {
+            .nitro-space-summary { grid-template-columns: 1fr; }
+            .nitro-space-chart { height: 18rem; }
         }
         .cpca-metric-grid {
             display: grid;
@@ -916,7 +953,7 @@
                                 <p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Nitro.RA</p>
                                 <h2 class="text-2xl font-black text-slate-800">Análises científicas</h2>
                             </div>
-                            <span class="cpca-status">3 módulos</span>
+                            <span class="cpca-status">4 módulos</span>
                         </div>
                         <div class="space-y-6">
                             <div>
@@ -933,6 +970,7 @@
                                     <label class="nitro-module-check"><input type="checkbox" data-nitro-module="cpca" checked><span><strong>cPCA</strong><small>Limite AI</small></span></label>
                                     <label class="nitro-module-check"><input type="checkbox" data-nitro-module="quantum"><span><strong>Quantum</strong><small>HOMO / LUMO</small></span></label>
                                     <label class="nitro-module-check"><input type="checkbox" data-nitro-module="metabolism"><span><strong>Metabolism</strong><small>CYP450</small></span></label>
+                                    <label class="nitro-module-check"><input type="checkbox" data-nitro-module="nitrosamine_space"><span><strong>Incluir busca e comparação de Nitrosaminas</strong><small>PubChem e espaço químico</small></span></label>
                                 </div>
                             </div>
                             <p class="text-xs leading-5 text-slate-500">Selecione uma ou mais análises. Os resultados serão organizados em abas independentes; módulos ainda em desenvolvimento serão identificados sem gerar dados fictícios.</p>
@@ -950,7 +988,7 @@
                                 <i class="fas fa-microscope text-4xl text-slate-300"></i>
                             </div>
                             <p class="text-xl font-black text-slate-700 tracking-[0.08em] uppercase">Aguardando análise</p>
-                            <p class="text-sm text-slate-500 mt-2 text-center max-w-md">Insira os SMILES à esquerda e pressione comparar para gerar a similaridade, o score ou a avaliação cPCA.</p>
+                            <p class="text-sm text-slate-500 mt-2 text-center max-w-md">Insira o SMILES à esquerda e pressione executar análises para gerar o resultado cPCA ou consultar os módulos selecionados.</p>
                         </div>
                     </div>
 
@@ -960,6 +998,7 @@
                                 <button type="button" class="nitro-tab active" data-nitro-tab="cpca" role="tab" aria-selected="true">cPCA</button>
                                 <button type="button" class="nitro-tab" data-nitro-tab="quantum" role="tab" aria-selected="false">Quantum</button>
                                 <button type="button" class="nitro-tab" data-nitro-tab="metabolism" role="tab" aria-selected="false">Metabolism</button>
+                                <button type="button" class="nitro-tab" data-nitro-tab="nitrosamine_space" role="tab" aria-selected="false">Nitrosaminas e Espaço Químico</button>
                             </div>
                             <div id="nitro-panel-cpca" class="nitro-tab-panel" role="tabpanel">
                                 <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -1013,6 +1052,37 @@
                             </div>
                             <div id="nitro-panel-metabolism" class="nitro-tab-panel hidden" role="tabpanel">
                                 <div class="nitro-pending-state"><i class="fas fa-dna"></i><strong>Metabolism em desenvolvimento</strong><p>O resultado desta aba ficará reservado para a futura predição CYP450. Nenhum valor é estimado nesta etapa.</p></div>
+                            </div>
+                            <div id="nitro-panel-nitrosamine_space" class="nitro-tab-panel hidden" role="tabpanel">
+                                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                                    <div>
+                                        <p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Busca opcional no PubChem</p>
+                                        <h2 class="text-3xl font-black text-slate-800">Nitrosaminas e Espaço Químico</h2>
+                                    </div>
+                                    <span id="nitro-space-status" class="cpca-status">—</span>
+                                </div>
+                                <p id="nitro-space-message" class="text-sm leading-6 text-slate-600 mb-6">Selecione o checkbox para buscar compostos estruturalmente semelhantes.</p>
+                                <div class="nitro-space-summary">
+                                    <div class="nitro-space-summary-card"><span>CIDs analisados</span><strong id="nitro-space-retrieved">—</strong></div>
+                                    <div class="nitro-space-summary-card"><span>N-nitroso encontrados</span><strong id="nitro-space-filtered">—</strong></div>
+                                    <div class="nitro-space-summary-card"><span>Selecionados</span><strong id="nitro-space-selected">—</strong></div>
+                                </div>
+                                <div class="nitro-space-chart-wrap mt-6">
+                                    <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+                                        <h3 class="section-title mb-0"><i class="fas fa-chart-scatter theme-accent-text"></i> Mapa PCA do espaço químico</h3>
+                                        <span class="cpca-metric-label">Descritores físico-químicos normalizados</span>
+                                    </div>
+                                    <div id="nitro-space-chart" class="nitro-space-chart" aria-label="Gráfico PCA de nitrosaminas"></div>
+                                    <div class="nitro-space-legend"><span><i class="target"></i> Molécula alvo</span><span><i></i> Nitrosaminas similares</span></div>
+                                </div>
+                                <div class="mt-6 rounded-2xl border border-slate-100 bg-white/55 p-5">
+                                    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                                        <h3 class="section-title mb-0"><i class="fas fa-table-list theme-accent-text"></i> Candidatos selecionados</h3>
+                                        <span id="nitro-space-selection-method" class="nitro-space-muted"></span>
+                                    </div>
+                                    <div id="nitro-space-table" class="nitro-space-table-wrap"></div>
+                                </div>
+                                <div id="nitro-space-warnings" class="mt-6 rounded-2xl border border-amber-200 bg-amber-50/60 p-5 text-sm leading-6 text-amber-800"></div>
                             </div>
                         </div>
                     </div>
@@ -1162,7 +1232,9 @@
             if (!placeholder) return;
             const text = mode === 'batch'
                 ? 'Insira a referência e a lista de moléculas para gerar o dashboard em lote.'
-                : 'Insira os SMILES à esquerda e pressione comparar para gerar a similaridade, o score e o resumo visual.';
+                : (mode === 'nitro'
+                    ? 'Insira o SMILES à esquerda e pressione executar análises para gerar o resultado cPCA ou consultar os módulos selecionados.'
+                    : 'Insira os SMILES à esquerda e pressione comparar para gerar a similaridade, o score e o resumo visual.');
             placeholder.querySelector('p.text-sm')?.replaceChildren(document.createTextNode(text));
         }
 
@@ -1382,6 +1454,7 @@
             currentBatchResults = [];
             updateReportAvailability();
             if (activeApp === 'molsim') setComparisonMode(currentMode);
+            else setModePlaceholder('nitro');
         }
 
         activateModule('molsim');
@@ -1526,7 +1599,7 @@
         }
 
         function activateNitroTab(tabName) {
-            const allowed = ['cpca', 'quantum', 'metabolism'];
+            const allowed = ['cpca', 'quantum', 'metabolism', 'nitrosamine_space'];
             const activeTab = allowed.includes(tabName) ? tabName : 'cpca';
             activeNitroTab = activeTab;
             document.querySelectorAll('.nitro-tab').forEach(tab => {
@@ -1620,6 +1693,92 @@
             });
         }
 
+        function nitroSpaceStatusLabel(status) {
+            const labels = {
+                ok: 'Concluído',
+                no_nitrosamines: 'Nenhuma encontrada',
+                pubchem_unavailable: 'PubChem indisponível',
+                invalid_smiles: 'SMILES inválido',
+                invalid_input: 'Entrada inválida',
+                not_selected: 'Não selecionado'
+            };
+            return labels[status] || 'Sem classificação';
+        }
+
+        function formatSpaceValue(value, digits = 3) {
+            if (value == null || value === '') return '—';
+            const number = Number(value);
+            return Number.isFinite(number) ? number.toLocaleString('pt-BR', { maximumFractionDigits: digits }) : safeText(value);
+        }
+
+        function renderNitrosamineSpaceResults(result) {
+            const status = safeText(result?.status, 'no_nitrosamines');
+            document.getElementById('nitro-space-status').textContent = nitroSpaceStatusLabel(status);
+            document.getElementById('nitro-space-message').textContent = safeText(result?.message, 'Nenhuma mensagem disponível.');
+            const search = result?.search || {};
+            document.getElementById('nitro-space-retrieved').textContent = formatSpaceValue(search.retrieved_cids, 0);
+            document.getElementById('nitro-space-filtered').textContent = formatSpaceValue(search.n_nitroso_candidates, 0);
+            document.getElementById('nitro-space-selected').textContent = formatSpaceValue(search.selected_candidates, 0);
+            document.getElementById('nitro-space-selection-method').textContent = safeText(search.selection_method, '');
+
+            const chart = document.getElementById('nitro-space-chart');
+            const points = Array.isArray(result?.points) ? result.points : [];
+            if (!points.length) {
+                chart.innerHTML = '<div class="nitro-space-muted p-6">O mapa será exibido quando houver candidatos N-nitroso no lote retornado pelo PubChem.</div>';
+            } else {
+                const width = 760;
+                const height = 360;
+                const padding = { left: 58, right: 24, top: 24, bottom: 46 };
+                const xs = points.map(point => Number(point.x) || 0);
+                const ys = points.map(point => Number(point.y) || 0);
+                const minX = Math.min(...xs, 0);
+                const maxX = Math.max(...xs, 0);
+                const minY = Math.min(...ys, 0);
+                const maxY = Math.max(...ys, 0);
+                const rangeX = maxX - minX || 1;
+                const rangeY = maxY - minY || 1;
+                const plotX = value => padding.left + ((value - minX) / rangeX) * (width - padding.left - padding.right);
+                const plotY = value => height - padding.bottom - ((value - minY) / rangeY) * (height - padding.top - padding.bottom);
+                const zeroX = plotX(0);
+                const zeroY = plotY(0);
+                const circles = points.map((point, index) => {
+                    const x = plotX(Number(point.x) || 0);
+                    const y = plotY(Number(point.y) || 0);
+                    const fill = point.is_target ? 'var(--theme-accent-secondary)' : 'var(--theme-accent-strong)';
+                    const radius = point.is_target ? 8 : 5;
+                    const label = point.is_target ? 'Alvo' : `${index}`;
+                    return `<g><circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${radius}" fill="${fill}" stroke="white" stroke-width="2"><title>${escapeHtml(point.name || label)}</title></circle><text x="${(x + 9).toFixed(2)}" y="${(y - 8).toFixed(2)}" font-size="10" fill="var(--text-700)">${escapeHtml(label)}</text></g>`;
+                }).join('');
+                chart.innerHTML = `<svg class="nitro-space-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="PCA do espaço químico de nitrosaminas"><line x1="${padding.left}" y1="${zeroY.toFixed(2)}" x2="${width - padding.right}" y2="${zeroY.toFixed(2)}" stroke="var(--line-soft)"/><line x1="${zeroX.toFixed(2)}" y1="${padding.top}" x2="${zeroX.toFixed(2)}" y2="${height - padding.bottom}" stroke="var(--line-soft)"/><text x="${width / 2}" y="${height - 12}" text-anchor="middle" font-size="11" fill="var(--theme-muted-text)">Componente principal 1</text><text x="16" y="${height / 2}" text-anchor="middle" font-size="11" fill="var(--theme-muted-text)" transform="rotate(-90 16 ${height / 2})">Componente principal 2</text>${circles}</svg>`;
+            }
+
+            const candidates = Array.isArray(result?.candidates) ? result.candidates : [];
+            const table = document.getElementById('nitro-space-table');
+            if (!candidates.length) {
+                table.innerHTML = `<div class="nitro-space-muted p-6">${escapeHtml(result?.message || 'Nenhuma nitrosamina foi encontrada no lote amostrado.')}</div>`;
+            } else {
+                const rows = candidates.map((candidate, index) => {
+                    const properties = candidate.properties || {};
+                    const image = candidate.svg || '<span class="nitro-space-muted">N/D</span>';
+                    return `<tr><td><div class="nitro-space-thumb">${image}</div></td><td><strong>${escapeHtml(candidate.name || `CID ${candidate.cid || index + 1}`)}</strong><br><span class="nitro-space-muted">CID ${escapeHtml(candidate.cid)}</span></td><td class="numeric">${formatSpaceValue(candidate.similarity)}</td><td class="numeric">${formatSpaceValue(candidate.global_distance)}</td><td>${formatSpaceValue(properties['Massa Molecular (g/mol)'], 2)}</td><td>${formatSpaceValue(properties['Coeficiente de Partição (LogP)'], 3)}</td><td>${formatSpaceValue(properties['Área de Superfície Polar (Å²)'], 2)}</td></tr>`;
+                }).join('');
+                table.innerHTML = `<table class="nitro-space-table"><thead><tr><th>Estrutura</th><th>Composto</th><th>Tanimoto</th><th>Distância global</th><th>MW</th><th>LogP</th><th>TPSA</th></tr></thead><tbody>${rows}</tbody></table>`;
+            }
+            const warnings = Array.isArray(result?.warnings) ? result.warnings : [];
+            document.getElementById('nitro-space-warnings').innerHTML = warnings.length ? `<strong>Avisos:</strong><br>${warnings.map(escapeHtml).join('<br>')}` : '';
+        }
+
+        function renderNitroSpaceNotSelected() {
+            renderNitrosamineSpaceResults({
+                status: 'not_selected',
+                message: 'A busca de nitrosaminas não foi selecionada para esta análise.',
+                search: {},
+                candidates: [],
+                points: [],
+                warnings: []
+            });
+        }
+
         function renderNitroModuleState(moduleName, result) {
             const labels = { quantum: 'Quantum', metabolism: 'Metabolism' };
             const icons = { quantum: 'fa-atom', metabolism: 'fa-dna' };
@@ -1644,6 +1803,8 @@
             else renderCpcaNotSelected();
             document.getElementById('nitro-panel-quantum').innerHTML = renderNitroModuleState('quantum', selectedModules.includes('quantum') ? results.quantum : null);
             document.getElementById('nitro-panel-metabolism').innerHTML = renderNitroModuleState('metabolism', selectedModules.includes('metabolism') ? results.metabolism : null);
+            if (selectedModules.includes('nitrosamine_space')) renderNitrosamineSpaceResults(results.nitrosamine_space || { status: 'no_nitrosamines', message: 'Resultado de espaço químico indisponível.' });
+            else renderNitroSpaceNotSelected();
             const firstTab = selectedModules.includes(activeNitroTab) ? activeNitroTab : (selectedModules[0] || 'cpca');
             activateNitroTab(firstTab);
         }

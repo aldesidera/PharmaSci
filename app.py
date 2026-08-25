@@ -30,6 +30,7 @@ from chemo_suite.apps.mol_sim.batch import run_batch_compare
 from chemo_suite.apps.nitro_ra.cpca import calculate_cpca
 from chemo_suite.apps.nitro_ra.metabolism import evaluate_metabolism
 from chemo_suite.apps.nitro_ra.quantum import evaluate_quantum
+from chemo_suite.apps.nitro_ra.nitrosamine_space import search_nitrosamine_space
 from molsim_runtime import get_env_int, parse_cors_origins, make_error_payload
 
 logging.basicConfig(
@@ -540,7 +541,7 @@ def api_nitro_ra_analyze():
         modules = data.get("modules")
         if not isinstance(modules, list) or not modules:
             return _error_response(400, "Informe ao menos um módulo Nitro.RA.", "modules")
-        allowed_modules = {"cpca", "quantum", "metabolism"}
+        allowed_modules = {"cpca", "quantum", "metabolism", "nitrosamine_space"}
         selected_modules = []
         for module in modules:
             if not isinstance(module, str) or module not in allowed_modules:
@@ -562,6 +563,8 @@ def api_nitro_ra_analyze():
             results["quantum"] = evaluate_quantum(smiles)
         if "metabolism" in selected_modules:
             results["metabolism"] = evaluate_metabolism(smiles)
+        if "nitrosamine_space" in selected_modules:
+            results["nitrosamine_space"] = search_nitrosamine_space(smiles)
 
         response = {
             "module": "nitro_ra",
@@ -570,7 +573,8 @@ def api_nitro_ra_analyze():
             "modules": selected_modules,
             "results": results,
         }
-        if results.get("cpca", {}).get("status") == "invalid_smiles":
+        invalid_modules = {"invalid_smiles", "invalid_input"}
+        if any(results.get(module, {}).get("status") in invalid_modules for module in selected_modules):
             response["status"] = "invalid_smiles"
             return jsonify(response), 400
         return jsonify(response), 200

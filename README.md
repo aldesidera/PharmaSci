@@ -30,9 +30,10 @@ Esta documentação reflete o estado atual do projeto em desenvolvimento: funcio
 - ✅ Fallback de nomes via PubChem quando o campo está vazio
 - ✅ Health check /healthz
 - ✅ Interface responsiva e melhor consistência do estado do cliente
-- ✅ Nitro.RA: seleção de cPCA, Quantum e Metabolism para o mesmo SMILES
-- ✅ Nitro.RA: três abas de resultados independentes; cPCA funcional e Quantum/Metabolism preparados para evolução
+- ✅ Nitro.RA: seleção de cPCA, Quantum, Metabolism e busca opcional de nitrosaminas para o mesmo SMILES
+- ✅ Nitro.RA: quatro abas de resultados independentes; cPCA funcional e Quantum/Metabolism preparados para evolução
 - ✅ Nitro.RA cPCA: estrutura química, limite FDA, motivos do resultado e lookup do AI EMA Appendix 1
+- ✅ Nitro.RA espaço químico: busca PubChem, filtro N-nitroso por RDKit, ranking Morgan2/Tanimoto, distância global de descritores e mapa PCA
 
 ---
 
@@ -81,6 +82,13 @@ MOLSIM_MAX_BATCH_REQUEST_BYTES=524288
 MOLSIM_MAX_EXPORT_IMAGE_BYTES=2097152
 MOLSIM_MAX_EXPORT_IMAGE_WIDTH=4096
 MOLSIM_MAX_EXPORT_IMAGE_HEIGHT=4096
+
+# Busca opcional de espaço químico no PubChem
+MOLSIM_PUBCHEM_SPACE_THRESHOLD=50
+MOLSIM_PUBCHEM_SPACE_MAX_RECORDS=100
+MOLSIM_PUBCHEM_SPACE_MAX_CANDIDATES=10
+MOLSIM_PUBCHEM_SPACE_TIMEOUT=12
+MOLSIM_PUBCHEM_SPACE_CACHE_TTL_SECONDS=3600
 ```
 
 Observações:
@@ -108,7 +116,8 @@ MolSim_ver10/
 │       └── nitro_ra/
 │           ├── cpca.py
 │           ├── quantum.py
-│           └── metabolism.py
+│           ├── metabolism.py
+│           └── nitrosamine_space.py
 ├── requirements.txt
 ├── static/
 ├── templates/
@@ -137,8 +146,9 @@ MolSim_ver10/
 6. Use o preview de relatório para revisar o conteúdo e exportar para PDF.
 7. No modo batch, informe a referência e a lista de moléculas.
 8. Para o Nitro.RA, ative o módulo, informe um SMILES, marque um ou mais checkboxes e execute as análises.
-9. Navegue pelas abas cPCA, Quantum e Metabolism para consultar os resultados separadamente; módulos futuros ficam explicitamente identificados como em desenvolvimento.
-10. Informe a dose diária máxima em mg/dia quando desejar a conversão do AI para ppm.
+9. Navegue pelas abas cPCA, Quantum, Metabolism e Nitrosaminas e Espaço Químico para consultar os resultados separadamente; módulos futuros ficam explicitamente identificados como em desenvolvimento.
+10. Marque `Incluir busca e comparação de Nitrosaminas` quando quiser consultar, sob demanda, compostos semelhantes no PubChem e visualizar o espaço químico.
+11. Informe a dose diária máxima em mg/dia quando desejar a conversão do AI para ppm.
 
 ---
 
@@ -204,12 +214,15 @@ Atenção:
 
 ### /nitro-ra/analyze
 - Requer JSON válido em `application/json`
-- Recebe `smiles`, uma lista `modules` com `cpca`, `quantum` e/ou `metabolism`, e `mdd_mg` opcional
+- Recebe `smiles`, uma lista `modules` com `cpca`, `quantum`, `metabolism` e/ou `nitrosamine_space`, e `mdd_mg` opcional
 - Retorna um objeto `results` separado por módulo, preservando o resultado de cada análise para as abas da interface
 - Módulos ainda não implementados retornam `status: not_implemented`, sem produzir valores fictícios
 - Quando cPCA é selecionado, o resultado inclui `structure_svg`, `canonical_smiles` e o objeto `ema`
 - O objeto `ema` consulta o snapshot `EMA/42261/2025 Rev.13`, atualizado em 24/06/2026, por SMILES canônico
 - Uma estrutura ausente do Appendix 1 retorna `ema.status: not_listed`; o sistema não infere AI EMA a partir da categoria FDA
+- `nitrosamine_space` consulta, sob demanda, a similaridade 2D do [PubChem PUG REST](https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest), filtra `[N;X3][N;X2]=O`, seleciona até 10 candidatos e retorna descritores, Tanimoto, distância global e pontos PCA
+- O PubChem fornece o lote de CIDs; o ranking final de Tanimoto é recalculado localmente com Morgan2, usando o pipeline de descritores do Mol.Sim, e a seleção final também considera a distância global normalizada
+- Falhas de rede/timeout retornam `status: pubchem_unavailable`; nenhum resultado retorna `status: no_nitrosamines`; esses estados não bloqueiam o cPCA nem inventam candidatos
 
 ### /report-preview
 - Gera o preview do relatório visual
@@ -236,7 +249,9 @@ Atenção:
 - Isso foi tratado na versão estabilizada; use o contrato padronizado de erro.
 
 ### PubChem indisponível
-- O lookup de nome é tolerante a falha e não bloqueia o fluxo principal.
+- A busca de espaço químico é opcional e só é executada quando o checkbox correspondente está marcado. HTTP 503/504, timeout ou falha de conexão aparecem na aba como `PubChem indisponível`, sem lançar erro no frontend; o cPCA e os demais módulos selecionados continuam preservados.
+- A busca usa cache temporário e limita o lote inicial. A ausência de um composto no lote retornado não prova ausência no universo químico; o resultado é uma triagem estrutural e não substitui avaliação toxicológica, confirmação analítica, read-across ou decisão regulatória.
+- O lookup de nome usado em outros fluxos é tolerante a falha e não bloqueia o fluxo principal.
 
 ### Preview/PDF não abre
 - Verifique popup blockers e use o botão de export diretamente no app.
@@ -247,6 +262,7 @@ Atenção:
 
 - RDKit: https://www.rdkit.org/
 - PubChem: https://pubchem.ncbi.nlm.nih.gov/
+- PubChem PUG REST: https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest
 - SMILES: https://en.wikipedia.org/wiki/Simplified_molecular_input_line_entry_system
 
 ---

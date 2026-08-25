@@ -135,3 +135,50 @@ def test_cpca_reports_when_structure_is_not_in_ema_appendix():
     assert result["ema"]["status"] == "not_listed"
     assert result["ema"].get("ai_ng_day") is None
     assert result["ema"]["message"].startswith("Nitrosamina não listada no Apêndice I da EMA")
+
+
+def test_nitro_ra_analyze_dispatches_nitrosamine_space(monkeypatch):
+    captured = {}
+
+    def fake_space(smiles):
+        captured["smiles"] = smiles
+        return {"module": "nitrosamine_space", "status": "no_nitrosamines", "candidates": [], "points": []}
+
+    monkeypatch.setattr("app.search_nitrosamine_space", fake_space)
+    client = app.test_client()
+    response = client.post(
+        "/nitro-ra/analyze",
+        json={"smiles": "O=NN1CCCCC1", "modules": ["nitrosamine_space"]},
+    )
+
+    assert response.status_code == 200
+    assert captured["smiles"] == "O=NN1CCCCC1"
+    payload = response.get_json()
+    assert payload["modules"] == ["nitrosamine_space"]
+    assert payload["results"]["nitrosamine_space"]["status"] == "no_nitrosamines"
+
+
+def test_nitro_ra_analyze_preserves_pubchem_unavailable_state(monkeypatch):
+    def fake_space(smiles):
+        return {
+            "module": "nitrosamine_space",
+            "status": "pubchem_unavailable",
+            "message": "PubChem retornou HTTP 503.",
+            "search": {"retrieved_cids": 0, "n_nitroso_candidates": 0, "selected_candidates": 0},
+            "candidates": [],
+            "points": [],
+        }
+
+    monkeypatch.setattr("app.search_nitrosamine_space", fake_space)
+    client = app.test_client()
+    response = client.post(
+        "/nitro-ra/analyze",
+        json={"smiles": "O=NN1CCCCC1", "modules": ["cpca", "nitrosamine_space"]},
+    )
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    space_result = payload["results"]["nitrosamine_space"]
+    assert space_result["status"] == "pubchem_unavailable"
+    assert space_result["search"]["retrieved_cids"] == 0
+    assert payload["results"]["cpca"]["status"] == "ok"
