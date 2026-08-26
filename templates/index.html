@@ -1140,33 +1140,76 @@
                             <div id="nitro-panel-nitrosamine_space" class="nitro-tab-panel hidden" role="tabpanel">
                                 <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
                                     <div>
-                                        <p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Busca opcional no PubChem</p>
+                                        <p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Espaços químicos independentes</p>
                                         <h2 class="text-3xl font-black text-slate-800">Espaço Químico</h2>
                                     </div>
                                     <span id="nitro-space-status" class="cpca-status">—</span>
                                 </div>
-                                <p id="nitro-space-message" class="text-sm leading-6 text-slate-600 mb-6">Selecione o checkbox para buscar compostos estruturalmente semelhantes.</p>
-                                <div class="nitro-space-summary">
-                                    <div class="nitro-space-summary-card"><span>CIDs analisados</span><strong id="nitro-space-retrieved">—</strong></div>
-                                    <div class="nitro-space-summary-card"><span>N-nitroso encontrados</span><strong id="nitro-space-filtered">—</strong></div>
-                                    <div class="nitro-space-summary-card"><span>Selecionados</span><strong id="nitro-space-selected">—</strong></div>
-                                </div>
-                                <div class="nitro-space-chart-wrap mt-6">
-                                    <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
-                                        <h3 class="section-title mb-0"><i class="fas fa-chart-scatter theme-accent-text"></i> Mapa PCA do espaço químico</h3>
-                                        <span class="cpca-metric-label">Descritores físico-químicos normalizados</span>
+                                <p id="nitro-space-message" class="text-sm leading-6 text-slate-600 mb-6">Selecione o checkbox para consultar o espaço químico.</p>
+
+                                <section class="nitro-space-subpanel">
+                                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                                        <div>
+                                            <p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Lote relativo</p>
+                                            <h3 class="section-title mb-0"><i class="fas fa-cloud theme-accent-text"></i> PubChem — vizinhança relativa</h3>
+                                        </div>
+                                        <span class="nitro-space-muted">Até 40 CIDs recuperados · 10 menores distâncias exibidas</span>
                                     </div>
-                                    <div id="nitro-space-chart" class="nitro-space-chart" aria-label="Gráfico PCA de nitrosaminas"></div>
-                                    <div class="nitro-space-legend"><span><i class="target"></i> Molécula alvo</span><span><i></i> Nitrosaminas similares</span></div>
-                                </div>
-                                <div class="mt-6 rounded-2xl border border-slate-100 bg-white/55 p-5">
-                                    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-                                        <h3 class="section-title mb-0"><i class="fas fa-table-list theme-accent-text"></i> Candidatos selecionados</h3>
-                                        <span id="nitro-space-selection-method" class="nitro-space-muted"></span>
+                                    <div class="nitro-space-summary">
+                                        <div class="nitro-space-summary-card"><span>CIDs analisados</span><strong id="nitro-space-retrieved">—</strong></div>
+                                        <div class="nitro-space-summary-card"><span>N-nitroso encontrados</span><strong id="nitro-space-filtered">—</strong></div>
+                                        <div class="nitro-space-summary-card"><span>Exibidos</span><strong id="nitro-space-selected">—</strong></div>
                                     </div>
-                                    <div id="nitro-space-table" class="nitro-space-table-wrap"></div>
-                                </div>
-                                <div id="nitro-space-warnings" class="mt-6 rounded-2xl border border-amber-200 bg-amber-50/60 p-5 text-sm leading-6 text-amber-800"></div>
+                                    <div class="nitro-space-chart-wrap mt-6">
+                                        <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+                                            <h4 class="section-title mb-0"><i class="fas fa-chart-scatter theme-accent-text"></i> Mapa MDS</h4>
+                                            <span class="cpca-metric-label">MACCS/Tanimoto + seis descritores</span>
+                                        </div>
+                                        <div id="nitro-space-chart" class="nitro-space-chart" aria-label="Gráfico MDS do espaço químico PubChem"></div>
+                                        <div class="nitro-space-legend"><span><i class="target"></i> Molécula alvo</span><span><i></i> Nitrosaminas similares</span></div>
+                                    </div>
+                                    <div class="mt-6 rounded-2xl border border-slate-100 bg-white/55 p-5">
+                                        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                                            <h4 class="section-title mb-0"><i class="fas fa-table-list theme-accent-text"></i> 10 mais próximas no PubChem</h4>
+                                            <span id="nitro-space-selection-method" class="nitro-space-muted"></span>
+                                        </div>
+                                        <div id="nitro-space-table" class="nitro-space-table-wrap"></div>
+                                    </div>
+                                    <div id="nitro-space-warnings" class="mt-6 rounded-2xl border border-amber-200 bg-amber-50/60 p-5 text-sm leading-6 text-amber-800"></div>
+                                </section>
+
+                                <section class="nitro-space-subpanel nitro-space-subpanel--ema mt-8">
+                                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                                        <div>
+                                            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-amber-700">Biblioteca de referência</p>
+                                            <h3 class="section-title mb-0"><i class="fas fa-landmark text-amber-700"></i> EMA Appendix 1 — referência</h3>
+                                        </div>
+                                        <span class="nitro-space-muted">N-nitrosamines · z-score fixo · 10 menores distâncias exibidas</span>
+                                    </div>
+                                    <p id="nitro-ema-space-message" class="text-sm leading-6 text-slate-600 mb-4">Biblioteca EMA local.</p>
+                                    <div class="nitro-space-summary">
+                                        <div class="nitro-space-summary-card"><span>Biblioteca EMA</span><strong id="nitro-ema-space-library">—</strong></div>
+                                        <div class="nitro-space-summary-card"><span>Avaliadas</span><strong id="nitro-ema-space-scored">—</strong></div>
+                                        <div class="nitro-space-summary-card"><span>Exibidas</span><strong id="nitro-ema-space-selected">—</strong></div>
+                                    </div>
+                                    <div class="nitro-space-chart-wrap mt-6">
+                                        <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+                                            <h4 class="section-title mb-0"><i class="fas fa-chart-scatter text-amber-700"></i> Mapa MDS EMA</h4>
+                                            <span id="nitro-ema-space-profile" class="cpca-metric-label">z-score fixo da biblioteca</span>
+                                        </div>
+                                        <div id="nitro-ema-space-chart" class="nitro-space-chart" aria-label="Gráfico MDS da biblioteca EMA"></div>
+                                        <div class="nitro-space-legend"><span><i class="target"></i> Molécula alvo</span><span><i style="background:#d97706"></i> Referências EMA</span></div>
+                                    </div>
+                                    <div class="mt-6 rounded-2xl border border-amber-100 bg-white/60 p-5">
+                                        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                                            <h4 class="section-title mb-0"><i class="fas fa-table-list text-amber-700"></i> 10 mais próximas na EMA</h4>
+                                            <span id="nitro-ema-space-selection-method" class="nitro-space-muted"></span>
+                                        </div>
+                                        <div id="nitro-ema-space-table" class="nitro-space-table-wrap"></div>
+                                    </div>
+                                    <div id="nitro-ema-space-warnings" class="mt-6 rounded-2xl border border-amber-200 bg-amber-50/60 p-5 text-sm leading-6 text-amber-800"></div>
+                                </section>
+                            </div>
                             </div>
                         </div>
                     </div>
@@ -1829,6 +1872,69 @@
             return Number.isFinite(number) ? number.toLocaleString('pt-BR', { maximumFractionDigits: digits }) : safeText(value);
         }
 
+        function renderNitroSpaceChart(elementId, space, candidateColor, ariaLabel, emptyMessage) {
+            const chart = document.getElementById(elementId);
+            if (!chart) return;
+            const points = Array.isArray(space?.points) ? space.points : [];
+            if (!points.length) {
+                chart.innerHTML = `<div class="nitro-space-muted p-6">${escapeHtml(emptyMessage)}</div>`;
+                return;
+            }
+            const width = 760;
+            const height = 360;
+            const padding = { left: 58, right: 24, top: 24, bottom: 46 };
+            const xs = points.map(point => Number(point.x) || 0);
+            const ys = points.map(point => Number(point.y) || 0);
+            const minX = Math.min(...xs, 0);
+            const maxX = Math.max(...xs, 0);
+            const minY = Math.min(...ys, 0);
+            const maxY = Math.max(...ys, 0);
+            const rangeX = maxX - minX || 1;
+            const rangeY = maxY - minY || 1;
+            const plotX = value => padding.left + ((value - minX) / rangeX) * (width - padding.left - padding.right);
+            const plotY = value => height - padding.bottom - ((value - minY) / rangeY) * (height - padding.top - padding.bottom);
+            const zeroX = plotX(0);
+            const zeroY = plotY(0);
+            const circles = points.map((point, index) => {
+                const x = plotX(Number(point.x) || 0);
+                const y = plotY(Number(point.y) || 0);
+                const fill = point.is_target ? 'var(--theme-accent-secondary)' : candidateColor;
+                const radius = point.is_target ? 8 : 5;
+                const label = point.is_target ? 'Alvo' : `${index}`;
+                return `<g><circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${radius}" fill="${fill}" stroke="white" stroke-width="2"><title>${escapeHtml(point.name || label)}</title></circle><text x="${(x + 9).toFixed(2)}" y="${(y - 8).toFixed(2)}" font-size="10" fill="var(--text-700)">${escapeHtml(label)}</text></g>`;
+            }).join('');
+            chart.innerHTML = `<svg class="nitro-space-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(ariaLabel)}"><line x1="${padding.left}" y1="${zeroY.toFixed(2)}" x2="${width - padding.right}" y2="${zeroY.toFixed(2)}" stroke="var(--line-soft)"/><line x1="${zeroX.toFixed(2)}" y1="${padding.top}" x2="${zeroX.toFixed(2)}" y2="${height - padding.bottom}" stroke="var(--line-soft)"/><text x="${width / 2}" y="${height - 12}" text-anchor="middle" font-size="11" fill="var(--theme-muted-text)">Coordenada MDS 1</text><text x="16" y="${height / 2}" text-anchor="middle" font-size="11" fill="var(--theme-muted-text)" transform="rotate(-90 16 ${height / 2})">Coordenada MDS 2</text>${circles}</svg>`;
+        }
+
+        function renderNitroSpaceTable(elementId, space, sourceLabel) {
+            const table = document.getElementById(elementId);
+            if (!table) return;
+            const candidates = Array.isArray(space?.candidates) ? space.candidates : [];
+            if (!candidates.length) {
+                table.innerHTML = `<div class="nitro-space-muted p-6">${escapeHtml(space?.message || `Nenhuma estrutura elegível foi encontrada na fonte ${sourceLabel}.`)}</div>`;
+                return;
+            }
+            const isEma = sourceLabel === 'EMA';
+            const rows = candidates.map((candidate, index) => {
+                const properties = candidate.properties || {};
+                const image = candidate.svg || '<span class="nitro-space-muted">N/D</span>';
+                const identifier = candidate.cid ? `CID ${candidate.cid}` : (candidate.cas_rn ? `CAS ${candidate.cas_rn}` : `Registro ${index + 1}`);
+                const ai = isEma ? `<td class="numeric">${formatSpaceValue(candidate.ai_ng_day, 0)}${candidate.ai_ng_day == null && candidate.ai_ng_day_raw ? ` (${escapeHtml(candidate.ai_ng_day_raw)})` : ''}</td>` : '';
+                return `<tr><td><div class="nitro-space-thumb">${image}</div></td><td><strong>${escapeHtml(candidate.name || identifier)}</strong><br><span class="nitro-space-muted">${escapeHtml(identifier)}</span></td><td class="numeric">${formatSpaceValue(candidate.similarity)}</td><td class="numeric">${formatSpaceValue(candidate.global_distance)}</td>${ai}<td>${formatSpaceValue(properties['Massa Molecular (g/mol)'], 2)}</td><td>${formatSpaceValue(properties['Coeficiente de Partição (LogP)'], 3)}</td><td>${formatSpaceValue(properties['Área de Superfície Polar (Å²)'], 2)}</td><td>${formatSpaceValue(properties['Ligações rotacionáveis (RotB)'], 0)}</td></tr>`;
+            }).join('');
+            const aiHeader = isEma ? '<th>AI EMA (ng/dia)</th>' : '';
+            table.innerHTML = `<table class="nitro-space-table"><thead><tr><th>Estrutura</th><th>Composto</th><th>Tanimoto</th><th>Distância global</th>${aiHeader}<th>MW</th><th>LogP</th><th>TPSA</th><th>RotB</th></tr></thead><tbody>${rows}</tbody></table>`;
+        }
+
+        function renderNitroSpaceMeta(space, prefix) {
+            const search = space?.search || {};
+            const profile = space?.reference_number ? `${space.reference_number} · ${space.last_updated || 'data n/d'}` : safeText(space?.source, 'Fonte local');
+            const profileElement = document.getElementById(`${prefix}-profile`);
+            if (profileElement) profileElement.textContent = profile;
+            const methodElement = document.getElementById(`${prefix}-selection-method`);
+            if (methodElement) methodElement.textContent = safeText(search.selection_method, 'Distância multimodal e MDS clássico');
+        }
+
         function renderNitrosamineSpaceResults(result) {
             const status = safeText(result?.status, 'no_nitrosamines');
             document.getElementById('nitro-space-status').textContent = nitroSpaceStatusLabel(status);
@@ -1837,53 +1943,24 @@
             document.getElementById('nitro-space-retrieved').textContent = formatSpaceValue(search.retrieved_cids, 0);
             document.getElementById('nitro-space-filtered').textContent = formatSpaceValue(search.n_nitroso_candidates, 0);
             document.getElementById('nitro-space-selected').textContent = formatSpaceValue(search.selected_candidates, 0);
-            document.getElementById('nitro-space-selection-method').textContent = safeText(search.selection_method, '');
-
-            const chart = document.getElementById('nitro-space-chart');
-            const points = Array.isArray(result?.points) ? result.points : [];
-            if (!points.length) {
-                chart.innerHTML = '<div class="nitro-space-muted p-6">O mapa será exibido quando houver candidatos N-nitroso no lote retornado pelo PubChem.</div>';
-            } else {
-                const width = 760;
-                const height = 360;
-                const padding = { left: 58, right: 24, top: 24, bottom: 46 };
-                const xs = points.map(point => Number(point.x) || 0);
-                const ys = points.map(point => Number(point.y) || 0);
-                const minX = Math.min(...xs, 0);
-                const maxX = Math.max(...xs, 0);
-                const minY = Math.min(...ys, 0);
-                const maxY = Math.max(...ys, 0);
-                const rangeX = maxX - minX || 1;
-                const rangeY = maxY - minY || 1;
-                const plotX = value => padding.left + ((value - minX) / rangeX) * (width - padding.left - padding.right);
-                const plotY = value => height - padding.bottom - ((value - minY) / rangeY) * (height - padding.top - padding.bottom);
-                const zeroX = plotX(0);
-                const zeroY = plotY(0);
-                const circles = points.map((point, index) => {
-                    const x = plotX(Number(point.x) || 0);
-                    const y = plotY(Number(point.y) || 0);
-                    const fill = point.is_target ? 'var(--theme-accent-secondary)' : 'var(--theme-accent-strong)';
-                    const radius = point.is_target ? 8 : 5;
-                    const label = point.is_target ? 'Alvo' : `${index}`;
-                    return `<g><circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${radius}" fill="${fill}" stroke="white" stroke-width="2"><title>${escapeHtml(point.name || label)}</title></circle><text x="${(x + 9).toFixed(2)}" y="${(y - 8).toFixed(2)}" font-size="10" fill="var(--text-700)">${escapeHtml(label)}</text></g>`;
-                }).join('');
-                chart.innerHTML = `<svg class="nitro-space-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="PCA do espaço químico de nitrosaminas"><line x1="${padding.left}" y1="${zeroY.toFixed(2)}" x2="${width - padding.right}" y2="${zeroY.toFixed(2)}" stroke="var(--line-soft)"/><line x1="${zeroX.toFixed(2)}" y1="${padding.top}" x2="${zeroX.toFixed(2)}" y2="${height - padding.bottom}" stroke="var(--line-soft)"/><text x="${width / 2}" y="${height - 12}" text-anchor="middle" font-size="11" fill="var(--theme-muted-text)">Componente principal 1</text><text x="16" y="${height / 2}" text-anchor="middle" font-size="11" fill="var(--theme-muted-text)" transform="rotate(-90 16 ${height / 2})">Componente principal 2</text>${circles}</svg>`;
-            }
-
-            const candidates = Array.isArray(result?.candidates) ? result.candidates : [];
-            const table = document.getElementById('nitro-space-table');
-            if (!candidates.length) {
-                table.innerHTML = `<div class="nitro-space-muted p-6">${escapeHtml(result?.message || 'Nenhuma nitrosamina foi encontrada no lote amostrado.')}</div>`;
-            } else {
-                const rows = candidates.map((candidate, index) => {
-                    const properties = candidate.properties || {};
-                    const image = candidate.svg || '<span class="nitro-space-muted">N/D</span>';
-                    return `<tr><td><div class="nitro-space-thumb">${image}</div></td><td><strong>${escapeHtml(candidate.name || `CID ${candidate.cid || index + 1}`)}</strong><br><span class="nitro-space-muted">CID ${escapeHtml(candidate.cid)}</span></td><td class="numeric">${formatSpaceValue(candidate.similarity)}</td><td class="numeric">${formatSpaceValue(candidate.global_distance)}</td><td>${formatSpaceValue(properties['Massa Molecular (g/mol)'], 2)}</td><td>${formatSpaceValue(properties['Coeficiente de Partição (LogP)'], 3)}</td><td>${formatSpaceValue(properties['Área de Superfície Polar (Å²)'], 2)}</td><td>${formatSpaceValue(properties['Ligações rotacionáveis (RotB)'], 0)}</td></tr>`;
-                }).join('');
-                table.innerHTML = `<table class="nitro-space-table"><thead><tr><th>Estrutura</th><th>Composto</th><th>Tanimoto</th><th>Distância global</th><th>MW</th><th>LogP</th><th>TPSA</th><th>RotB</th></tr></thead><tbody>${rows}</tbody></table>`;
-            }
+            const pubchemSpace = result || {};
+            renderNitroSpaceMeta(pubchemSpace, 'nitro-space');
+            renderNitroSpaceChart('nitro-space-chart', pubchemSpace, 'var(--theme-accent-strong)', 'Mapa MDS do espaço químico PubChem', 'O mapa PubChem será exibido quando houver candidatos N-nitroso elegíveis.');
+            renderNitroSpaceTable('nitro-space-table', pubchemSpace, 'PubChem');
             const warnings = Array.isArray(result?.warnings) ? result.warnings : [];
-            document.getElementById('nitro-space-warnings').innerHTML = warnings.length ? `<strong>Avisos:</strong><br>${warnings.map(escapeHtml).join('<br>')}` : '';
+            document.getElementById('nitro-space-warnings').innerHTML = warnings.length ? `<strong>Avisos PubChem:</strong><br>${warnings.map(escapeHtml).join('<br>')}` : '';
+
+            const emaSpace = result?.ema_space || { status: 'ema_reference_unavailable', message: 'Resultado EMA indisponível.', candidates: [], points: [], warnings: [] };
+            const emaSearch = emaSpace.search || {};
+            document.getElementById('nitro-ema-space-message').textContent = safeText(emaSpace.message, 'Biblioteca EMA local.');
+            document.getElementById('nitro-ema-space-library').textContent = formatSpaceValue(emaSearch.library_size, 0);
+            document.getElementById('nitro-ema-space-scored').textContent = formatSpaceValue(emaSearch.scored_candidates, 0);
+            document.getElementById('nitro-ema-space-selected').textContent = formatSpaceValue(emaSearch.selected_candidates, 0);
+            renderNitroSpaceMeta(emaSpace, 'nitro-ema-space');
+            renderNitroSpaceChart('nitro-ema-space-chart', emaSpace, '#d97706', 'Mapa MDS da biblioteca EMA', 'O mapa EMA será exibido quando a biblioteca de referência estiver disponível.');
+            renderNitroSpaceTable('nitro-ema-space-table', emaSpace, 'EMA');
+            const emaWarnings = Array.isArray(emaSpace.warnings) ? emaSpace.warnings : [];
+            document.getElementById('nitro-ema-space-warnings').innerHTML = emaWarnings.length ? `<strong>Avisos EMA:</strong><br>${emaWarnings.map(escapeHtml).join('<br>')}` : '';
         }
 
         function renderNitroSpaceNotSelected() {
@@ -1893,6 +1970,7 @@
                 search: {},
                 candidates: [],
                 points: [],
+                ema_space: { status: 'not_selected', message: 'O espaço EMA não foi selecionado para esta análise.', candidates: [], points: [], warnings: [] },
                 warnings: []
             });
         }
@@ -2281,7 +2359,10 @@
                 },
             });
             document.getElementById('chemical-space-method').textContent = safeText(space.method, 'MDS clássico');
-            document.getElementById('chemical-space-note').textContent = `${points.length} pontos válidos, incluindo a referência. MDS (*Multidimensional Scaling*) posiciona os pontos em 2D para aproximar as distâncias globais; X/Y são coordenadas relativas e podem ser positivas ou negativas. Dist.FQ = norma Euclidiana dos Z-scores de MM, LogP, TPSA, HBD, HBA e RotB; a distância global usa 60% estrutural e 40% Dist.FQ normalizada. A projeção serve para triagem e não substitui análise estrutural detalhada.`;
+            const totalPoints = Number(space.total_valid_points) || points.length;
+            const displayedNeighbors = Math.max(0, points.length - 1);
+            const availableNeighbors = Math.max(0, totalPoints - 1);
+            document.getElementById('chemical-space-note').textContent = `${displayedNeighbors} vizinhos exibidos entre ${availableNeighbors} válidos; MDS (*Multidimensional Scaling*) posiciona os pontos em 2D para aproximar as distâncias globais. Fórmula: ${safeText(space.distance_formula, '60% de distância estrutural + 40% de Dist.FQ normalizada')}. Dist.FQ usa Z-scores de MW, LogP, TPSA, HBD, HBA e RotB. A projeção serve para triagem e não substitui análise estrutural detalhada.`;
             panel.classList.remove('hidden');
         }
 

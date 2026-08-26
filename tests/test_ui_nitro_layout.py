@@ -27,6 +27,11 @@ def test_nitro_module_order_and_labels_are_stable():
     assert "Espaço Químico</strong><small>PubChem e similaridade" in checks
     assert "Espaço Químico</button>" in tabs
     assert "<th>RotB</th>" in html
+    assert 'id="nitro-space-chart"' in html
+    assert 'id="nitro-ema-space-chart"' in html
+    assert "PubChem — vizinhança relativa" in html
+    assert "EMA Appendix 1 — referência" in html
+    assert "10 menores distâncias exibidas" in html
 
 
 def test_module_switch_has_local_display_fallback():

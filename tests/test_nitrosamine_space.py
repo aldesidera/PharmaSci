@@ -1,5 +1,9 @@
 from chemo_suite.apps.nitro_ra import nitrosamine_space
 
+from rdkit import Chem
+
+from analysis import get_properties
+
 
 def _property_item(cid, smiles, title):
     return {
@@ -98,3 +102,53 @@ def test_search_reports_no_nitrosamine_after_filter(monkeypatch):
     assert len(result["points"]) == 1
     assert result["points"][0]["is_target"] is True
     assert "Nenhuma nitrosamina" in result["message"]
+
+
+def test_pubchem_caps_retrieval_and_selects_ten_after_multimodal_scoring(monkeypatch):
+    candidate_smiles = [f"O=NN1{'C' * ring_size}1" for ring_size in range(3, 16) if ring_size != 5]
+    cids = list(range(301, 301 + len(candidate_smiles)))
+
+    def fake_get_json(url):
+        if "/cids/JSON" in url:
+            return {"IdentifierList": {"CID": cids}}, None
+        return {
+            "PropertyTable": {
+                "Properties": [
+                    _property_item(cid, smiles, f"N-nitroso-{cid}")
+                    for cid, smiles in zip(cids, candidate_smiles)
+                ]
+            }
+        }, None
+
+    monkeypatch.setattr(nitrosamine_space, "_get_json", fake_get_json)
+    result = nitrosamine_space.search_nitrosamine_space(
+        "O=NN1CCCCC1", threshold=70, max_records=100, max_candidates=10
+    )
+
+    assert result["status"] == "ok"
+    assert result["search"]["max_records"] == 40
+    assert result["search"]["retrieved_cids"] == len(cids)
+    assert result["search"]["n_nitroso_candidates"] == len(cids)
+    assert result["search"]["scored_candidates"] == len(cids)
+    assert result["search"]["selected_candidates"] == 10
+    assert len(result["candidates"]) == 10
+    assert len(result["points"]) == 11
+    assert result["search"]["display_limit"] == 10
+    distances = [candidate["global_distance"] for candidate in result["candidates"]]
+    assert distances == sorted(distances)
+
+
+def test_ema_reference_space_is_offline_fixed_and_limited_to_ten():
+    target_mol = Chem.MolFromSmiles("O=NN1CCCCC1")
+    result = nitrosamine_space._ema_space(target_mol, get_properties(target_mol) or {})
+
+    assert result["status"] == "ok"
+    assert result["source"] == "EMA Appendix 1"
+    assert result["sheet"] == "N-nitrosamines"
+    assert result["search"]["profile_n_structures"] == 243
+    assert result["search"]["library_size"] == 243
+    assert result["search"]["selected_candidates"] == 10
+    assert len(result["candidates"]) == 10
+    assert len(result["points"]) == 11
+    assert result["search"]["fq_normalizer"] > 0
+    assert all(candidate["source"] == "EMA Appendix 1" for candidate in result["candidates"])

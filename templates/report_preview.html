@@ -462,7 +462,7 @@
                 {% endfor %}
                 <div class="chemical-space-report-card">
                     <p><strong>Projeção:</strong> {{ report.get('chemical_space', {}).get('method', 'MDS clássico sobre distância composta') }}.</p>
-                    <p><strong>Fórmula:</strong> 60% de distância estrutural + 40% de Dist.FQ normalizada. A Dist.FQ reproduz o Excel com Z-scores de MM, LogP, TPSA, HBD, HBA e RotB.</p>
+                    <p><strong>Fórmula:</strong> 60% de distância estrutural + 40% de Dist.FQ normalizada, combinadas quadraticamente: sqrt(0,6 × D_struct² + 0,4 × D_FQ²). A Dist.FQ usa Z-scores populacionais de MW, LogP, TPSA, HBD, HBA e RotB; o gráfico exibe os 10 vizinhos mais próximos.</p>
                     <svg class="chemical-space-report-svg" viewBox="0 0 920 410" role="img" aria-label="Espaço químico 2D">
                         <line x1="460" y1="15" x2="460" y2="395" stroke="#cbd5e1" stroke-width="1" />
                         <line x1="20" y1="205" x2="900" y2="205" stroke="#cbd5e1" stroke-width="1" />
@@ -476,7 +476,7 @@
                             <text x="{{ '%.2f'|format(px + 8) }}" y="{{ '%.2f'|format(py - 7) }}" font-size="9" fill="#1e293b">{{ point.get('name', '-')|truncate(24, True, '…') }}</text>
                         {% endfor %}
                     </svg>
-                    <div class="space-legend"><span style="color:#f97316;">●</span> Referência &nbsp;&nbsp; <span style="color:#2563eb;">●</span> Moléculas do lote. A projeção é uma ferramenta de triagem visual.</div>
+                    <div class="space-legend"><span style="color:#f97316;">●</span> Referência &nbsp;&nbsp; <span style="color:#2563eb;">●</span> 10 vizinhos mais próximos do lote. A projeção é uma ferramenta de triagem visual.</div>
                     <table class="chemical-space-report-table">
                         <thead><tr><th>Molécula</th><th>Dist.FQ normalizada</th><th>Distância global</th><th>RotB</th></tr></thead>
                         <tbody>

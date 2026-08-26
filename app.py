@@ -506,8 +506,8 @@ def api_bulk_compare():
                 data["smiles_list"],
                 data.get("names_list"),
                 results or [],
-                data.get("fp_type", "Morgan2"),
-                data["metric"],
+                "MACCS",
+                "Tanimoto",
             )
         return jsonify(payload), 200
     except Exception:

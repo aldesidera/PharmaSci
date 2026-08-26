@@ -65,3 +65,18 @@ def test_batch_report_preview_includes_chemical_space_section():
     assert "60% de distância estrutural + 40% de Dist.FQ normalizada" in html
     assert "RotB" in html
     assert "chemical-space-report-svg" in html
+
+
+def test_build_chemical_space_displays_at_most_ten_nearest_neighbors():
+    smiles_list = ["C" * length for length in range(2, 14)]
+    names = [f"Mol_{index}" for index in range(len(smiles_list))]
+    results, error = bulk_compare("CCO", smiles_list, names, "MACCS", "Tanimoto")
+    assert error is None
+
+    space = build_chemical_space("CCO", smiles_list, names, results, "MACCS", "Tanimoto")
+
+    assert space["display_limit"] == 10
+    assert space["total_valid_points"] == len(results) + 1
+    assert len(space["points"]) == 11
+    assert space["points"][0]["role"] == "reference"
+    assert space["displayed_candidates"] == 10
