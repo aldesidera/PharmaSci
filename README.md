@@ -33,7 +33,7 @@ Esta documentação reflete o estado atual do projeto em desenvolvimento: funcio
 - ✅ Nitro.RA: seleção de cPCA, Quantum, Metabolism e busca opcional de nitrosaminas para o mesmo SMILES
 - ✅ Nitro.RA: quatro abas de resultados independentes; cPCA e Metabolism funcionais, Quantum preparado para evolução
 - ✅ Nitro.RA cPCA: estrutura química, limite FDA, motivos do resultado e lookup do AI EMA Appendix 1
-- ✅ Nitro.RA espaço químico: busca PubChem, filtro N-nitroso por RDKit, ranking MACCS/Tanimoto, distância global de descritores e mapa PCA
+- ✅ Nitro.RA espaço químico: busca PubChem, filtro N-nitroso por RDKit, ranking MACCS/Tanimoto, descritores MW/LogP/TPSA/HBD/HBA/RotB, distância físico-química e mapa PCA
 - ✅ Nitro.RA Metabolism: predição estrutural CYP450 por α-hidroxilação, sítios alfa vulneráveis, metabólitos de Fase I e intermediários diazônio hipotéticos
 
 ---
@@ -271,8 +271,8 @@ Atenção:
 - Quando cPCA é selecionado, o resultado inclui `structure_svg`, `canonical_smiles` e o objeto `ema`
 - O objeto `ema` consulta o snapshot `EMA/42261/2025 Rev.13`, atualizado em 24/06/2026, por SMILES canônico
 - Uma estrutura ausente do Appendix 1 retorna `ema.status: not_listed`; o sistema não infere AI EMA a partir da categoria FDA
-- `nitrosamine_space` consulta, sob demanda, a similaridade 2D do [PubChem PUG REST](https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest), filtra `[N;X3][N;X2]=O`, seleciona até 10 candidatos e retorna descritores, Tanimoto, distância global e pontos PCA
-- O PubChem fornece o lote de CIDs; o ranking final de Tanimoto é recalculado localmente com MACCS, usando o pipeline de similaridade do Mol.Sim, e a seleção final também considera a distância global normalizada
+- `nitrosamine_space` consulta, sob demanda, a similaridade 2D do [PubChem PUG REST](https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest), filtra `[N;X3][N;X2]=O`, seleciona até 10 candidatos e retorna descritores, Tanimoto, distância físico-química e pontos PCA
+- O PubChem fornece o lote de CIDs; o ranking de Tanimoto é recalculado localmente com MACCS, usando o pipeline de similaridade do Mol.Sim, e a seleção final também considera a distância físico-química min–max calculada com MW, LogP, TPSA, HBD, HBA e RotB
 - Falhas de rede/timeout retornam `status: pubchem_unavailable`; nenhum resultado retorna `status: no_nitrosamines`; esses estados não bloqueiam o cPCA nem inventam candidatos
 - Metabolism pode retornar `not_nitrosamine`, `no_alpha_sites` ou `invalid_smiles`; N-nitrosos aromáticos reconhecidos sem carbono α sp3 retornam `no_alpha_sites`; quando `ok`, informa `alpha_sites`, `metabolites`, `reactive_intermediates`, `rule_id`, contexto enzimático e avisos de triagem
 - O complemento Deep-PK não é incluído em `modules` do endpoint local; quando selecionado na UI, o frontend chama `/nitro-ra/deep-pk` depois da resposta local e consulta `/nitro-ra/deep-pk/<job_id>` até concluir ou atingir o limite de espera

@@ -35,6 +35,7 @@ DESCRIPTOR_KEYS = (
     "Área de Superfície Polar (Å²)",
     "Doadores de H (HBD)",
     "Receptores de H (HBA)",
+    "Ligações rotacionáveis (RotB)",
 )
 
 _HTTP_CACHE: Dict[str, Tuple[float, Any]] = {}
@@ -314,7 +315,7 @@ def search_nitrosamine_space(
             "selected_candidates": len(candidates),
             "search_url": search_url,
             "fingerprint": SPACE_FINGERPRINT,
-            "selection_method": "Filtro SMARTS [N;X3][N;X2]=O + MACCS/Tanimoto + distância euclidiana normalizada dos descritores",
+            "selection_method": "Filtro SMARTS [N;X3][N;X2]=O + MACCS/Tanimoto + distância euclidiana min–max dos descritores (MW, LogP, TPSA, HBD, HBA e RotB)",
         },
         "descriptor_keys": list(DESCRIPTOR_KEYS),
         "candidates": candidates,

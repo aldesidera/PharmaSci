@@ -26,6 +26,7 @@ def test_nitro_module_order_and_labels_are_stable():
     assert [tabs.index(value) for value in tab_order] == sorted(tabs.index(value) for value in tab_order)
     assert "Espaço Químico</strong><small>PubChem e similaridade" in checks
     assert "Espaço Químico</button>" in tabs
+    assert "<th>RotB</th>" in html
 
 
 def test_module_switch_has_local_display_fallback():

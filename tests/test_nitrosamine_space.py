@@ -57,7 +57,10 @@ def test_search_filters_n_nitroso_and_builds_space(monkeypatch):
     assert fingerprint_types and set(fingerprint_types) == {"MACCS"}
     assert result["search"]["fingerprint"] == "MACCS"
     assert all(candidate["fingerprint"] == "MACCS" for candidate in result["candidates"])
+    assert "Ligações rotacionáveis (RotB)" in result["descriptor_keys"]
+    assert all("Ligações rotacionáveis (RotB)" in candidate["properties"] for candidate in result["candidates"])
     assert result["search"]["selection_method"].startswith("Filtro SMARTS [N;X3][N;X2]=O + MACCS/Tanimoto")
+    assert "RotB" in result["search"]["selection_method"]
 
 
 def test_search_handles_pubchem_failure(monkeypatch):

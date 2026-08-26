@@ -1878,9 +1878,9 @@
                 const rows = candidates.map((candidate, index) => {
                     const properties = candidate.properties || {};
                     const image = candidate.svg || '<span class="nitro-space-muted">N/D</span>';
-                    return `<tr><td><div class="nitro-space-thumb">${image}</div></td><td><strong>${escapeHtml(candidate.name || `CID ${candidate.cid || index + 1}`)}</strong><br><span class="nitro-space-muted">CID ${escapeHtml(candidate.cid)}</span></td><td class="numeric">${formatSpaceValue(candidate.similarity)}</td><td class="numeric">${formatSpaceValue(candidate.global_distance)}</td><td>${formatSpaceValue(properties['Massa Molecular (g/mol)'], 2)}</td><td>${formatSpaceValue(properties['Coeficiente de Partição (LogP)'], 3)}</td><td>${formatSpaceValue(properties['Área de Superfície Polar (Å²)'], 2)}</td></tr>`;
+                    return `<tr><td><div class="nitro-space-thumb">${image}</div></td><td><strong>${escapeHtml(candidate.name || `CID ${candidate.cid || index + 1}`)}</strong><br><span class="nitro-space-muted">CID ${escapeHtml(candidate.cid)}</span></td><td class="numeric">${formatSpaceValue(candidate.similarity)}</td><td class="numeric">${formatSpaceValue(candidate.global_distance)}</td><td>${formatSpaceValue(properties['Massa Molecular (g/mol)'], 2)}</td><td>${formatSpaceValue(properties['Coeficiente de Partição (LogP)'], 3)}</td><td>${formatSpaceValue(properties['Área de Superfície Polar (Å²)'], 2)}</td><td>${formatSpaceValue(properties['Ligações rotacionáveis (RotB)'], 0)}</td></tr>`;
                 }).join('');
-                table.innerHTML = `<table class="nitro-space-table"><thead><tr><th>Estrutura</th><th>Composto</th><th>Tanimoto</th><th>Distância global</th><th>MW</th><th>LogP</th><th>TPSA</th></tr></thead><tbody>${rows}</tbody></table>`;
+                table.innerHTML = `<table class="nitro-space-table"><thead><tr><th>Estrutura</th><th>Composto</th><th>Tanimoto</th><th>Distância global</th><th>MW</th><th>LogP</th><th>TPSA</th><th>RotB</th></tr></thead><tbody>${rows}</tbody></table>`;
             }
             const warnings = Array.isArray(result?.warnings) ? result.warnings : [];
             document.getElementById('nitro-space-warnings').innerHTML = warnings.length ? `<strong>Avisos:</strong><br>${warnings.map(escapeHtml).join('<br>')}` : '';
