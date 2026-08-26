@@ -63,3 +63,15 @@ def test_molsim_space_text_excludes_external_sources():
     space_end = html.index('id="batch-properties-panel"')
     space_section = html[space_start:space_end]
     assert "não consulta PubChem nem EMA" in space_section
+
+
+def test_logo_switch_has_explicit_active_and_inactive_visibility_rules():
+    html = TEMPLATE.read_text(encoding="utf-8")
+    assert ".brand-logo-image" in html
+    assert "display: none;" in html
+    assert ".brand-visual.is-molsim .brand-logo-image--molsim" in html
+    assert ".brand-visual.is-nitro .brand-logo-image--nitro" in html
+    assert ".brand-visual.is-molsim .brand-logo-image--nitro" in html
+    assert ".brand-visual.is-nitro .brand-logo-image--molsim" in html
+    assert "if (brandVisual)" in html
+    assert "brandVisual.classList.toggle('is-nitro', activeApp === 'nitro')" in html
