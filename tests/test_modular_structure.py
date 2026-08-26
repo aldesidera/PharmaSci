@@ -67,5 +67,7 @@ def test_nitro_ra_scaffold_contracts():
     assert cpca["status"] == "not_nitrosamine"
     assert cpca["module"] == "cpca"
     assert quantum["status"] == "not_implemented"
-    assert metabolism["status"] == "not_implemented"
+    assert metabolism["status"] == "not_nitrosamine"
+    assert metabolism["alpha_sites"] == []
+    assert metabolism["metabolites"] == []
 

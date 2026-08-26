@@ -711,7 +711,37 @@
         .nitro-pending-state i { color: var(--theme-accent-strong); font-size: 2rem; }
         .nitro-pending-state strong { color: var(--text-700); font-size: 1.1rem; }
         .nitro-pending-state p { max-width: 32rem; color: var(--theme-muted-text); font-size: 0.86rem; line-height: 1.6; }
+        .metabolism-summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+        .metabolism-summary-card { border: 1px solid var(--theme-panel-border); border-radius: 1.25rem; padding: 1rem; background: color-mix(in srgb, var(--theme-accent-soft) 42%, white 58%); }
+        .metabolism-summary-card span { color: var(--theme-muted-text); font-size: 0.64rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; }
+        .metabolism-summary-card strong { display: block; margin-top: 0.35rem; color: var(--theme-accent-strong); font-size: 1.35rem; font-weight: 900; }
+        .metabolism-target-card, .metabolism-section-card { border: 1px solid var(--theme-panel-border); border-radius: 1.5rem; padding: 1.25rem; background: rgba(255,255,255,0.68); }
+        .metabolism-target-grid { display: grid; grid-template-columns: minmax(12rem, 0.85fr) minmax(0, 1.15fr); gap: 1.25rem; align-items: center; }
+        .metabolism-target-svg { display: grid; min-height: 12rem; place-items: center; overflow: hidden; border-radius: 1.1rem; background: rgba(255,255,255,0.76); }
+        .metabolism-target-svg svg { width: 100%; height: 100%; min-height: 12rem; display: block; }
+        .metabolism-meta-label { color: var(--theme-muted-text); font-size: 0.64rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; }
+        .metabolism-meta-value { margin-top: 0.4rem; color: var(--text-700); font-size: 0.78rem; line-height: 1.55; }
+        .metabolism-smiles { display: block; overflow-wrap: anywhere; color: var(--theme-accent-strong); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.7rem; line-height: 1.45; }
+        .metabolism-table-wrap { overflow-x: auto; border: 1px solid var(--theme-panel-border); border-radius: 1.25rem; background: rgba(255,255,255,0.72); }
+        .metabolism-table { width: 100%; min-width: 62rem; border-collapse: collapse; font-size: 0.72rem; }
+        .metabolism-table th { padding: 0.8rem; color: var(--theme-muted-text); background: var(--theme-accent-soft); font-size: 0.62rem; font-weight: 900; letter-spacing: 0.12em; text-align: left; text-transform: uppercase; }
+        .metabolism-table td { border-top: 1px solid var(--line-soft); padding: 0.8rem; color: var(--text-700); vertical-align: top; }
+        .metabolism-table td.numeric { color: var(--theme-accent-strong); font-weight: 900; }
+        .metabolism-product-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+        .metabolism-product-card { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 1rem; align-items: center; border: 1px solid var(--theme-panel-border); border-radius: 1.25rem; padding: 0.9rem; background: color-mix(in srgb, var(--theme-accent-soft) 25%, white 75%); }
+        .metabolism-product-svg { display: grid; width: 7rem; height: 5rem; place-items: center; overflow: hidden; border-radius: 0.9rem; background: rgba(255,255,255,0.84); }
+        .metabolism-product-svg svg { width: 100%; height: 100%; display: block; }
+        .metabolism-product-title { color: var(--text-700); font-size: 0.78rem; font-weight: 900; }
+        .metabolism-product-kind { margin-top: 0.2rem; color: var(--theme-muted-text); font-size: 0.64rem; line-height: 1.4; }
+        .metabolism-warning { border: 1px solid rgba(245,158,11,0.35); border-radius: 1.25rem; padding: 1rem 1.1rem; color: #92400e; background: rgba(255,251,235,0.82); font-size: 0.74rem; line-height: 1.55; }
+        .metabolism-disclaimer { color: var(--theme-muted-text); font-size: 0.7rem; line-height: 1.55; }
+        @media (max-width: 900px) {
+            .metabolism-target-grid { grid-template-columns: 1fr; }
+            .metabolism-product-grid { grid-template-columns: 1fr; }
+        }
         @media (max-width: 640px) {
+            .metabolism-summary-grid { grid-template-columns: 1fr; }
+
             .nitro-module-checks { grid-template-columns: 1fr; }
             .nitro-tab { flex-basis: 7.5rem; }
         }
@@ -1084,7 +1114,7 @@
                                 <div class="nitro-pending-state"><i class="fas fa-atom"></i><strong>Quantum em desenvolvimento</strong><p>O resultado desta aba ficará reservado para a futura análise HOMO/LUMO. Nenhum valor é estimado nesta etapa.</p></div>
                             </div>
                             <div id="nitro-panel-metabolism" class="nitro-tab-panel hidden" role="tabpanel">
-                                <div class="nitro-pending-state"><i class="fas fa-dna"></i><strong>Metabolism em desenvolvimento</strong><p>O resultado desta aba ficará reservado para a futura predição CYP450. Nenhum valor é estimado nesta etapa.</p></div>
+                                <div class="nitro-pending-state"><i class="fas fa-dna"></i><strong>Predição CYP450</strong><p>Selecione Metabolism e execute a análise para gerar hipóteses de α-hidroxilação, metabólitos de Fase I e intermediários alquilantes hipotéticos.</p></div>
                             </div>
                             <div id="nitro-panel-nitrosamine_space" class="nitro-tab-panel hidden" role="tabpanel">
                                 <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -1854,6 +1884,49 @@
             return `<div class="nitro-pending-state"><i class="fas ${icons[moduleName] || 'fa-flask'}"></i><strong>${escapeHtml(title)}</strong><p>${escapeHtml(message)}</p></div>`;
         }
 
+        function metabolismStatusLabel(status) {
+            const labels = {
+                ok: 'Hipóteses geradas',
+                invalid_smiles: 'Entrada inválida',
+                not_nitrosamine: 'Fora de escopo',
+                no_alpha_sites: 'Sem sítio elegível',
+                not_implemented: 'Em desenvolvimento'
+            };
+            return labels[status] || 'Revisão manual';
+        }
+
+        function renderMetabolismResults(result) {
+            const panel = document.getElementById('nitro-panel-metabolism');
+            if (!panel) return;
+            const status = safeText(result?.status, 'manual_review');
+            const summary = result?.summary || {};
+            const sites = Array.isArray(result?.alpha_sites) ? result.alpha_sites : [];
+            const metabolites = Array.isArray(result?.metabolites) ? result.metabolites : [];
+            const intermediates = Array.isArray(result?.reactive_intermediates) ? result.reactive_intermediates : [];
+            const target = result?.target || {};
+            const targetSmiles = target.canonical_smiles || result?.canonical_smiles || result?.smiles || '—';
+            const targetSvg = target.svg || '<span class="nitro-space-muted">Estrutura indisponível</span>';
+            const enzymes = Array.isArray(result?.enzyme_context) ? result.enzyme_context.join(', ') : '—';
+            const warnings = Array.isArray(result?.warnings) ? result.warnings : [];
+            const siteRows = sites.map((site) => {
+                const metabolite = site.metabolite || {};
+                const intermediate = site.reactive_intermediate || {};
+                const ring = site.is_in_ring ? 'Sim' : 'Não';
+                return `<tr><td class="numeric">C${escapeHtml(site.atom_index_display)}</td><td>${escapeHtml(site.carbon_hydrogens ?? '—')}</td><td>${escapeHtml(ring)}</td><td>${escapeHtml((site.enzyme_hypotheses || []).join(', ') || '—')}</td><td><span class="metabolism-smiles">${escapeHtml(metabolite.smiles || 'N/D')}</span></td><td><span class="metabolism-smiles">${escapeHtml(intermediate.smiles || 'N/D')}</span></td></tr>`;
+            }).join('');
+            const productCards = metabolites.map((metabolite, index) => {
+                const svg = metabolite.svg || '<span class="nitro-space-muted">N/D</span>';
+                const title = metabolite.kind === 'alpha_hydroxynitrosamine' ? `Metabólito ${index + 1} — α-hidroxilação` : `Metabólito ${index + 1}`;
+                return `<article class="metabolism-product-card"><div class="metabolism-product-svg">${svg}</div><div><div class="metabolism-product-title">${escapeHtml(title)}</div><div class="metabolism-product-kind">SMILES gerado</div><code class="metabolism-smiles">${escapeHtml(metabolite.smiles || 'N/D')}</code></div></article>`;
+            }).join('');
+            const intermediateCards = intermediates.map((intermediate, index) => `<div class="metabolism-section-card"><div class="metabolism-product-title">Intermediário diazônio ${index + 1}</div><div class="metabolism-product-kind">Representação mecanística hipotética</div><code class="metabolism-smiles">${escapeHtml(intermediate.smiles || 'N/D')}</code></div>`).join('');
+            const warningBlock = warnings.length ? `<div class="metabolism-warning"><strong>Avisos científicos</strong><br>${warnings.map(escapeHtml).join('<br>')}</div>` : '';
+            const tableBlock = sites.length ? `<div class="metabolism-table-wrap"><table class="metabolism-table"><thead><tr><th>Sítio</th><th>H α</th><th>Anel</th><th>Enzimas em contexto</th><th>SMILES do metabólito</th><th>SMILES do intermediário</th></tr></thead><tbody>${siteRows}</tbody></table></div>` : `<div class="nitro-pending-state"><i class="fas fa-microscope"></i><strong>${escapeHtml(metabolismStatusLabel(status))}</strong><p>${escapeHtml(result?.message || 'Nenhum sítio alfa elegível foi encontrado.')}</p></div>`;
+            const productsBlock = productCards ? `<div class="metabolism-product-grid">${productCards}</div>` : '<p class="metabolism-disclaimer">Nenhum metabólito estruturalmente válido foi gerado.</p>';
+            const intermediatesBlock = intermediateCards ? `<div class="metabolism-product-grid">${intermediateCards}</div>` : '<p class="metabolism-disclaimer">Nenhum intermediário foi representado como SMILES válido.</p>';
+            panel.innerHTML = `<div class="flex flex-wrap items-center justify-between gap-4 mb-6"><div><p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Predição estrutural de Fase I</p><h2 class="text-3xl font-black text-slate-800"><i class="fas fa-dna theme-accent-text"></i> CYP450 — α-hidroxilação</h2></div><span class="cpca-status">${escapeHtml(metabolismStatusLabel(status))}</span></div><p class="text-sm leading-6 text-slate-600 mb-6">${escapeHtml(result?.message || 'Predição metabólica baseada em regras estruturais.')}</p><div class="metabolism-summary-grid mb-6"><div class="metabolism-summary-card"><span>Sítios α candidatos</span><strong>${escapeHtml(summary.alpha_sites ?? sites.length)}</strong></div><div class="metabolism-summary-card"><span>Metabólitos gerados</span><strong>${escapeHtml(summary.metabolites ?? metabolites.length)}</strong></div><div class="metabolism-summary-card"><span>Intermediários hipotéticos</span><strong>${escapeHtml(summary.reactive_intermediates ?? intermediates.length)}</strong></div></div><div class="metabolism-target-card mb-6"><h3 class="section-title mb-4"><i class="fas fa-atom theme-accent-text"></i> Molécula analisada</h3><div class="metabolism-target-grid"><div class="metabolism-target-svg">${targetSvg}</div><div><div class="metabolism-meta-label">SMILES canônico</div><code class="metabolism-smiles metabolism-meta-value">${escapeHtml(targetSmiles)}</code><div class="metabolism-meta-label mt-5">Enzimas em contexto</div><div class="metabolism-meta-value">${escapeHtml(enzymes)}</div><div class="metabolism-meta-label mt-5">Motor</div><div class="metabolism-meta-value">${escapeHtml(result?.engine || 'RDKit rule-based')}</div></div></div></div><div class="metabolism-section-card mb-6"><h3 class="section-title mb-4"><i class="fas fa-location-crosshairs theme-accent-text"></i> Carbonos α metabolicamente vulneráveis</h3>${tableBlock}</div><div class="metabolism-section-card mb-6"><h3 class="section-title mb-4"><i class="fas fa-flask-vial theme-accent-text"></i> Metabólitos de Fase I</h3>${productsBlock}</div><div class="metabolism-section-card mb-6"><h3 class="section-title mb-4"><i class="fas fa-bolt theme-accent-text"></i> Intermediário alquilante</h3>${intermediatesBlock}</div>${warningBlock}<p class="metabolism-disclaimer mt-5">${escapeHtml(result?.disclaimer || 'Resultado in silico de triagem; não substitui confirmação analítica, avaliação toxicológica ou decisão regulatória.')}</p>`;
+        }
+
         function renderNitroResults(payload) {
             document.getElementById('placeholder-results')?.classList.add('hidden');
             document.getElementById('result-content')?.classList.add('hidden');
@@ -1867,7 +1940,8 @@
             if (selectedModules.includes('cpca')) renderCpcaResults(results.cpca || { status: 'manual_review', message: 'Resultado cPCA indisponível.' });
             else renderCpcaNotSelected();
             document.getElementById('nitro-panel-quantum').innerHTML = renderNitroModuleState('quantum', selectedModules.includes('quantum') ? results.quantum : null);
-            document.getElementById('nitro-panel-metabolism').innerHTML = renderNitroModuleState('metabolism', selectedModules.includes('metabolism') ? results.metabolism : null);
+            if (selectedModules.includes('metabolism')) renderMetabolismResults(results.metabolism || { status: 'manual_review', message: 'Resultado metabólico indisponível.' });
+            else document.getElementById('nitro-panel-metabolism').innerHTML = renderNitroModuleState('metabolism', null);
             if (selectedModules.includes('nitrosamine_space')) renderNitrosamineSpaceResults(results.nitrosamine_space || { status: 'no_nitrosamines', message: 'Resultado de espaço químico indisponível.' });
             else renderNitroSpaceNotSelected();
             const firstTab = selectedModules.includes(activeNitroTab) ? activeNitroTab : (selectedModules[0] || 'cpca');

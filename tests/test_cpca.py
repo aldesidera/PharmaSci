@@ -100,7 +100,9 @@ def test_nitro_ra_analyze_returns_one_result_per_selected_module():
     assert payload["modules"] == ["cpca", "quantum", "metabolism"]
     assert payload["results"]["cpca"]["potency_category"] == 3
     assert payload["results"]["quantum"]["status"] == "not_implemented"
-    assert payload["results"]["metabolism"]["status"] == "not_implemented"
+    assert payload["results"]["metabolism"]["status"] == "ok"
+    assert payload["results"]["metabolism"]["summary"]["alpha_sites"] >= 1
+    assert payload["results"]["metabolism"]["summary"]["metabolites"] >= 1
 
 
 def test_nitro_ra_analyze_rejects_missing_or_invalid_modules():

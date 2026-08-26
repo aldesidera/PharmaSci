@@ -31,9 +31,10 @@ Esta documentação reflete o estado atual do projeto em desenvolvimento: funcio
 - ✅ Health check /healthz
 - ✅ Interface responsiva e melhor consistência do estado do cliente
 - ✅ Nitro.RA: seleção de cPCA, Quantum, Metabolism e busca opcional de nitrosaminas para o mesmo SMILES
-- ✅ Nitro.RA: quatro abas de resultados independentes; cPCA funcional e Quantum/Metabolism preparados para evolução
+- ✅ Nitro.RA: quatro abas de resultados independentes; cPCA e Metabolism funcionais, Quantum preparado para evolução
 - ✅ Nitro.RA cPCA: estrutura química, limite FDA, motivos do resultado e lookup do AI EMA Appendix 1
 - ✅ Nitro.RA espaço químico: busca PubChem, filtro N-nitroso por RDKit, ranking MACCS/Tanimoto, distância global de descritores e mapa PCA
+- ✅ Nitro.RA Metabolism: predição estrutural CYP450 por α-hidroxilação, sítios alfa vulneráveis, metabólitos de Fase I e intermediários diazônio hipotéticos
 
 ---
 
@@ -127,6 +128,7 @@ MolSim_ver10/
 │   ├── test_phase1_app.py
 │   ├── test_modular_structure.py
 │   ├── test_cpca.py
+│   ├── test_metabolism.py
 │   └── test_main_cli.py
 ├── chemo_suite/apps/nitro_ra/data/ema_appendix1.json
 
@@ -147,7 +149,7 @@ MolSim_ver10/
 7. No modo batch, informe a referência e a lista de moléculas.
 8. Para o Nitro.RA, ative o módulo, informe um SMILES, marque um ou mais checkboxes e execute as análises.
 9. Navegue pelas abas cPCA, Nitrosaminas e Espaço Químico, Quantum e Metabolism para consultar os resultados separadamente; módulos futuros ficam explicitamente identificados como em desenvolvimento.
-10. Marque `Incluir busca e comparação de Nitrosaminas` quando quiser consultar, sob demanda, compostos semelhantes no PubChem e visualizar o espaço químico.
+10. Marque `Espaço Químico N-nitroso` quando quiser consultar, sob demanda, compostos semelhantes no PubChem e visualizar o espaço químico.
 11. Informe a dose diária máxima em mg/dia quando desejar a conversão do AI para ppm.
 
 ---
@@ -175,6 +177,25 @@ O primeiro módulo científico funcional do Nitro.RA implementa uma triagem estr
 A implementação é deliberadamente conservadora. Estruturas sem centro N-nitroso retornam `not_nitrosamine`; estruturas inválidas retornam `invalid_smiles`; estruturas fora do escopo cPCA ou com padrão não mapeado retornam `manual_review` ou `not_applicable`. A [EMA mantém orientação própria e documentos atualizados para nitrosaminas](https://www.ema.europa.eu/en/human-regulatory-overview/post-authorisation/pharmacovigilance-post-authorisation/referral-procedures-human-medicines/nitrosamine-impurities/nitrosamine-impurities-guidance-marketing-authorisation-holders), portanto o resultado não deve ser tratado como limite universal entre jurisdições.
 
 O cPCA é uma estimativa de triagem para apoio técnico e não substitui avaliação toxicológica, dados composto-específicos, read-across ou decisão regulatória final.
+
+---
+
+## Nitro.RA — Metabolism CYP450
+
+O módulo **Metabolism** implementa uma primeira camada local e determinística de predição estrutural de Fase I. Ele identifica carbonos alifáticos sp3 com pelo menos um hidrogênio diretamente adjacentes ao nitrogênio do grupo N-nitroso e gera hipóteses de **α-hidroxilação CYP450**. Essa escolha é coerente com a literatura que trata a α-hidroxilação como uma etapa crítica da ativação metabólica de N-nitrosaminas, mas a regra não substitui um modelo treinado, dados enzimáticos ou confirmação experimental [1].
+
+Para cada sítio elegível, o endpoint retorna o índice do átomo, hidrogênios α, indicação de anel, contexto enzimático de **CYP2E1/CYP3A4**, regra aplicada, SMILES do produto α-hidroxilado, SVG estrutural e propriedades físico-químicas quando disponíveis. O resultado também inclui uma representação de fragmento diazônio como **intermediário mecanístico hipotético**; essa estrutura é uma hipótese de triagem e não deve ser interpretada como espécie isolada, produto experimental confirmado ou decisão de risco.
+
+A implementação atual usa `prediction_mode: rule_based` e o identificador versionado `CYP450_ALPHA_HYDROXYLATION_N_NITROSO`. O campo `reaction_smarts` mantém a transformação auditável; a aplicação do OH é localizada pelo índice do carbono α para não confundir múltiplas correspondências em substratos assimétricos. O código expõe `predict_cyp450_metabolism(smiles)` e mantém `evaluate_metabolism(smiles)` para compatibilidade com a rota existente. BioTransformer 3.0 e SyGMa são referências externas importantes para comparação e evolução futura: BioTransformer oferece uma opção CYP450 baseada em regras e/ou aprendizado de máquina [2] [3], enquanto SyGMa usa regras de Fase I/Fase II e pontuação empírica para ordenar produtos potenciais [4]. Eles não são chamados automaticamente pelo fluxo local atual, evitando dependência de serviço externo e mantendo o resultado reproduzível.
+
+Estados relevantes do módulo são `ok`, `invalid_smiles`, `not_nitrosamine` e `no_alpha_sites`. Em todos os casos, o painel informa os limites da inferência e preserva a distinção entre uma hipótese computacional e uma conclusão toxicológica.
+
+### Referências científicas
+
+[1] [Chakravarti et al. — Computational Prediction of Metabolic α-Carbon Hydroxylation Potential of N-Nitrosamines](https://pmc.ncbi.nlm.nih.gov/articles/PMC10283024/).
+[2] [BioTransformer — Overview and CYP450 Help](https://biotransformer.ca/help).
+[3] [Wishart et al. — BioTransformer 3.0, Nucleic Acids Research](https://pmc.ncbi.nlm.nih.gov/articles/PMC9252798/).
+[4] [Ridder & Wagener — SyGMa, PubMed PMID 18311745](https://pubmed.ncbi.nlm.nih.gov/18311745/).
 
 ---
 
@@ -216,13 +237,15 @@ Atenção:
 - Requer JSON válido em `application/json`
 - Recebe `smiles`, uma lista `modules` com `cpca`, `quantum`, `metabolism` e/ou `nitrosamine_space`, e `mdd_mg` opcional
 - Retorna um objeto `results` separado por módulo, preservando o resultado de cada análise para as abas da interface
-- Módulos ainda não implementados retornam `status: not_implemented`, sem produzir valores fictícios
+- Quantum continua retornando `status: not_implemented`, sem produzir valores fictícios
+- Metabolism retorna hipóteses locais `rule_based` de α-hidroxilação CYP450; não representa confirmação experimental nem substitui BioTransformer, SyGMa ou avaliação toxicológica
 - Quando cPCA é selecionado, o resultado inclui `structure_svg`, `canonical_smiles` e o objeto `ema`
 - O objeto `ema` consulta o snapshot `EMA/42261/2025 Rev.13`, atualizado em 24/06/2026, por SMILES canônico
 - Uma estrutura ausente do Appendix 1 retorna `ema.status: not_listed`; o sistema não infere AI EMA a partir da categoria FDA
 - `nitrosamine_space` consulta, sob demanda, a similaridade 2D do [PubChem PUG REST](https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest), filtra `[N;X3][N;X2]=O`, seleciona até 10 candidatos e retorna descritores, Tanimoto, distância global e pontos PCA
 - O PubChem fornece o lote de CIDs; o ranking final de Tanimoto é recalculado localmente com MACCS, usando o pipeline de similaridade do Mol.Sim, e a seleção final também considera a distância global normalizada
 - Falhas de rede/timeout retornam `status: pubchem_unavailable`; nenhum resultado retorna `status: no_nitrosamines`; esses estados não bloqueiam o cPCA nem inventam candidatos
+- Metabolism pode retornar `not_nitrosamine`, `no_alpha_sites` ou `invalid_smiles`; quando `ok`, informa `alpha_sites`, `metabolites`, `reactive_intermediates`, `rule_id`, contexto enzimático e avisos de triagem
 
 ### /report-preview
 - Gera o preview do relatório visual
