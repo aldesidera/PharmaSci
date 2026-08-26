@@ -117,3 +117,32 @@ def test_batch_chemical_space_is_user_batch_only_contract():
     assert "PubChem" not in space.get("method", "")
     assert "EMA" not in space.get("method", "")
     assert "source" not in space or space.get("source") in (None, "")
+
+
+
+def test_nitro_report_preview_is_modular_and_preserves_quantum_state():
+    client = app.test_client()
+    response = client.post("/report-preview", json={
+        "mode": "nitro",
+        "module": "nitro_ra",
+        "status": "ok",
+        "smiles": "O=NN1CCCCC1",
+        "modules": ["quantum"],
+        "results": {
+            "quantum": {
+                "module": "quantum",
+                "status": "not_implemented",
+                "message": "Cálculo de HOMO/LUMO será integrado na próxima etapa do Nitro.RA.",
+                "smiles": "O=NN1CCCCC1",
+            }
+        },
+    })
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert "Relatório de Análise Nitro.RA" in html
+    assert "Quantum" in html
+    assert "Cálculo de HOMO/LUMO será integrado" in html
+    assert "cPCA" not in html
+    assert "Metabolism" not in html
+    assert "PubChem" not in html
+    assert "1300 ng/dia" not in html

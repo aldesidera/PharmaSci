@@ -1364,6 +1364,8 @@
         let activeCpcaController = null;
         let activeCpcaRequestId = 0;
         let currentNitroResults = null;
+        let currentDeepPkResult = null;
+        let currentApp = 'molsim';
         let activeDeepPkController = null;
         let activeDeepPkRequestId = 0;
         let activeNitroTab = 'cpca';
@@ -1441,10 +1443,12 @@
             const batchReportButton = document.getElementById('btn-batch-report');
             const hasPairResult = Boolean(currentResult && typeof currentResult === 'object');
             const hasBatchResult = Array.isArray(currentBatchResults) && currentBatchResults.length > 0;
+            const hasNitroResult = Boolean(currentNitroResults && typeof currentNitroResults === 'object');
+            const hasReportResult = currentApp === 'nitro' ? hasNitroResult : (currentMode === 'batch' ? hasBatchResult : hasPairResult);
 
             if (exportButton) {
-                exportButton.disabled = !hasPairResult;
-                exportButton.classList.toggle('hidden', !hasPairResult);
+                exportButton.disabled = !hasReportResult;
+                exportButton.classList.toggle('hidden', !hasReportResult);
             }
 
             if (batchReportButton) {
@@ -1592,6 +1596,7 @@
 
         function activateModule(appName) {
             const activeApp = appName === 'nitro' ? 'nitro' : 'molsim';
+            currentApp = activeApp;
             document.querySelectorAll('.module-chip').forEach(item => item.classList.toggle('active', item.dataset.app === activeApp));
             const brandVisual = document.querySelector('.brand-visual');
             if (brandVisual) {
@@ -1618,6 +1623,8 @@
             currentResult = null;
             currentBatchResults = [];
             currentBatchChemicalSpace = null;
+            currentNitroResults = null;
+            currentDeepPkResult = null;
             updateReportAvailability();
             if (activeApp === 'molsim') setComparisonMode(currentMode);
             else setModePlaceholder('nitro');
@@ -2072,6 +2079,7 @@
         }
 
         function renderDeepPkResults(result, target = {}) {
+            currentDeepPkResult = result || null;
             const container = document.getElementById('metabolism-deep-pk');
             if (!container) return;
             const status = safeText(result?.status, 'deep_pk_error');
@@ -2202,6 +2210,7 @@
                 if (!response.ok && payload?.status !== 'invalid_smiles') throw new Error(getErrorMessage(payload, `Falha nas análises Nitro.RA (${response.status})`));
                 currentNitroResults = payload;
                 renderNitroResults(payload);
+                updateReportAvailability();
                 const localMetabolism = payload?.results?.metabolism || {};
                 if (deepPkSelected && payload.status !== 'invalid_smiles') {
                     startDeepPkLookup(smiles, localMetabolism.target || {});
@@ -2532,6 +2541,21 @@
         }
 
         function buildPreviewPayload() {
+            if (currentApp === 'nitro') {
+                if (!currentNitroResults || typeof currentNitroResults !== 'object') return null;
+                return {
+                    ...currentNitroResults,
+                    mode: 'nitro',
+                    module: 'nitro_ra',
+                    modules: getSelectedNitroModules(),
+                    results: {
+                        ...(currentNitroResults.results || {}),
+                        ...(currentDeepPkResult ? { deep_pk: currentDeepPkResult } : {})
+                    },
+                    generated_at: new Date().toLocaleString('pt-BR')
+                };
+            }
+
             if (currentMode === 'batch') {
                 return {
                     mode: 'batch',

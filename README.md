@@ -25,8 +25,8 @@ Esta documentação reflete o estado atual do projeto em desenvolvimento: funcio
 - ✅ Comparação individual entre duas moléculas
 - ✅ Comparação em lote (batch)
 - ✅ Validação de fingerprint e métrica
-- ✅ Preview de relatório visual
-- ✅ Export para PDF via preview
+- ✅ Preview de relatório visual modular para Mol.Sim e Nitro.RA
+- ✅ Exportação para PDF via impressão do preview, com layout A4 adaptativo
 - ✅ Fallback de nomes via PubChem quando o campo está vazio
 - ✅ Health check /healthz
 - ✅ Interface responsiva e melhor consistência do estado do cliente
@@ -290,7 +290,11 @@ Atenção:
 - Não altera nem mistura as hipóteses estruturais locais de Metabolism
 
 ### /report-preview
-- Gera o preview do relatório visual
+- Gera o preview visual modular para Mol.Sim Par a Par, Mol.Sim Batch e Nitro.RA
+- Reutiliza o padrão editorial do Mol.Sim com resumo, parâmetros, tabelas, gráficos, avisos e rodapé
+- O Mol.Sim Batch pode incluir o espaço químico somente quando solicitado e somente com o lote do usuário
+- O Nitro.RA renderiza apenas os módulos presentes no payload, incluindo cPCA, Espaço Químico PubChem/EMA, Quantum, Metabolism e Deep-PK
+- O preview usa A4 retrato para Par a Par/Nitro.RA e A4 paisagem para Batch; os controles de edição são ocultados na impressão
 - Não deve falhar em 500 para payload inválido
 
 ### /export-pdf

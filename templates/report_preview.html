@@ -1,100 +1,95 @@
+{% set is_batch = report.get('mode') == 'batch' %}
+{% set is_nitro = report.get('module') == 'nitro_ra' or report.get('mode') == 'nitro' %}
+{% set is_pair = not is_batch and not is_nitro %}
+{% set nitro_modules = report.get('modules', []) if is_nitro else [] %}
+{% set nitro_results = report.get('results', {}) if is_nitro else {} %}
+{% set cpca_result = nitro_results.get('cpca') or {} %}
+{% set quantum_result = nitro_results.get('quantum') or {} %}
+{% set metabolism_result = nitro_results.get('metabolism') or {} %}
+{% set space_result = nitro_results.get('nitrosamine_space') or {} %}
+{% set deep_pk_result = nitro_results.get('deep_pk') or {} %}
+{% macro module_label(name) -%}
+    {%- if name == 'cpca' -%}cPCA
+    {%- elif name == 'nitrosamine_space' -%}Espaço Químico
+    {%- elif name == 'quantum' -%}Quantum
+    {%- elif name == 'metabolism' -%}Metabolism
+    {%- elif name == 'deep_pk' -%}Deep-PK
+    {%- else -%}{{ name|replace('_', ' ') }}{%- endif -%}
+{%- endmacro %}
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Preview do Relatório - Mol.Sim</title>
+    <title>{% if is_nitro %}Relatório Nitro.RA{% elif is_batch %}Relatório Mol.Sim Batch{% else %}Relatório Mol.Sim{% endif %}</title>
     <style>
         :root {
-            --report-title-size: 24px;
-            --report-text-size: 12px;
-            --molecule-box-height: 240px;
-            --molecule-box-gap: 16px;
-            --molecule-title-size: 13px;
+            --report-title-size: 27px;
+            --report-text-size: 11px;
+            --molecule-box-height: 190px;
+            --molecule-box-gap: 14px;
+            --accent: {% if is_nitro %}#f97316{% else %}#0284c7{% endif %};
+            --accent-dark: {% if is_nitro %}#c2410c{% else %}#0369a1{% endif %};
+            --accent-soft: {% if is_nitro %}#fff7ed{% else %}#eff6ff{% endif %};
+            --ink: #172033;
+            --muted: #5d6b82;
+            --line: #dbe3ee;
+            --panel: #f8fafc;
         }
 
         * { box-sizing: border-box; }
         body {
             margin: 0;
-            background: #eef2f7;
-            color: #0f172a;
+            background: #e9eef5;
+            color: var(--ink);
             font-family: Arial, Helvetica, sans-serif;
+            font-size: var(--report-text-size);
+            line-height: 1.45;
         }
 
         .designer-controls {
             position: sticky;
             top: 0;
             z-index: 20;
-            background: #0f172a;
-            color: #ffffff;
-            padding: 12px 16px;
             display: flex;
+            align-items: center;
             flex-wrap: wrap;
-            gap: 12px;
-            align-items: center;
+            gap: 10px 14px;
+            padding: 10px 16px;
+            background: #111827;
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, .18);
         }
-
         .designer-controls label {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 6px;
-            font-size: 12px;
+            gap: 7px;
+            font-size: 11px;
             font-weight: 700;
+            letter-spacing: .02em;
         }
-
-        .designer-controls input[type="range"] {
-            width: 120px;
-            accent-color: #0ea5e9;
-        }
-
+        .designer-controls input[type="range"] { width: 112px; accent-color: var(--accent); }
         .designer-controls button {
             border: 0;
-            padding: 8px 12px;
-            border-radius: 8px;
+            border-radius: 7px;
+            padding: 7px 11px;
             cursor: pointer;
             font-weight: 700;
-            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+            font-size: 11px;
         }
-
-        .designer-controls button:hover { transform: translateY(-1px); }
-        .designer-controls button:focus-visible {
-            outline: 3px solid rgba(14, 165, 233, 0.5);
-            outline-offset: 2px;
-        }
-
-        .btn-primary { background: #0ea5e9; color: #ffffff; }
-        .btn-light { background: #e2e8f0; color: #0f172a; }
-        .btn-success { background: #10b981; color: #ffffff; }
-
-        .status-banner {
-            width: 100%;
-            min-height: 22px;
-            margin-top: 6px;
-            font-size: 12px;
-            color: #dbeafe;
-        }
-
-        @media (max-width: 640px) {
-            .designer-controls {
-                align-items: flex-start;
-                flex-direction: column;
-            }
-            .designer-controls label {
-                width: 100%;
-                justify-content: space-between;
-            }
-            .designer-controls input[type="range"] {
-                width: min(100%, 180px);
-            }
-        }
+        .designer-controls button:hover { filter: brightness(1.06); }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-light { background: #e2e8f0; color: #172033; }
+        .btn-success { background: #10b981; color: #fff; }
+        .status-banner { width: 100%; min-height: 18px; color: #dbeafe; font-size: 11px; }
 
         .page {
             width: 210mm;
             min-height: 297mm;
-            margin: 16px auto;
-            background: #ffffff;
-            padding: 12mm;
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
+            margin: 18px auto;
+            padding: 13mm;
+            background: #fff;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, .14);
         }
         body.batch-report .page {
             width: 297mm;
@@ -102,637 +97,466 @@
             padding: 10mm;
         }
 
-        .report-title {
-            margin: 0;
-            text-align: center;
-            font-size: var(--report-title-size);
+        .report-header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px 18px;
+            align-items: end;
+            padding-bottom: 13px;
+            border-bottom: 2px solid var(--accent);
+        }
+        .report-kicker {
+            color: var(--accent-dark);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+        }
+        .report-title { margin: 3px 0 0; font-size: var(--report-title-size); line-height: 1.1; letter-spacing: -.02em; }
+        .report-subtitle { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
+        .report-mark {
+            align-self: start;
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            padding: 8px 10px;
+            color: var(--accent-dark);
+            background: var(--accent-soft);
+            font-size: 10px;
+            font-weight: 800;
+            text-align: right;
+            white-space: nowrap;
         }
 
-        .report-subtitle {
-            margin: 8px 0 0;
-            text-align: center;
-            font-size: var(--report-text-size);
-            color: #475569;
+        .section { margin-top: 17px; }
+        .section h2, .module-section h2 {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 0 0 9px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--line);
+            color: #243149;
+            font-size: 15px;
+            line-height: 1.2;
         }
-
-        .section {
-            margin-top: 16px;
-            font-size: var(--report-text-size);
-        }
-
-        .section h2 {
-            margin: 0 0 8px;
-            font-size: 16px;
-            border-bottom: 1px solid #cbd5e1;
-            padding-bottom: 4px;
-        }
+        .section h2 small, .module-section h2 small { color: var(--muted); font-size: 9px; font-weight: 600; }
+        .section-intro { margin: 0 0 9px; color: var(--muted); }
 
         .summary-grid {
             display: grid;
-            grid-template-columns: 1.7fr 1fr;
-            gap: 12px;
-            align-items: stretch;
+            grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(0, .8fr));
+            gap: 10px;
         }
-
+        .summary-grid--two { grid-template-columns: minmax(0, 1.7fr) minmax(0, .9fr); }
         .summary-box {
-            border: 1px solid #dbe3ee;
-            border-radius: 14px;
-            padding: 14px 16px;
-            background: #f8fafc;
-            min-height: 150px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            min-height: 105px;
+            padding: 11px 13px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: var(--panel);
         }
-
-        .summary-box strong {
+        .summary-box strong, .meta-label {
             display: block;
-            margin-bottom: 8px;
-            color: #64748b;
-            font-size: 11px;
-            letter-spacing: 0.14em;
+            margin-bottom: 5px;
+            color: #718096;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: .13em;
             text-transform: uppercase;
         }
+        .summary-box--accent { border-color: color-mix(in srgb, var(--accent) 35%, white); background: var(--accent-soft); }
+        .summary-value { display: block; margin-top: 8px; color: var(--accent-dark); font-size: 27px; font-weight: 800; line-height: 1; }
+        .summary-note { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; }
+        .reference-card { padding: 9px 10px; border: 1px solid #d4deeb; border-radius: 8px; background: #fff; }
+        .reference-name { margin-bottom: 5px; font-size: 13px; font-weight: 800; }
+        .reference-smiles { color: #334155; font-family: "Courier New", monospace; font-size: 12px; overflow-wrap: anywhere; }
 
-        .reference-card {
-            background: #e8edf4;
-            border: 1px solid #d4deeb;
-            border-radius: 12px;
-            padding: 16px 18px;
-            min-height: 92px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+        .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+        .metric-card { padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+        .metric-card span { display: block; color: var(--muted); font-size: 9px; }
+        .metric-card strong { display: block; margin-top: 4px; font-size: 17px; line-height: 1; }
 
-        .reference-name {
-            font-size: 14px;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 12px;
-        }
-
-        .reference-smiles {
-            font-family: "Courier New", monospace;
-            font-size: 18px;
-            line-height: 1.4;
-            color: #0f172a;
-            word-break: break-word;
-        }
-
-        .summary-box--similarity {
-            background: linear-gradient(180deg, #effcf7 0%, #dcfce7 100%);
-            border: 1px solid #9ae6b4;
-            box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.08);
-            justify-content: center;
-        }
-
-        .similarity-score {
-            display: block;
-            font-size: 34px;
-            font-weight: 800;
-            line-height: 1.1;
-            color: #0f766e;
-            letter-spacing: -0.04em;
-        }
-
-        .similarity-badge {
-            display: inline-block;
-            margin-top: 8px;
-            padding: 5px 10px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 700;
-            background: rgba(15, 118, 110, 0.12);
-            color: #0f766e;
-            width: fit-content;
-        }
-
-        .molecule-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--molecule-box-gap);
-        }
-
-                .fingerprint-mini-box {
-                    border: 1px solid #dbe3ee;
-                    border-radius: 8px;
-                    background: #ffffff;
-                    min-height: 90px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 6px;
-                }
-
-                .fingerprint-mini-box img {
-                    max-width: 100%;
-                    max-height: 90px;
-                    display: block;
-                }
-
-        .molecule-card {
-            border: 1px solid #dbe3ee;
-            border-radius: 10px;
-            padding: 8px;
-            background: #ffffff;
-            break-inside: avoid;
-        }
-
-        .molecule-name {
-            margin: 0 0 6px;
-            text-align: center;
-            font-weight: 700;
-            font-size: var(--molecule-title-size);
-        }
-
+        .molecule-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--molecule-box-gap); }
+        .molecule-card { break-inside: avoid; padding: 8px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
+        .molecule-name { margin: 0 0 6px; text-align: center; font-size: 11px; font-weight: 800; }
         .molecule-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             height: var(--molecule-box-height);
+            padding: 7px;
             border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            padding: 6px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            border-radius: 7px;
+            background: #fff;
         }
+        .molecule-box img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+        .structure-svg { display: flex; align-items: center; justify-content: center; min-height: 145px; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+        .structure-svg svg { display: block; width: 100%; height: 145px; }
 
-        .molecule-box img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            display: block;
-        }
+        table { width: 100%; border-collapse: collapse; font-size: var(--report-text-size); }
+        th, td { padding: 6px 7px; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+        th { background: #f1f5f9; color: #334155; font-size: 9px; font-weight: 800; }
+        td.center, th.center { text-align: center; }
+        tr { break-inside: avoid; }
+        .compact-table { font-size: 9px; }
+        .compact-table th, .compact-table td { padding: 4px 5px; }
+        .table-wrap { overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
+        .batch-report-table { table-layout: fixed; font-size: 9px; }
+        .batch-report-table th { text-align: center; line-height: 1.15; }
+        .batch-molecule-cell { width: 150px; }
+        .batch-molecule-report { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .batch-molecule-name { color: #172033; text-align: center; font-size: 10px; font-weight: 800; overflow-wrap: anywhere; }
+        .batch-structure-thumb { display: flex; align-items: center; justify-content: center; width: 92px; height: 64px; padding: 3px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+        .batch-structure-thumb img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+        .batch-structure-placeholder { color: #94a3b8; font-size: 9px; text-align: center; }
+        .status-badge { display: inline-block; padding: 3px 7px; border-radius: 999px; background: #e2e8f0; color: #334155; font-size: 9px; font-weight: 800; }
+        .status-badge--ok { background: #dcfce7; color: #166534; }
+        .status-badge--warn { background: #fef3c7; color: #92400e; }
+        .status-badge--error { background: #fee2e2; color: #b91c1c; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: var(--report-text-size);
-        }
+        .report-card, .module-section { break-inside: avoid; padding: 11px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+        .report-card--accent { border-color: color-mix(in srgb, var(--accent) 33%, white); background: var(--accent-soft); }
+        .module-section { margin-top: 14px; }
+        .module-section--break { break-before: page; page-break-before: always; }
+        .module-meta-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 9px 0; }
+        .module-meta { padding: 8px 9px; border: 1px solid var(--line); border-radius: 7px; background: #f8fafc; }
+        .module-meta strong { display: block; margin-top: 3px; font-size: 11px; overflow-wrap: anywhere; }
+        .notice { margin-top: 9px; padding: 8px 10px; border-left: 3px solid var(--accent); border-radius: 5px; background: #f8fafc; color: #46556b; font-size: 10px; }
+        .notice--warning { border-left-color: #d97706; background: #fffbeb; }
+        .notice--error { border-left-color: #dc2626; background: #fef2f2; }
+        .disclaimer { margin-top: 9px; color: #64748b; font-size: 9px; font-style: italic; }
+        .muted { color: var(--muted); }
+        .mono { font-family: "Courier New", monospace; overflow-wrap: anywhere; }
 
-        th, td {
-            border: 1px solid #dbe3ee;
-            padding: 6px 8px;
-            text-align: left;
-        }
+        .chemical-space-report-card { padding: 10px; border: 1px solid color-mix(in srgb, var(--accent) 30%, white); border-radius: 9px; background: var(--accent-soft); }
+        .chemical-space-report-svg { display: block; width: 100%; height: 205px; border: 1px solid #dbe5ef; border-radius: 8px; background: #fff; }
+        .space-legend { margin-top: 5px; color: #536176; font-size: 9px; }
+        .chemical-space-report-table { margin-top: 8px; font-size: 8px; }
+        .chemical-space-report-table th, .chemical-space-report-table td { padding: 4px 5px; }
+        .space-meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin: 8px 0; }
+        .space-meta div { padding: 6px 7px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+        .space-meta span { display: block; color: var(--muted); font-size: 8px; }
+        .space-meta strong { display: block; margin-top: 2px; font-size: 10px; }
 
-        th { background: #f1f5f9; }
-        .center { text-align: center; }
-        .batch-report-table {
-            font-size: 10px;
-            table-layout: fixed;
-        }
-        .batch-report-table th {
-            text-align: center;
-            vertical-align: middle;
-            white-space: normal;
-            line-height: 1.2;
-            font-size: 9px;
-            letter-spacing: 0.04em;
-        }
-        .batch-report-table td {
-            vertical-align: middle;
-        }
-        .batch-table-wrap {
-            border: 1px solid #dbe3ee;
-            border-radius: 12px;
-            overflow: hidden;
-            background: #ffffff;
-        }
-        .batch-molecule-cell {
-            width: 160px;
-        }
-        .chemical-space-report-card {
-            border: 1px solid #bfdbfe;
-            border-radius: 12px;
-            background: #f8fbff;
-            padding: 12px;
-        }
-        .chemical-space-report-svg {
-            display: block;
-            width: 100%;
-            height: 205px;
-            border: 1px solid #dbeafe;
-            border-radius: 10px;
-            background: #ffffff;
-        }
-        .chemical-space-report-table {
-            margin-top: 10px;
-            font-size: 9px;
-        }
-        .chemical-space-report-table th, .chemical-space-report-table td {
-            padding: 4px 6px;
-        }
-        .space-legend { font-size: 10px; color: #475569; margin-top: 6px; }
-        .batch-molecule-report {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
-        .batch-molecule-name {
-            font-size: 11px;
-            font-weight: 700;
-            color: #0f172a;
-            text-align: center;
-        }
-        .batch-structure-thumb {
-            width: 104px;
-            height: 76px;
-            border: 1px solid #dbe3ee;
-            border-radius: 10px;
-            background: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 4px;
-            margin: 0 auto;
-        }
-        .batch-structure-thumb img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            display: block;
-        }
-        .batch-structure-placeholder {
-            font-size: 10px;
-            text-align: center;
-            color: #94a3b8;
-        }
-        .batch-status-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 999px;
-            font-size: 10px;
-            font-weight: 700;
-            background: #e2e8f0;
-            color: #334155;
-        }
-        .batch-status-badge--success {
-            background: #dcfce7;
-            color: #166534;
-        }
-        .batch-status-badge--error {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-        .batch-value-strong {
-            font-weight: 700;
-            color: #0f172a;
-        }
+        .page-break { break-before: page; page-break-before: always; }
+        .footer-line { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; padding-top: 7px; border-top: 1px solid var(--line); color: #8290a5; font-size: 9px; }
 
-        .page-break {
-            break-before: page;
-            page-break-before: always;
+        @media (max-width: 850px) {
+            .page, body.batch-report .page { width: auto; min-height: auto; margin: 0; padding: 22px 16px; box-shadow: none; }
+            .report-header, .summary-grid, .summary-grid--two, .metric-grid, .module-meta-grid, .space-meta { grid-template-columns: 1fr; }
+            .designer-controls { position: static; }
         }
-
         @media print {
-            body { background: #ffffff; }
+            body { background: #fff; }
             .designer-controls { display: none !important; }
-            .page {
-                width: auto;
-                min-height: auto;
-                margin: 0;
-                box-shadow: none;
-                padding: 10mm;
-            }
-            {% if report.get('mode') == 'batch' %}
+            .page, body.batch-report .page { width: auto; min-height: auto; margin: 0; padding: 0; box-shadow: none; }
+            {% if is_batch %}
             @page { size: A4 landscape; margin: 10mm; }
             {% else %}
-            @page { size: A4; margin: 10mm; }
+            @page { size: A4 portrait; margin: 11mm; }
             {% endif %}
         }
     </style>
 </head>
-<body class="{% if report.get('mode') == 'batch' %}batch-report{% endif %}">
+<body class="{% if is_batch %}batch-report{% elif is_nitro %}nitro-report{% else %}pair-report{% endif %}">
     <div class="designer-controls" aria-label="Controles do preview do relatório">
-        <label for="titleSize">Título
-            <input id="titleSize" type="range" min="18" max="34" value="24" aria-label="Tamanho do título do relatório">
-        </label>
-        <label for="textSize">Texto
-            <input id="textSize" type="range" min="10" max="15" value="12" aria-label="Tamanho do texto do relatório">
-        </label>
-        <label for="boxHeight">Altura Caixa
-            <input id="boxHeight" type="range" min="180" max="340" value="240" aria-label="Altura da caixa de molécula">
-        </label>
-        <label for="boxGap">Gap Caixas
-            <input id="boxGap" type="range" min="8" max="36" value="16" aria-label="Espaçamento entre caixas de molécula">
-        </label>
+        <label for="titleSize">Título <input id="titleSize" type="range" min="18" max="34" value="27" aria-label="Tamanho do título do relatório"></label>
+        <label for="textSize">Texto <input id="textSize" type="range" min="9" max="15" value="11" aria-label="Tamanho do texto do relatório"></label>
+        <label for="boxHeight">Altura Caixa <input id="boxHeight" type="range" min="140" max="280" value="190" aria-label="Altura da caixa de molécula"></label>
+        <label for="boxGap">Gap Caixas <input id="boxGap" type="range" min="8" max="28" value="14" aria-label="Espaçamento entre caixas de molécula"></label>
         <button type="button" class="btn-success" id="printBtn">Imprimir / Salvar PDF</button>
         <button type="button" class="btn-primary" id="saveLayoutBtn">Salvar Layout</button>
         <button type="button" class="btn-light" id="resetLayoutBtn">Resetar</button>
         <div id="layoutStatus" class="status-banner" aria-live="polite" role="status"></div>
     </div>
 
-    <div class="page{% if report.get('mode') == 'batch' %} page--batch{% endif %}">
-        <h1 class="report-title">Relatório de Similaridade Molecular</h1>
-        <p class="report-subtitle">
-            {% if report.get('mode') == 'batch' %}
-                Comparação em lote | Método: {{ report.get('fp_type', '-') }} | Métrica: {{ report.get('metric', '-') }} | Gerado em {{ report.get('generated_at', '-') }}
-            {% else %}
-                Método: {{ report.get('fp_type', '-') }} | Métrica: {{ report.get('metric', '-') }} | Gerado em {{ report.get('generated_at', '-') }}
-            {% endif %}
-        </p>
+    <main class="page">
+        <header class="report-header">
+            <div>
+                <div class="report-kicker">PharmaSci · {% if is_nitro %}Nitro.RA{% else %}Mol.Sim{% endif %}</div>
+                <h1 class="report-title">{% if is_nitro %}Relatório de Análise Nitro.RA{% else %}Relatório de Similaridade Molecular{% endif %}</h1>
+                <p class="report-subtitle">
+                    {% if is_nitro %}
+                        Módulos: {% for module in nitro_modules %}{{ module_label(module) }}{% if not loop.last %} · {% endif %}{% else %}não informados{% endfor %} · Gerado em {{ report.get('generated_at', '-') }}
+                    {% elif is_batch %}
+                        Comparação em lote · Método estrutural: {{ report.get('fp_type', '-') }} · Métrica: {{ report.get('metric', '-') }} · Gerado em {{ report.get('generated_at', '-') }}
+                    {% else %}
+                        Método: {{ report.get('fp_type', '-') }} · Métrica: {{ report.get('metric', '-') }} · Gerado em {{ report.get('generated_at', '-') }}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="report-mark">{% if is_nitro %}TRIAGEM CIENTÍFICA{% elif is_batch %}BATCH DO USUÁRIO{% else %}COMPARAÇÃO PAR A PAR{% endif %}</div>
+        </header>
 
-        {% if report.get('mode') == 'batch' %}
+        {% macro space_section(space, title, source_label) %}
+            {% set points = space.get('points', []) %}
+            {% set candidates = space.get('candidates', []) %}
+            {% set search = space.get('search', {}) %}
+            {% set bounds = namespace(max_abs=0.25) %}
+            {% for point in points %}
+                {% set bounds.max_abs = [bounds.max_abs, (point.get('x', 0) or 0)|abs, (point.get('y', 0) or 0)|abs]|max %}
+            {% endfor %}
+            <div class="chemical-space-report-card">
+                <div class="space-meta">
+                    <div><span>Fonte</span><strong>{{ source_label }}</strong></div>
+                    <div><span>Estruturas pontuadas</span><strong>{{ search.get('scored_candidates', candidates|length) }}</strong></div>
+                    <div><span>Exibidas</span><strong>{{ search.get('selected_candidates', candidates|length) }}</strong></div>
+                    <div><span>Stress MDS</span><strong>{{ search.get('mds_stress', '-') }}</strong></div>
+                </div>
+                <p class="section-intro"><strong>Método:</strong> {{ search.get('selection_method', space.get('message', 'Distância multimodal e MDS clássico.')) }}</p>
+                {% if points %}
+                <svg class="chemical-space-report-svg" viewBox="0 0 920 410" role="img" aria-label="{{ title }}">
+                    <line x1="460" y1="15" x2="460" y2="395" stroke="#cbd5e1" stroke-width="1" />
+                    <line x1="20" y1="205" x2="900" y2="205" stroke="#cbd5e1" stroke-width="1" />
+                    <text x="872" y="198" font-size="11" fill="#64748b">Eixo 1</text>
+                    <text x="466" y="28" font-size="11" fill="#64748b">Eixo 2</text>
+                    {% for point in points %}
+                        {% set px = 460 + ((point.get('x', 0) or 0) / bounds.max_abs) * 405 %}
+                        {% set py = 205 - ((point.get('y', 0) or 0) / bounds.max_abs) * 175 %}
+                        {% set is_target = point.get('is_target') or point.get('role') == 'reference' %}
+                        {% set point_color = '#f97316' if is_target else '#2563eb' %}
+                        <circle cx="{{ '%.2f'|format(px) }}" cy="{{ '%.2f'|format(py) }}" r="{{ 6 if is_target else 4 }}" fill="{{ point_color }}" stroke="#ffffff" stroke-width="1.5" />
+                        <text x="{{ '%.2f'|format(px + 8) }}" y="{{ '%.2f'|format(py - 7) }}" font-size="9" fill="#1e293b">{{ point.get('name', point.get('label', '-'))|truncate(25, True, '…') }}</text>
+                    {% endfor %}
+                </svg>
+                <div class="space-legend"><span style="color:#f97316;">●</span> Alvo/referência &nbsp;&nbsp; <span style="color:#2563eb;">●</span> Referências mais próximas. O MDS é uma projeção visual; o ranking usa a distância calculada antes da projeção.</div>
+                {% else %}
+                <div class="notice notice--warning">{{ space.get('message', 'Nenhuma estrutura elegível foi encontrada para este espaço químico.') }}</div>
+                {% endif %}
+                {% if candidates %}
+                <table class="chemical-space-report-table compact-table">
+                    <thead><tr><th>#</th><th>Molécula</th><th>Distância global</th><th>MACCS/Tanimoto</th><th>AI / metadado</th><th>Fonte</th></tr></thead>
+                    <tbody>
+                    {% for candidate in candidates %}
+                        <tr>
+                            <td class="center">{{ loop.index }}</td>
+                            <td>{{ candidate.get('name', '-') }}</td>
+                            <td class="center">{{ '%.4f'|format(candidate.get('global_distance', 0)) if candidate.get('global_distance') is not none else '-' }}</td>
+                            <td class="center">{{ '%.4f'|format(candidate.get('similarity', 0)) if candidate.get('similarity') is not none else '-' }}</td>
+                            <td class="center">{% if candidate.get('ai_ng_day') is not none %}{{ candidate.get('ai_ng_day') }} ng/dia{% elif candidate.get('cpca_category') %}Categoria {{ candidate.get('cpca_category') }}{% else %}—{% endif %}</td>
+                            <td>{{ candidate.get('source', source_label) }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+                {% if space.get('warnings') %}<div class="notice notice--warning">{% for warning in space.get('warnings', []) %}{{ warning }}{% if not loop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
+            </div>
+        {% endmacro %}
+
+        {% if is_nitro %}
             <section class="section">
-                <h2>Resumo</h2>
-                <div class="summary-grid" style="grid-template-columns: 2fr 1fr;">
+                <h2>Resumo executivo <small>resultados efetivamente executados</small></h2>
+                <div class="summary-grid">
                     <div class="summary-box">
-                        <strong>Referência</strong>
+                        <strong>Molécula analisada</strong>
                         <div class="reference-card">
-                            <div class="reference-name">{{ report.get('ref_name', '-') }}</div>
-                            <div class="reference-smiles">{{ report.get('ref_smiles', '-') }}</div>
+                            <div class="reference-name">{{ report.get('name', 'Alvo Nitro.RA') }}</div>
+                            <div class="reference-smiles mono">{{ report.get('smiles', '-') }}</div>
                         </div>
                     </div>
-                    <div class="summary-box summary-box--similarity">
-                        <strong>Resultados</strong>
-                        <span class="similarity-score">{{ report.get('results', [])|length }}</span>
-                        <span class="similarity-badge">moléculas avaliadas</span>
+                    <div class="summary-box summary-box--accent">
+                        <strong>Módulos selecionados</strong>
+                        <span class="summary-value">{{ nitro_modules|length }}</span>
+                        <span class="summary-note">{% for module in nitro_modules %}{{ module_label(module) }}{% if not loop.last %} · {% endif %}{% else %}Nenhum módulo informado{% endfor %}</span>
                     </div>
+                    <div class="summary-box">
+                        <strong>Estado da análise</strong>
+                        <span class="summary-value" style="font-size:18px;">{{ report.get('status', '—') }}</span>
+                        <span class="summary-note">Cada módulo conserva seu próprio estado.</span>
+                    </div>
+                </div>
+                {% if 'cpca' not in nitro_modules and space_result.get('target', {}).get('svg') %}
+                <div class="target-summary-structure"><span class="meta-label">Estrutura 2D do alvo</span><div class="structure-svg">{{ space_result.get('target', {}).get('svg')|safe }}</div></div>
+                {% endif %}
+            </section>
+
+            {% if 'cpca' in nitro_modules %}
+            <section class="module-section" id="report-cpca">
+                <h2>cPCA <small>{{ cpca_result.get('rule_version', 'versão não informada') }}</small></h2>
+                <div class="summary-grid summary-grid--two">
+                    <div>
+                        {% if cpca_result.get('structure_svg') %}<div class="structure-svg">{{ cpca_result.get('structure_svg')|safe }}</div>{% endif %}
+                        <p class="section-intro"><strong>SMILES canônico:</strong> <span class="mono">{{ cpca_result.get('canonical_smiles', report.get('smiles', '-')) }}</span></p>
+                    </div>
+                    <div class="metric-grid" style="grid-template-columns:repeat(2,minmax(0,1fr)); align-content:start;">
+                        <div class="metric-card"><span>Categoria de potência</span><strong>{{ cpca_result.get('potency_category', '—') }}</strong></div>
+                        <div class="metric-card"><span>AI EMA</span><strong>{{ cpca_result.get('ema', {}).get('ai_ng_day', '—') }}{% if cpca_result.get('ema', {}).get('ai_ng_day') is not none %} ng/dia{% endif %}</strong></div>
+                        <div class="metric-card"><span>AI cPCA</span><strong>{{ cpca_result.get('ai_ng_day', '—') }}{% if cpca_result.get('ai_ng_day') is not none %} ng/dia{% endif %}</strong></div>
+                        <div class="metric-card"><span>PPM</span><strong>{{ cpca_result.get('ppm_limit', '—') }}</strong></div>
+                    </div>
+                </div>
+                <div class="module-meta-grid">
+                    <div class="module-meta"><span class="meta-label">Status</span><strong>{{ cpca_result.get('status', '—') }}</strong></div>
+                    <div class="module-meta"><span class="meta-label">Base regulatória</span><strong>{{ cpca_result.get('regulatory_basis', '—') }}</strong></div>
+                    <div class="module-meta"><span class="meta-label">Fundamento</span><strong>{{ cpca_result.get('category_basis', '—') }}</strong></div>
+                </div>
+                {% if cpca_result.get('ema') %}<div class="notice"><strong>Appendix 1 EMA:</strong> {{ cpca_result.get('ema', {}).get('message', 'Metadado EMA disponível.') }}{% if cpca_result.get('ema', {}).get('reference_number') %} Referência {{ cpca_result.get('ema', {}).get('reference_number') }}.{% endif %}</div>{% endif %}
+                {% if cpca_result.get('warnings') %}<div class="notice notice--warning">{% for warning in cpca_result.get('warnings', []) %}{{ warning }}{% if not loop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
+            </section>
+            {% endif %}
+
+            {% if 'nitrosamine_space' in nitro_modules %}
+            <section class="module-section module-section--break" id="report-chemical-space">
+                <h2>Espaço Químico <small>PubChem e referência EMA independentes</small></h2>
+                {% set pubchem_space = space_result %}
+                {% if pubchem_space %}{{ space_section(pubchem_space, 'Espaço químico PubChem', 'PubChem · lote limitado a 40 CIDs') }}{% endif %}
+                {% if pubchem_space.get('ema_space') %}
+                    <div class="page-break"></div>
+                    {{ space_section(pubchem_space.get('ema_space'), 'Espaço químico EMA', 'EMA Appendix 1 · biblioteca versionada') }}
+                {% endif %}
+            </section>
+            {% endif %}
+
+            {% if 'quantum' in nitro_modules %}
+            <section class="module-section module-section--break" id="report-quantum">
+                <h2>Quantum <small>estado do motor eletrônico</small></h2>
+                {% if quantum_result.get('status') == 'ok' and (quantum_result.get('homo') or quantum_result.get('lumo')) %}
+                    <div class="module-meta-grid">
+                        <div class="module-meta"><span class="meta-label">HOMO</span><strong>{{ quantum_result.get('homo', {}).get('value', '—') }} {{ quantum_result.get('homo', {}).get('unit', '') }}</strong></div>
+                        <div class="module-meta"><span class="meta-label">LUMO</span><strong>{{ quantum_result.get('lumo', {}).get('value', '—') }} {{ quantum_result.get('lumo', {}).get('unit', '') }}</strong></div>
+                        <div class="module-meta"><span class="meta-label">Gap HOMO–LUMO</span><strong>{{ quantum_result.get('homo_lumo_gap', {}).get('value', '—') }} {{ quantum_result.get('homo_lumo_gap', {}).get('unit', '') }}</strong></div>
+                    </div>
+                {% else %}
+                    <div class="notice notice--warning"><strong>{{ quantum_result.get('status', 'not_implemented') }}</strong> — {{ quantum_result.get('message', 'O cálculo Quantum não foi executado.') }}</div>
+                {% endif %}
+                <div class="module-meta-grid">
+                    <div class="module-meta"><span class="meta-label">Motor</span><strong>{{ quantum_result.get('engine', '—') }}</strong></div>
+                    <div class="module-meta"><span class="meta-label">Método</span><strong>{{ quantum_result.get('method', '—') }}</strong></div>
+                    <div class="module-meta"><span class="meta-label">SMILES</span><strong class="mono">{{ quantum_result.get('smiles', report.get('smiles', '—')) }}</strong></div>
+                </div>
+                <p class="disclaimer">HOMO/LUMO e outros descritores eletrônicos, quando disponíveis, são dependentes do método e não constituem conclusão toxicológica ou regulatória.</p>
+            </section>
+            {% endif %}
+
+            {% if 'metabolism' in nitro_modules %}
+            <section class="module-section module-section--break" id="report-metabolism">
+                <h2>Metabolism <small>predição estrutural CYP450</small></h2>
+                <div class="module-meta-grid">
+                    <div class="module-meta"><span class="meta-label">Status</span><strong>{{ metabolism_result.get('status', '—') }}</strong></div>
+                    <div class="module-meta"><span class="meta-label">Sítios α candidatos</span><strong>{{ metabolism_result.get('summary', {}).get('alpha_sites', metabolism_result.get('alpha_sites', '—')) }}</strong></div>
+                    <div class="module-meta"><span class="meta-label">Motor</span><strong>{{ metabolism_result.get('engine', 'RDKit rule-based') }}</strong></div>
+                </div>
+                <p class="section-intro">{{ metabolism_result.get('message', 'Resultado metabólico não informado.') }}</p>
+                {% if metabolism_result.get('sites') %}
+                <table class="compact-table">
+                    <thead><tr><th>Sítio</th><th>Hα</th><th>Anel</th><th>Enzimas</th><th>Metabólito</th><th>Intermediário</th></tr></thead>
+                    <tbody>{% for site in metabolism_result.get('sites', []) %}<tr><td>{{ site.get('atom_index', site.get('site', '—')) }}</td><td>{{ site.get('alpha_hydrogens', site.get('hydrogens', '—')) }}</td><td>{{ site.get('ring', '—') }}</td><td>{{ site.get('enzymes', '—') }}</td><td class="mono">{{ site.get('metabolite_smiles', '—') }}</td><td class="mono">{{ site.get('intermediate_smiles', '—') }}</td></tr>{% endfor %}</tbody>
+                </table>
+                {% else %}<div class="notice notice--warning">{{ metabolism_result.get('message', 'Nenhum sítio α elegível foi informado.') }}</div>{% endif %}
+                <p class="disclaimer">A saída representa uma hipótese estrutural de metabolismo e não confirma formação do metabólito in vivo.</p>
+            </section>
+            {% endif %}
+
+            {% if 'deep_pk' in nitro_modules or deep_pk_result %}
+            <section class="module-section module-section--break" id="report-deep-pk">
+                <h2>Deep-PK <small>complemento externo</small></h2>
+                {% if deep_pk_result.get('isoforms') %}
+                <table class="compact-table"><thead><tr><th>Isoforma</th><th>Substrato?</th><th>Probabilidade</th><th>Inibidor?</th><th>Probabilidade</th></tr></thead><tbody>{% for item in deep_pk_result.get('isoforms', []) %}<tr><td>{{ item.get('isoform', '—') }}</td><td>{{ item.get('substrate', {}).get('prediction', '—') }}</td><td>{{ item.get('substrate', {}).get('probability', '—') }}</td><td>{{ item.get('inhibitor', {}).get('prediction', '—') }}</td><td>{{ item.get('inhibitor', {}).get('probability', '—') }}</td></tr>{% endfor %}</tbody></table>
+                {% else %}<div class="notice notice--warning">{{ deep_pk_result.get('message', 'O Deep-PK não foi concluído ou não foi incluído no payload do relatório.') }}</div>{% endif %}
+                {% if deep_pk_result.get('warnings') %}<div class="notice notice--warning">{% for warning in deep_pk_result.get('warnings', []) %}{{ warning }}{% if not loop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
+            </section>
+            {% endif %}
+
+            <section class="section">
+                <h2>Limitações e interpretação</h2>
+                <div class="notice notice--warning">Os resultados Nitro.RA são análises de triagem. Nenhum resultado isolado deve ser tratado como prova toxicológica, dose segura ou decisão regulatória; a interpretação deve considerar o módulo executado, sua fonte e suas limitações.</div>
+            </section>
+
+        {% elif is_batch %}
+            <section class="section">
+                <h2>Resumo <small>lote fornecido pelo usuário</small></h2>
+                <div class="summary-grid summary-grid--two">
+                    <div class="summary-box"><strong>Referência</strong><div class="reference-card"><div class="reference-name">{{ report.get('ref_name', '-') }}</div><div class="reference-smiles mono">{{ report.get('ref_smiles', '-') }}</div></div></div>
+                    <div class="summary-box summary-box--accent"><strong>Resultados</strong><span class="summary-value">{{ report.get('results', [])|length }}</span><span class="summary-note">moléculas avaliadas no Batch</span></div>
                 </div>
             </section>
 
             {% if report.get('chemical_space') and report.get('chemical_space', {}).get('points') %}
             <section class="section">
-                <h2>Espaço Químico 2D</h2>
+                <h2>Espaço Químico 2D <small>somente lote do usuário</small></h2>
                 {% set points = report.get('chemical_space', {}).get('points', []) %}
-                {% set bounds = namespace(max_abs=0.25) %}
-                {% for point in points %}
-                    {% set bounds.max_abs = [bounds.max_abs, (point.get('x', 0) or 0)|abs, (point.get('y', 0) or 0)|abs]|max %}
-                {% endfor %}
+                {% set bounds = namespace(max_abs=0.25) %}{% for point in points %}{% set bounds.max_abs = [bounds.max_abs, (point.get('x', 0) or 0)|abs, (point.get('y', 0) or 0)|abs]|max %}{% endfor %}
                 <div class="chemical-space-report-card">
-                    <p><strong>Projeção:</strong> {{ report.get('chemical_space', {}).get('method', 'MDS clássico sobre distância composta') }}.</p>
-                    <p><strong>Fórmula:</strong> 60% de distância estrutural + 40% de Dist.FQ normalizada, combinadas quadraticamente: sqrt(0,6 × D_struct² + 0,4 × D_FQ²). A Dist.FQ usa Z-scores populacionais de MW, LogP, TPSA, HBD, HBA e RotB; o gráfico exibe os 10 vizinhos mais próximos.</p>
+                    <p class="section-intro"><strong>Projeção:</strong> {{ report.get('chemical_space', {}).get('method', 'MDS clássico sobre distância composta') }}.</p>
+                    <p class="section-intro"><strong>Fórmula:</strong> 60% de distância estrutural + 40% de Dist.FQ normalizada, combinadas quadraticamente: sqrt(0,6 × D_struct² + 0,4 × D_FQ²). A Dist.FQ usa Z-scores populacionais de MW, LogP, TPSA, HBD, HBA e RotB; o gráfico exibe os 10 vizinhos mais próximos.</p>
                     <svg class="chemical-space-report-svg" viewBox="0 0 920 410" role="img" aria-label="Espaço químico 2D">
-                        <line x1="460" y1="15" x2="460" y2="395" stroke="#cbd5e1" stroke-width="1" />
-                        <line x1="20" y1="205" x2="900" y2="205" stroke="#cbd5e1" stroke-width="1" />
-                        <text x="870" y="198" font-size="11" fill="#64748b">X</text>
-                        <text x="467" y="28" font-size="11" fill="#64748b">Y</text>
-                        {% for point in points %}
-                            {% set px = 460 + ((point.get('x', 0) or 0) / bounds.max_abs) * 405 %}
-                            {% set py = 205 - ((point.get('y', 0) or 0) / bounds.max_abs) * 175 %}
-                            {% set color = '#f97316' if point.get('role') == 'reference' else '#2563eb' %}
-                            <circle cx="{{ '%.2f'|format(px) }}" cy="{{ '%.2f'|format(py) }}" r="{{ 6 if point.get('role') == 'reference' else 4 }}" fill="{{ color }}" stroke="#ffffff" stroke-width="1.5" />
-                            <text x="{{ '%.2f'|format(px + 8) }}" y="{{ '%.2f'|format(py - 7) }}" font-size="9" fill="#1e293b">{{ point.get('name', '-')|truncate(24, True, '…') }}</text>
-                        {% endfor %}
+                        <line x1="460" y1="15" x2="460" y2="395" stroke="#cbd5e1" stroke-width="1" /><line x1="20" y1="205" x2="900" y2="205" stroke="#cbd5e1" stroke-width="1" />
+                        {% for point in points %}{% set px = 460 + ((point.get('x', 0) or 0) / bounds.max_abs) * 405 %}{% set py = 205 - ((point.get('y', 0) or 0) / bounds.max_abs) * 175 %}{% set is_ref = point.get('role') == 'reference' or point.get('is_target') %}<circle cx="{{ '%.2f'|format(px) }}" cy="{{ '%.2f'|format(py) }}" r="{{ 6 if is_ref else 4 }}" fill="{{ '#f97316' if is_ref else '#2563eb' }}" stroke="#fff" stroke-width="1.5" /><text x="{{ '%.2f'|format(px + 8) }}" y="{{ '%.2f'|format(py - 7) }}" font-size="9" fill="#1e293b">{{ point.get('name', '-')|truncate(24, True, '…') }}</text>{% endfor %}
                     </svg>
                     <div class="space-legend"><span style="color:#f97316;">●</span> Referência &nbsp;&nbsp; <span style="color:#2563eb;">●</span> 10 vizinhos mais próximos do lote. A projeção é uma ferramenta de triagem visual.</div>
-                    <table class="chemical-space-report-table">
-                        <thead><tr><th>Molécula</th><th>Dist.FQ normalizada</th><th>Distância global</th><th>RotB</th></tr></thead>
-                        <tbody>
-                        {% for point in points if point.get('role') != 'reference' %}
-                            <tr><td>{{ point.get('name', '-') }}</td><td>{{ '%.4f'|format(point.get('physicochemical_distance', 0)) }}</td><td>{{ '%.4f'|format(point.get('global_distance', 0)) }}</td><td>{{ point.get('rotatable_bonds', '-') }}</td></tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+                    <table class="chemical-space-report-table"><thead><tr><th>Molécula</th><th>Dist.FQ normalizada</th><th>Distância global</th><th>RotB</th></tr></thead><tbody>{% for point in points if point.get('role') != 'reference' and not point.get('is_target') %}<tr><td>{{ point.get('name', '-') }}</td><td>{{ '%.4f'|format(point.get('physicochemical_distance', 0)) }}</td><td>{{ '%.4f'|format(point.get('global_distance', 0)) }}</td><td>{{ point.get('rotatable_bonds', '-') }}</td></tr>{% endfor %}</tbody></table>
                 </div>
             </section>
             {% endif %}
 
             <section class="section">
-                <h2>Resultado de Similaridade</h2>
-                <div class="batch-table-wrap">
-                    <table class="batch-report-table">
-                        <colgroup>
-                            <col style="width: 52%;">
-                            <col style="width: 16%;">
-                            <col style="width: 32%;">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th>Molécula</th>
-                                <th class="center">Similaridade</th>
-                                <th class="center">Classificação</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in report.get('results', []) %}
-                            <tr>
-                                <td class="batch-molecule-cell">
-                                    <div class="batch-molecule-report">
-                                        <div class="batch-structure-thumb">
-                                            {% if item.get('png') %}
-                                            <img src="data:image/png;base64,{{ item.get('png') }}" alt="Estrutura 2D de {{ item.get('name', 'molécula') }}">
-                                            {% else %}
-                                            <span class="batch-structure-placeholder">Estrutura indisponível</span>
-                                            {% endif %}
-                                        </div>
-                                        <span class="batch-molecule-name">{{ item.get('name', '-') }}</span>
-                                    </div>
-                                </td>
-                                <td class="center batch-value-strong">{{ '%.4f'|format(item.get('similarity', 0.0)) if item.get('similarity') is not none else '-' }}</td>
-                                <td class="center">
-                                    {% if item.get('error') %}
-                                    <span class="batch-status-badge batch-status-badge--error">Erro</span>
-                                    {% elif item.get('classification') %}
-                                    <span class="batch-status-badge batch-status-badge--success">{{ item.get('classification') }}</span>
-                                    {% else %}
-                                    <span class="batch-status-badge">-</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                <h2>Resultado de Similaridade <small>comparação com a referência</small></h2>
+                <div class="table-wrap"><table class="batch-report-table"><colgroup><col style="width:52%;"><col style="width:16%;"><col style="width:32%;"></colgroup><thead><tr><th>Molécula</th><th>Similaridade</th><th>Classificação</th></tr></thead><tbody>{% for item in report.get('results', []) %}<tr><td class="batch-molecule-cell"><div class="batch-molecule-report"><div class="batch-structure-thumb">{% if item.get('png') %}<img src="data:image/png;base64,{{ item.get('png') }}" alt="Estrutura 2D de {{ item.get('name', 'molécula') }}">{% else %}<span class="batch-structure-placeholder">Estrutura indisponível</span>{% endif %}</div><span class="batch-molecule-name">{{ item.get('name', '-') }}</span></div></td><td class="center"><strong>{{ '%.4f'|format(item.get('similarity', 0.0)) if item.get('similarity') is not none else '-' }}</strong></td><td class="center">{% if item.get('error') %}<span class="status-badge status-badge--error">Erro</span>{% elif item.get('classification') %}<span class="status-badge status-badge--ok">{{ item.get('classification') }}</span>{% else %}<span class="status-badge">—</span>{% endif %}</td></tr>{% endfor %}</tbody></table></div>
             </section>
 
             <section class="section">
-                <h2>Propriedades Físico-Químicas</h2>
-                <div class="batch-table-wrap">
-                    <table class="batch-report-table">
-                        <colgroup>
-                            <col style="width: 22%;">
-                            <col style="width: 9.75%;">
-                            <col style="width: 8.75%;">
-                            <col style="width: 10%;">
-                            <col style="width: 8.75%;">
-                            <col style="width: 8.75%;">
-                            <col style="width: 8%;">
-                            <col style="width: 8%;">
-                            <col style="width: 14%;">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th>Molécula</th>
-                                <th class="center">Massa Molecular<br>(g/mol)</th>
-                                <th class="center">Coef. Partição<br>(LogP)</th>
-                                <th class="center">Área Superfície<br>Polar (Å²)</th>
-                                <th class="center">pKa<br>ácido</th>
-                                <th class="center">pKa<br>básico</th>
-                                <th class="center">Doadores H<br>(HBD)</th>
-                                <th class="center">Receptores H<br>(HBA)</th>
-                                <th class="center">Ligações<br>Rotacionais</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in report.get('results', []) %}
-                            <tr>
-                                <td class="batch-molecule-cell">
-                                    <div class="batch-molecule-report">
-                                        <div class="batch-structure-thumb">
-                                            {% if item.get('png') %}
-                                            <img src="data:image/png;base64,{{ item.get('png') }}" alt="Estrutura 2D de {{ item.get('name', 'molécula') }}">
-                                            {% else %}
-                                            <span class="batch-structure-placeholder">Estrutura indisponível</span>
-                                            {% endif %}
-                                        </div>
-                                        <span class="batch-molecule-name">{{ item.get('name', '-') }}</span>
-                                    </div>
-                                </td>
-                                <td class="center">{{ item.get('properties', {}).get('Massa Molecular (g/mol)', '-') if item.get('properties') else '-' }}</td>
-                                <td class="center">{{ item.get('properties', {}).get('Coeficiente de Partição (LogP)', '-') if item.get('properties') else '-' }}</td>
-                                <td class="center">{{ item.get('properties', {}).get('Área de Superfície Polar (Å²)', '-') if item.get('properties') else '-' }}</td>
-                                <td class="center">{{ item.get('properties', {}).get('pKa ácido', '-') if item.get('properties') else '-' }}</td>
-                                <td class="center">{{ item.get('properties', {}).get('pKa básico', '-') if item.get('properties') else '-' }}</td>
-                                <td class="center">{{ item.get('properties', {}).get('Doadores de H (HBD)', '-') if item.get('properties') else '-' }}</td>
-                                <td class="center">{{ item.get('properties', {}).get('Receptores de H (HBA)', '-') if item.get('properties') else '-' }}</td>
-                                <td class="center">{{ item.get('properties', {}).get('Ligações rotacionáveis (RotB)', '-') if item.get('properties') else '-' }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                <h2>Propriedades Físico-Químicas <small>seis descritores e demais campos disponíveis</small></h2>
+                <div class="table-wrap"><table class="batch-report-table"><colgroup><col style="width:22%;"><col style="width:9.75%;"><col style="width:8.75%;"><col style="width:10%;"><col style="width:8.75%;"><col style="width:8.75%;"><col style="width:8%;"><col style="width:8%;"><col style="width:14%;"></colgroup><thead><tr><th>Molécula</th><th>Massa Molecular<br>(g/mol)</th><th>LogP</th><th>TPSA<br>(Å²)</th><th>pKa ácido</th><th>pKa básico</th><th>HBD</th><th>HBA</th><th>RotB</th></tr></thead><tbody>{% for item in report.get('results', []) %}<tr><td class="batch-molecule-cell">{{ item.get('name', '-') }}</td><td class="center">{{ item.get('properties', {}).get('Massa Molecular (g/mol)', '-') if item.get('properties') else '-' }}</td><td class="center">{{ item.get('properties', {}).get('Coeficiente de Partição (LogP)', '-') if item.get('properties') else '-' }}</td><td class="center">{{ item.get('properties', {}).get('Área de Superfície Polar (Å²)', '-') if item.get('properties') else '-' }}</td><td class="center">{{ item.get('properties', {}).get('pKa ácido', '-') if item.get('properties') else '-' }}</td><td class="center">{{ item.get('properties', {}).get('pKa básico', '-') if item.get('properties') else '-' }}</td><td class="center">{{ item.get('properties', {}).get('Doadores de H (HBD)', '-') if item.get('properties') else '-' }}</td><td class="center">{{ item.get('properties', {}).get('Receptores de H (HBA)', '-') if item.get('properties') else '-' }}</td><td class="center">{{ item.get('properties', {}).get('Ligações rotacionáveis (RotB)', '-') if item.get('properties') else '-' }}</td></tr>{% endfor %}</tbody></table></div>
             </section>
+
         {% else %}
             <section class="section">
-                <h2>Resumo</h2>
-                <div class="summary-grid">
-                    <div class="summary-box">
-                        <strong>Referência</strong>
-                        <div class="reference-card">
-                            <div class="reference-name">{{ report.get('name_ref', '-') }}</div>
-                            <div class="reference-smiles">{{ report.get('smiles_ref', '-') }}</div>
-                        </div>
-                    </div>
-                    <div class="summary-box summary-box--similarity">
-                        <strong>Resultado</strong>
-                        <span class="similarity-score">{{ '%.4f'|format(report.get('similarity', 0.0)) }}</span>
-                        <span class="similarity-badge">{{ report.get('classification', '-') }}</span>
-                    </div>
-                </div>
+                <h2>Resumo <small>comparação direta</small></h2>
+                <div class="summary-grid summary-grid--two"><div class="summary-box"><strong>Referência</strong><div class="reference-card"><div class="reference-name">{{ report.get('name_ref', '-') }}</div><div class="reference-smiles mono">{{ report.get('smiles_ref', '-') }}</div></div></div><div class="summary-box summary-box--accent"><strong>Resultado</strong><span class="summary-value">{{ '%.4f'|format(report.get('similarity', 0.0)) }}</span><span class="summary-note">{{ report.get('classification', '-') }}</span></div></div>
             </section>
-
-            <section class="section">
-                <h2>Estruturas Moleculares</h2>
-                <div class="molecule-grid">
-                    <article class="molecule-card">
-                        <p class="molecule-name">{{ report.get('name_ref', 'Referência') }}</p>
-                        <div class="molecule-box">
-                            {% if report.get('png_ref') %}
-                            <img src="data:image/png;base64,{{ report.get('png_ref') }}" alt="Estrutura referência">
-                            {% else %}
-                            <span>Imagem não disponível</span>
-                            {% endif %}
-                        </div>
-                    </article>
-                    <article class="molecule-card">
-                        <p class="molecule-name">{{ report.get('name_test', 'Teste') }}</p>
-                        <div class="molecule-box">
-                            {% if report.get('png_test') %}
-                            <img src="data:image/png;base64,{{ report.get('png_test') }}" alt="Estrutura teste">
-                            {% else %}
-                            <span>Imagem não disponível</span>
-                            {% endif %}
-                        </div>
-                    </article>
-                </div>
-            </section>
-
-            <section class="section">
-                <h2>Propriedades Físico-Químicas</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Propriedade</th>
-                            <th class="center">Referência</th>
-                            <th class="center">Teste</th>
-                            <th class="center">Diferença</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for prop in report.get('properties', []) %}
-                        <tr>
-                            <td>{{ prop.get('Propriedade', '-') }}</td>
-                            <td class="center">{{ prop.get('Referência', '-') }}</td>
-                            <td class="center">{{ prop.get('Teste', '-') }}</td>
-                            <td class="center">{{ prop.get('Diferença', '-') }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </section>
+            <section class="section"><h2>Estruturas Moleculares</h2><div class="molecule-grid"><article class="molecule-card"><p class="molecule-name">{{ report.get('name_ref', 'Referência') }}</p><div class="molecule-box">{% if report.get('png_ref') %}<img src="data:image/png;base64,{{ report.get('png_ref') }}" alt="Estrutura referência">{% else %}<span>Imagem não disponível</span>{% endif %}</div></article><article class="molecule-card"><p class="molecule-name">{{ report.get('name_test', 'Teste') }}</p><div class="molecule-box">{% if report.get('png_test') %}<img src="data:image/png;base64,{{ report.get('png_test') }}" alt="Estrutura teste">{% else %}<span>Imagem não disponível</span>{% endif %}</div></article></div></section>
+            <section class="section"><h2>Propriedades Físico-Químicas</h2><table><thead><tr><th>Propriedade</th><th class="center">Referência</th><th class="center">Teste</th><th class="center">Diferença</th></tr></thead><tbody>{% for prop in report.get('properties', []) %}<tr><td>{{ prop.get('Propriedade', '-') }}</td><td class="center">{{ prop.get('Referência', '-') }}</td><td class="center">{{ prop.get('Teste', '-') }}</td><td class="center">{{ prop.get('Diferença', '-') }}</td></tr>{% endfor %}</tbody></table></section>
+            {% if report.get('fingerprint_ref_png') or report.get('fingerprint_test_png') %}<section class="section"><h2>Fingerprints</h2><div class="molecule-grid"><div class="report-card">{% if report.get('fingerprint_ref_png') %}<img style="display:block;max-width:100%;height:100px;margin:auto;object-fit:contain;" src="data:image/png;base64,{{ report.get('fingerprint_ref_png') }}" alt="Fingerprint da referência">{% endif %}</div><div class="report-card">{% if report.get('fingerprint_test_png') %}<img style="display:block;max-width:100%;height:100px;margin:auto;object-fit:contain;" src="data:image/png;base64,{{ report.get('fingerprint_test_png') }}" alt="Fingerprint do teste">{% endif %}</div></div></section>{% endif %}
         {% endif %}
-    </div>
+
+        <div class="footer-line"><span>PharmaSci · relatório gerado a partir do payload da análise</span><span>{% if is_nitro %}Nitro.RA{% else %}Mol.Sim{% endif %} · {{ report.get('generated_at', '-') }}</span></div>
+    </main>
 
     <script>
         const controls = {
             titleSize: document.getElementById('titleSize'),
             textSize: document.getElementById('textSize'),
             boxHeight: document.getElementById('boxHeight'),
-            boxGap: document.getElementById('boxGap'),
+            boxGap: document.getElementById('boxGap')
         };
         const statusBanner = document.getElementById('layoutStatus');
-
-        function showStatus(message) {
-            if (!statusBanner) return;
-            statusBanner.textContent = message;
-        }
-
+        function showStatus(message) { if (statusBanner) statusBanner.textContent = message; }
         function applyLayoutFromControls() {
             document.documentElement.style.setProperty('--report-title-size', controls.titleSize.value + 'px');
             document.documentElement.style.setProperty('--report-text-size', controls.textSize.value + 'px');
             document.documentElement.style.setProperty('--molecule-box-height', controls.boxHeight.value + 'px');
             document.documentElement.style.setProperty('--molecule-box-gap', controls.boxGap.value + 'px');
         }
-
         function saveLayout() {
-            const layout = {
-                titleSize: Number(controls.titleSize.value),
-                textSize: Number(controls.textSize.value),
-                boxHeight: Number(controls.boxHeight.value),
-                boxGap: Number(controls.boxGap.value),
-            };
-            localStorage.setItem('molsim_report_layout', JSON.stringify(layout));
+            localStorage.setItem('pharmasci_report_layout', JSON.stringify({
+                titleSize: Number(controls.titleSize.value), textSize: Number(controls.textSize.value),
+                boxHeight: Number(controls.boxHeight.value), boxGap: Number(controls.boxGap.value)
+            }));
             showStatus('Layout salvo para os próximos relatórios.');
         }
-
         function resetLayout() {
-            localStorage.removeItem('molsim_report_layout');
-            controls.titleSize.value = 24;
-            controls.textSize.value = 12;
-            controls.boxHeight.value = 240;
-            controls.boxGap.value = 16;
-            applyLayoutFromControls();
-            showStatus('Layout restaurado para o padrão.');
+            localStorage.removeItem('pharmasci_report_layout');
+            controls.titleSize.value = 27; controls.textSize.value = 11; controls.boxHeight.value = 190; controls.boxGap.value = 14;
+            applyLayoutFromControls(); showStatus('Layout restaurado para o padrão.');
         }
-
         function loadLayout() {
-            const raw = localStorage.getItem('molsim_report_layout');
-            if (!raw) {
-                applyLayoutFromControls();
-                return;
-            }
             try {
-                const layout = JSON.parse(raw);
-                if (Number.isFinite(Number(layout.titleSize))) controls.titleSize.value = Number(layout.titleSize);
-                if (Number.isFinite(Number(layout.textSize))) controls.textSize.value = Number(layout.textSize);
-                if (Number.isFinite(Number(layout.boxHeight))) controls.boxHeight.value = Number(layout.boxHeight);
-                if (Number.isFinite(Number(layout.boxGap))) controls.boxGap.value = Number(layout.boxGap);
-            } catch (err) {
-                localStorage.removeItem('molsim_report_layout');
-            }
+                const raw = localStorage.getItem('pharmasci_report_layout');
+                if (raw) {
+                    const layout = JSON.parse(raw);
+                    ['titleSize', 'textSize', 'boxHeight', 'boxGap'].forEach((key) => {
+                        if (Number.isFinite(Number(layout[key]))) controls[key].value = Number(layout[key]);
+                    });
+                }
+            } catch (_) { localStorage.removeItem('pharmasci_report_layout'); }
             applyLayoutFromControls();
         }
-
-        Object.values(controls).forEach((control) => {
-            control.addEventListener('input', applyLayoutFromControls);
-        });
-
+        Object.values(controls).forEach((control) => control.addEventListener('input', applyLayoutFromControls));
         document.getElementById('saveLayoutBtn').addEventListener('click', saveLayout);
         document.getElementById('resetLayoutBtn').addEventListener('click', resetLayout);
         document.getElementById('printBtn').addEventListener('click', () => window.print());
-
         loadLayout();
     </script>
 </body>
