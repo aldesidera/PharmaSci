@@ -186,7 +186,7 @@ O cPCA é uma estimativa de triagem para apoio técnico e não substitui avalia�
 
 ## Nitro.RA — Metabolism CYP450
 
-O módulo **Metabolism** implementa uma primeira camada local e determinística de predição estrutural de Fase I. Ele identifica carbonos alifáticos sp3 com pelo menos um hidrogênio diretamente adjacentes ao nitrogênio do grupo N-nitroso e gera hipóteses de **α-hidroxilação CYP450**. Essa escolha é coerente com a literatura que trata a α-hidroxilação como uma etapa crítica da ativação metabólica de N-nitrosaminas, mas a regra não substitui um modelo treinado, dados enzimáticos ou confirmação experimental [1].
+O módulo **Metabolism** implementa uma primeira camada local e determinística de predição estrutural de Fase I. Ele reconhece padrões N-nitroso alifáticos e aromáticos e, quando encontra carbonos alifáticos sp3 com pelo menos um hidrogênio diretamente adjacentes ao nitrogênio N-nitroso, gera hipóteses de **α-hidroxilação CYP450**. Uma N-nitrosamina aromática pode ser reconhecida sem possuir carbono α sp3 elegível; nesse caso o estado é `no_alpha_sites`, sem geração artificial de produtos. Essa escolha é coerente com a literatura que trata a α-hidroxilação como uma etapa crítica da ativação metabólica de N-nitrosaminas, mas a regra não substitui um modelo treinado, dados enzimáticos ou confirmação experimental [1].
 
 Para cada sítio elegível, o endpoint retorna o índice do átomo, hidrogênios α, indicação de anel, contexto enzimático de **CYP2E1/CYP3A4**, regra aplicada, SMILES do produto α-hidroxilado, SVG estrutural e propriedades físico-químicas quando disponíveis. O resultado também inclui uma representação de fragmento diazônio como **intermediário mecanístico hipotético**; essa estrutura é uma hipótese de triagem e não deve ser interpretada como espécie isolada, produto experimental confirmado ou decisão de risco.
 
@@ -274,7 +274,7 @@ Atenção:
 - `nitrosamine_space` consulta, sob demanda, a similaridade 2D do [PubChem PUG REST](https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest), filtra `[N;X3][N;X2]=O`, seleciona até 10 candidatos e retorna descritores, Tanimoto, distância global e pontos PCA
 - O PubChem fornece o lote de CIDs; o ranking final de Tanimoto é recalculado localmente com MACCS, usando o pipeline de similaridade do Mol.Sim, e a seleção final também considera a distância global normalizada
 - Falhas de rede/timeout retornam `status: pubchem_unavailable`; nenhum resultado retorna `status: no_nitrosamines`; esses estados não bloqueiam o cPCA nem inventam candidatos
-- Metabolism pode retornar `not_nitrosamine`, `no_alpha_sites` ou `invalid_smiles`; quando `ok`, informa `alpha_sites`, `metabolites`, `reactive_intermediates`, `rule_id`, contexto enzimático e avisos de triagem
+- Metabolism pode retornar `not_nitrosamine`, `no_alpha_sites` ou `invalid_smiles`; N-nitrosos aromáticos reconhecidos sem carbono α sp3 retornam `no_alpha_sites`; quando `ok`, informa `alpha_sites`, `metabolites`, `reactive_intermediates`, `rule_id`, contexto enzimático e avisos de triagem
 - O complemento Deep-PK não é incluído em `modules` do endpoint local; quando selecionado na UI, o frontend chama `/nitro-ra/deep-pk` depois da resposta local e consulta `/nitro-ra/deep-pk/<job_id>` até concluir ou atingir o limite de espera
 
 ### /nitro-ra/deep-pk

@@ -17,7 +17,13 @@ from analysis import get_properties, mol_to_svg
 
 
 NITROSAMINE_SMARTS = "[N;X3]-[N;X2]=O"
-NITROSAMINE_QUERY = Chem.MolFromSmarts(NITROSAMINE_SMARTS)
+AROMATIC_NITROSAMINE_SMARTS = "[n;H0;+0]-[N;X2]=O"
+NITROSAMINE_QUERIES = tuple(
+    query for query in (
+        Chem.MolFromSmarts(NITROSAMINE_SMARTS),
+        Chem.MolFromSmarts(AROMATIC_NITROSAMINE_SMARTS),
+    ) if query is not None
+)
 RULE_ID = "CYP450_ALPHA_HYDROXYLATION_N_NITROSO"
 ALPHA_HYDROXYLATION_SMIRKS = "[N;X2:10](=O)[N;X3:1][C;X4;H1,H2:2]>>[N;X2:10](=O)[N:1][C:2][O;H1]"
 ALPHA_HYDROXYLATION_REACTION = rdChemReactions.ReactionFromSmarts(ALPHA_HYDROXYLATION_SMIRKS)
@@ -42,6 +48,7 @@ def _empty_result(smiles: str, status: str, message: str) -> Dict[str, Any]:
         "prediction_mode": "rule_based",
         "rule_id": RULE_ID,
         "reaction_smarts": ALPHA_HYDROXYLATION_SMIRKS,
+        "nitrosamine_smarts": [NITROSAMINE_SMARTS, AROMATIC_NITROSAMINE_SMARTS],
         "enzyme_context": ENZYME_CONTEXT,
         "alpha_sites": [],
         "metabolites": [],
@@ -74,9 +81,14 @@ def _target_payload(mol: Mol) -> Dict[str, Any]:
 
 
 def _find_nitrosamine_matches(mol: Mol) -> Tuple[Tuple[int, int, int], ...]:
-    if NITROSAMINE_QUERY is None:
-        return ()
-    return mol.GetSubstructMatches(NITROSAMINE_QUERY, uniquify=True)
+    matches: List[Tuple[int, int, int]] = []
+    seen: Set[Tuple[int, int, int]] = set()
+    for query in NITROSAMINE_QUERIES:
+        for match in mol.GetSubstructMatches(query, uniquify=True):
+            if match not in seen:
+                seen.add(match)
+                matches.append(match)
+    return tuple(matches)
 
 
 def _find_alpha_sites(mol: Mol, matches: Tuple[Tuple[int, int, int], ...]) -> List[Dict[str, int]]:
@@ -276,6 +288,7 @@ def evaluate_metabolism(smiles: str) -> Dict[str, Any]:
         "prediction_mode": "rule_based",
         "rule_id": RULE_ID,
         "reaction_smarts": ALPHA_HYDROXYLATION_SMIRKS,
+        "nitrosamine_smarts": [NITROSAMINE_SMARTS, AROMATIC_NITROSAMINE_SMARTS],
         "enzyme_context": ENZYME_CONTEXT,
         "target": target,
         "nitrosamine_centers": len(matches),

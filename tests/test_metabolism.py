@@ -55,6 +55,17 @@ def test_invalid_smiles_is_safe_and_structured():
     assert result["warnings"]
 
 
+def test_aromatic_n_nitroso_imidazole_is_recognized_without_alpha_sp3_sites():
+    result = evaluate_metabolism("C1=CN(C=N1)N=O")
+
+    assert result["status"] == "no_alpha_sites"
+    assert result["canonical_smiles"] == "O=Nn1ccnc1"
+    assert result["nitrosamine_centers"] == 1
+    assert result["alpha_sites"] == []
+    assert result["metabolites"] == []
+    assert result["reactive_intermediates"] == []
+
+
 def test_nitrosamine_with_heteroatom_in_ring_keeps_alpha_sites():
     result = evaluate_metabolism("O=NN1CCOCC1")
 
