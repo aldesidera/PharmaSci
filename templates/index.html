@@ -735,6 +735,26 @@
         .metabolism-product-kind { margin-top: 0.2rem; color: var(--theme-muted-text); font-size: 0.64rem; line-height: 1.4; }
         .metabolism-warning { border: 1px solid rgba(245,158,11,0.35); border-radius: 1.25rem; padding: 1rem 1.1rem; color: #92400e; background: rgba(255,251,235,0.82); font-size: 0.74rem; line-height: 1.55; }
         .metabolism-disclaimer { color: var(--theme-muted-text); font-size: 0.7rem; line-height: 1.55; }
+        .deep-pk-card { border: 1px solid rgba(15,118,110,0.24); border-radius: 1.5rem; padding: 1.25rem; background: linear-gradient(135deg, rgba(240,253,250,0.92), rgba(255,255,255,0.82)); }
+        .deep-pk-kicker { color: #0f766e; font-size: 0.64rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; }
+        .deep-pk-description { color: #475569; font-size: 0.76rem; line-height: 1.55; }
+        .deep-pk-table-wrap { overflow-x: auto; border: 1px solid rgba(15,118,110,0.2); border-radius: 1.1rem; background: rgba(255,255,255,0.82); }
+        .deep-pk-table { width: 100%; min-width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 0.66rem; }
+        .deep-pk-table th { padding: 0.58rem 0.5rem; color: #0f766e; background: rgba(204,251,241,0.58); font-size: 0.57rem; font-weight: 900; letter-spacing: 0.06em; text-align: left; text-transform: uppercase; overflow-wrap: anywhere; }
+        .deep-pk-table td { border-top: 1px solid rgba(15,118,110,0.12); padding: 0.58rem 0.5rem; color: var(--text-700); vertical-align: top; overflow-wrap: anywhere; }
+        .deep-pk-table th:nth-child(1) { width: 16%; }
+        .deep-pk-table th:nth-child(2) { width: 23%; }
+        .deep-pk-table th:nth-child(3) { width: 18%; }
+        .deep-pk-table th:nth-child(4) { width: 25%; }
+        .deep-pk-table th:nth-child(5) { width: 18%; }
+        .deep-pk-table td.numeric { color: #0f766e; font-weight: 900; white-space: nowrap; }
+        .deep-pk-interpretation { display: block; margin-top: 0.25rem; color: #64748b; font-size: 0.58rem; line-height: 1.35; }
+        .deep-pk-label { display: inline-flex; align-items: center; border-radius: 999px; padding: 0.25rem 0.5rem; font-size: 0.62rem; font-weight: 900; white-space: nowrap; }
+        .deep-pk-label.is-positive { color: #9f1239; background: #ffe4e6; }
+        .deep-pk-label.is-negative { color: #166534; background: #dcfce7; }
+        .deep-pk-label.is-neutral { color: #475569; background: #f1f5f9; }
+        .deep-pk-muted { color: #64748b; font-size: 0.72rem; line-height: 1.55; }
+        .deep-pk-warning { border: 1px solid rgba(180,83,9,0.24); border-radius: 1rem; padding: 0.85rem 1rem; color: #92400e; background: rgba(255,251,235,0.84); font-size: 0.7rem; line-height: 1.5; }
         @media (max-width: 900px) {
             .metabolism-target-grid { grid-template-columns: 1fr; }
             .metabolism-product-grid { grid-template-columns: 1fr; }
@@ -1016,7 +1036,7 @@
                                 <p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Nitro.RA</p>
                                 <h2 class="text-2xl font-black text-slate-800">Análises científicas</h2>
                             </div>
-                            <span class="cpca-status">4 módulos</span>
+                            <span class="cpca-status">5 módulos</span>
                         </div>
                         <div class="space-y-6">
                             <div>
@@ -1034,9 +1054,10 @@
                                     <label class="nitro-module-check"><input type="checkbox" data-nitro-module="nitrosamine_space"><span><strong>Espaço Químico N-nitroso</strong><small>PubChem e espaço químico</small></span></label>
                                     <label class="nitro-module-check"><input type="checkbox" data-nitro-module="quantum"><span><strong>Quantum</strong><small>HOMO / LUMO</small></span></label>
                                     <label class="nitro-module-check"><input type="checkbox" data-nitro-module="metabolism"><span><strong>Metabolism</strong><small>CYP450</small></span></label>
+                                    <label class="nitro-module-check"><input type="checkbox" data-nitro-module="deep_pk"><span><strong>Deep-PK</strong><small>CYP · substrato / inibidor</small></span></label>
                                 </div>
                             </div>
-                            <p class="text-xs leading-5 text-slate-500">Selecione uma ou mais análises. Os resultados serão organizados em abas independentes; módulos ainda em desenvolvimento serão identificados sem gerar dados fictícios.</p>
+                            <p class="text-xs leading-5 text-slate-500">Selecione uma ou mais análises. O Deep-PK é complementar, depende da etapa Metabolism e será consultado depois da análise local; módulos ainda em desenvolvimento serão identificados sem gerar dados fictícios.</p>
                         </div>
                         <button id="btn-nitro-analyze" data-tooltip="Executa os módulos Nitro.RA selecionados" onclick="calculateNitroModules()" class="mt-8 w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-5 rounded-2xl text-lg flex items-center justify-center gap-3 transition-all shadow-lg shadow-sky-500/30">
                             <i class="fas fa-flask-vial"></i> EXECUTAR ANÁLISES
@@ -1297,6 +1318,8 @@
         let activeCpcaController = null;
         let activeCpcaRequestId = 0;
         let currentNitroResults = null;
+        let activeDeepPkController = null;
+        let activeDeepPkRequestId = 0;
         let activeNitroTab = 'cpca';
         let toastTimer = null;
         let chemicalSpaceChart = null;
@@ -1925,6 +1948,72 @@
             const productsBlock = productCards ? `<div class="metabolism-product-grid">${productCards}</div>` : '<p class="metabolism-disclaimer">Nenhum metabólito estruturalmente válido foi gerado.</p>';
             const intermediatesBlock = intermediateCards ? `<div class="metabolism-product-grid">${intermediateCards}</div>` : '<p class="metabolism-disclaimer">Nenhum intermediário foi representado como SMILES válido.</p>';
             panel.innerHTML = `<div class="flex flex-wrap items-center justify-between gap-4 mb-6"><div><p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Predição estrutural de Fase I</p><h2 class="text-3xl font-black text-slate-800"><i class="fas fa-dna theme-accent-text"></i> CYP450 — α-hidroxilação</h2></div><span class="cpca-status">${escapeHtml(metabolismStatusLabel(status))}</span></div><p class="text-sm leading-6 text-slate-600 mb-6">${escapeHtml(result?.message || 'Predição metabólica baseada em regras estruturais.')}</p><div class="metabolism-summary-grid mb-6"><div class="metabolism-summary-card"><span>Sítios α candidatos</span><strong>${escapeHtml(summary.alpha_sites ?? sites.length)}</strong></div><div class="metabolism-summary-card"><span>Metabólitos gerados</span><strong>${escapeHtml(summary.metabolites ?? metabolites.length)}</strong></div><div class="metabolism-summary-card"><span>Intermediários hipotéticos</span><strong>${escapeHtml(summary.reactive_intermediates ?? intermediates.length)}</strong></div></div><div class="metabolism-target-card mb-6"><h3 class="section-title mb-4"><i class="fas fa-atom theme-accent-text"></i> Molécula analisada</h3><div class="metabolism-target-grid"><div class="metabolism-target-svg">${targetSvg}</div><div><div class="metabolism-meta-label">SMILES canônico</div><code class="metabolism-smiles metabolism-meta-value">${escapeHtml(targetSmiles)}</code><div class="metabolism-meta-label mt-5">Enzimas em contexto</div><div class="metabolism-meta-value">${escapeHtml(enzymes)}</div><div class="metabolism-meta-label mt-5">Motor</div><div class="metabolism-meta-value">${escapeHtml(result?.engine || 'RDKit rule-based')}</div></div></div></div><div class="metabolism-section-card mb-6"><h3 class="section-title mb-4"><i class="fas fa-location-crosshairs theme-accent-text"></i> Carbonos α metabolicamente vulneráveis</h3>${tableBlock}</div><div class="metabolism-section-card mb-6"><h3 class="section-title mb-4"><i class="fas fa-flask-vial theme-accent-text"></i> Metabólitos de Fase I</h3>${productsBlock}</div><div class="metabolism-section-card mb-6"><h3 class="section-title mb-4"><i class="fas fa-bolt theme-accent-text"></i> Intermediário alquilante</h3>${intermediatesBlock}</div>${warningBlock}<p class="metabolism-disclaimer mt-5">${escapeHtml(result?.disclaimer || 'Resultado in silico de triagem; não substitui confirmação analítica, avaliação toxicológica ou decisão regulatória.')}</p>`;
+            panel.insertAdjacentHTML('beforeend', '<div id="metabolism-deep-pk" class="deep-pk-card mt-6"></div>');
+            renderDeepPkResults({ status: 'not_selected', message: 'Marque Deep-PK para consultar os endpoints externos de substrato e inibição CYP.' }, target);
+        }
+
+        function deepPkPredictionLabel(value) {
+            const labels = {
+                Substrate: 'Substrato',
+                'Non-Substrate': 'Não substrato',
+                Inhibitor: 'Inibidor',
+                'Non-Inhibitor': 'Não inibidor'
+            };
+            return labels[value] || safeText(value, '—');
+        }
+
+        function deepPkPredictionClass(value) {
+            if (value === 'Substrate' || value === 'Inhibitor') return 'is-positive';
+            if (value === 'Non-Substrate' || value === 'Non-Inhibitor') return 'is-negative';
+            return 'is-neutral';
+        }
+
+        function deepPkInterpretation(value, prediction) {
+            const text = safeText(value, '—');
+            const predictionText = safeText(prediction, '');
+            if (!predictionText || text === '—') return text;
+            if (text.toLowerCase().startsWith(predictionText.toLowerCase())) {
+                const remaining = text.slice(predictionText.length).trim().replace(/^\\((.*)\\)$/, '$1');
+                return remaining || '—';
+            }
+            return text;
+        }
+
+        function deepPkProbability(value) {
+            if (value == null || value === '') return '—';
+            const number = Number(value);
+            if (!Number.isFinite(number)) return safeText(value);
+            const percent = number >= 0 && number <= 1 ? number * 100 : number;
+            return `${percent.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+        }
+
+        function renderDeepPkResults(result, target = {}) {
+            const container = document.getElementById('metabolism-deep-pk');
+            if (!container) return;
+            const status = safeText(result?.status, 'deep_pk_error');
+            const statusLabels = {
+                not_selected: 'Não selecionado',
+                running: 'Processando',
+                ok: 'Concluído',
+                deep_pk_unavailable: 'Indisponível',
+                deep_pk_error: 'Erro',
+                invalid_smiles: 'SMILES inválido',
+                deep_pk_timeout: 'Tempo excedido'
+            };
+            const title = status === 'ok' ? 'Substrato e inibição CYP' : 'Consulta complementar Deep-PK';
+            const isoforms = Array.isArray(result?.isoforms) ? result.isoforms : [];
+            const targetSmiles = target?.canonical_smiles || result?.smiles || '—';
+            const rows = isoforms.map((item) => {
+                const substrate = item.substrate || {};
+                const inhibitor = item.inhibitor || {};
+                return `<tr><td class="numeric">${escapeHtml(item.isoform || '—')}</td><td><span class="deep-pk-label ${deepPkPredictionClass(substrate.prediction)}">${escapeHtml(deepPkPredictionLabel(substrate.prediction))}</span><small class="deep-pk-interpretation">${escapeHtml(deepPkInterpretation(substrate.interpretation, substrate.prediction))}</small></td><td class="numeric">${escapeHtml(deepPkProbability(substrate.probability))}</td><td><span class="deep-pk-label ${deepPkPredictionClass(inhibitor.prediction)}">${escapeHtml(deepPkPredictionLabel(inhibitor.prediction))}</span><small class="deep-pk-interpretation">${escapeHtml(deepPkInterpretation(inhibitor.interpretation, inhibitor.prediction))}</small></td><td class="numeric">${escapeHtml(deepPkProbability(inhibitor.probability))}</td></tr>`;
+            }).join('');
+            const table = rows
+                ? `<div class="deep-pk-table-wrap"><table class="deep-pk-table"><thead><tr><th>Isoforma</th><th>Substrato?</th><th>Probabilidade</th><th>Inibidor?</th><th>Probabilidade</th></tr></thead><tbody>${rows}</tbody></table></div>`
+                : `<div class="deep-pk-muted">${escapeHtml(result?.message || 'Nenhum endpoint Deep-PK disponível neste momento.')}</div>`;
+            const warnings = Array.isArray(result?.warnings) ? result.warnings : [];
+            const warningBlock = warnings.length ? `<div class="deep-pk-warning mt-4"><strong>Limitação da fonte externa:</strong><br>${warnings.map(escapeHtml).join('<br>')}</div>` : '';
+            container.innerHTML = `<div class="flex flex-wrap items-start justify-between gap-4"><div><p class="deep-pk-kicker">Complemento externo · ${escapeHtml(safeText(result?.provider, 'Deep-PK'))}</p><h3 class="section-title mt-1"><i class="fas fa-table-list" style="color:#0f766e"></i> ${escapeHtml(title)}</h3></div><span class="cpca-status">${escapeHtml(statusLabels[status] || 'Revisão')}</span></div><p class="deep-pk-description mt-3">${escapeHtml(result?.message || 'Os endpoints abaixo são consultados para o mesmo SMILES canônico, após a análise estrutural local.')}</p><p class="deep-pk-muted mt-2">SMILES consultado: <code>${escapeHtml(targetSmiles)}</code></p><div class="mt-4">${table}</div>${warningBlock}`;
         }
 
         function renderNitroResults(payload) {
@@ -1948,16 +2037,65 @@
             activateNitroTab(firstTab);
         }
 
+        function waitForDeepPk(milliseconds) {
+            return new Promise(resolve => setTimeout(resolve, milliseconds));
+        }
+
+        async function startDeepPkLookup(smiles, target) {
+            if (activeDeepPkController) activeDeepPkController.abort();
+            const controller = new AbortController();
+            activeDeepPkController = controller;
+            const requestId = ++activeDeepPkRequestId;
+            renderDeepPkResults({ status: 'running', message: 'Submetendo o SMILES ao Deep-PK e aguardando os endpoints CYP.' }, target);
+            try {
+                const submitResponse = await fetchWithTimeout('/nitro-ra/deep-pk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ smiles })
+                }, 25000, controller);
+                const submitted = await submitResponse.json();
+                if (requestId !== activeDeepPkRequestId) return;
+                if (!submitResponse.ok) throw new Error(getErrorMessage(submitted, `Falha ao submeter Deep-PK (${submitResponse.status})`));
+                if (submitted.status !== 'running' || !submitted.job_id) {
+                    renderDeepPkResults(submitted, target);
+                    return;
+                }
+
+                for (let attempt = 0; attempt < 18; attempt += 1) {
+                    await waitForDeepPk(3000);
+                    if (requestId !== activeDeepPkRequestId) return;
+                    const statusResponse = await fetchWithTimeout(`/nitro-ra/deep-pk/${encodeURIComponent(submitted.job_id)}`, {}, 25000, controller);
+                    const statusPayload = await statusResponse.json();
+                    if (requestId !== activeDeepPkRequestId) return;
+                    if (!statusResponse.ok) throw new Error(getErrorMessage(statusPayload, `Falha ao consultar Deep-PK (${statusResponse.status})`));
+                    if (statusPayload.status === 'running') continue;
+                    renderDeepPkResults(statusPayload, target);
+                    return;
+                }
+                renderDeepPkResults({ status: 'deep_pk_timeout', message: 'O Deep-PK permaneceu em processamento além do tempo de espera da interface.', warnings: ['Você pode repetir a consulta mais tarde sem alterar a análise estrutural local.'] }, target);
+            } catch (error) {
+                if (requestId !== activeDeepPkRequestId || error?.name === 'AbortError') return;
+                renderDeepPkResults({ status: 'deep_pk_unavailable', message: error.message || 'Não foi possível consultar o Deep-PK.' }, target);
+            } finally {
+                if (requestId === activeDeepPkRequestId) activeDeepPkController = null;
+            }
+        }
+
         async function calculateNitroModules() {
             const smiles = document.getElementById('nitro-smiles').value.trim();
             const mddValue = document.getElementById('nitro-mdd').value.trim();
             const selectedModules = getSelectedNitroModules();
+            const deepPkSelected = selectedModules.includes('deep_pk');
+            const localModules = selectedModules.filter(module => module !== 'deep_pk');
             if (!smiles) return showToast('Informe o SMILES da nitrosamina.', 'error');
             if (!selectedModules.length) return showToast('Selecione ao menos um módulo Nitro.RA.', 'error');
+            if (deepPkSelected && !localModules.includes('metabolism')) return showToast('Selecione também Metabolism para consultar o Deep-PK após a análise local.', 'error');
             if (mddValue && (!Number.isFinite(Number(mddValue)) || Number(mddValue) <= 0)) {
                 return showToast('A dose diária máxima deve ser um número maior que zero.', 'error');
             }
             if (activeCpcaController) activeCpcaController.abort();
+            if (activeDeepPkController) activeDeepPkController.abort();
+            activeDeepPkRequestId += 1;
             activeCpcaController = new AbortController();
             const requestId = ++activeCpcaRequestId;
             const btn = document.getElementById('btn-nitro-analyze');
@@ -1965,7 +2103,7 @@
             btn.innerHTML = '<i class="fas fa-circle-notch animate-spin"></i> ANALISANDO...';
             btn.disabled = true;
             try {
-                const body = { smiles, modules: selectedModules };
+                const body = { smiles, modules: localModules };
                 if (mddValue) body.mdd_mg = Number(mddValue);
                 const response = await fetchWithTimeout('/nitro-ra/analyze', {
                     method: 'POST',
@@ -1977,6 +2115,12 @@
                 if (!response.ok && payload?.status !== 'invalid_smiles') throw new Error(getErrorMessage(payload, `Falha nas análises Nitro.RA (${response.status})`));
                 currentNitroResults = payload;
                 renderNitroResults(payload);
+                const localMetabolism = payload?.results?.metabolism || {};
+                if (deepPkSelected && payload.status !== 'invalid_smiles') {
+                    startDeepPkLookup(smiles, localMetabolism.target || {});
+                } else if (deepPkSelected) {
+                    renderDeepPkResults({ status: 'invalid_smiles', message: 'O Deep-PK não foi consultado porque o SMILES é inválido.' }, localMetabolism.target || {});
+                }
                 showToast(payload.status === 'ok' ? 'Análises Nitro.RA concluídas!' : 'A análise requer revisão.', payload.status === 'ok' ? 'success' : 'info');
             } catch (error) {
                 if (requestId !== activeCpcaRequestId) return;

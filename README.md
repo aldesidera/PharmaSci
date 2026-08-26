@@ -118,6 +118,7 @@ MolSim_ver10/
 │           ├── cpca.py
 │           ├── quantum.py
 │           ├── metabolism.py
+│           ├── deep_pk.py
 │           └── nitrosamine_space.py
 ├── requirements.txt
 ├── static/
@@ -129,6 +130,7 @@ MolSim_ver10/
 │   ├── test_modular_structure.py
 │   ├── test_cpca.py
 │   ├── test_metabolism.py
+│   ├── test_deep_pk.py
 │   └── test_main_cli.py
 ├── chemo_suite/apps/nitro_ra/data/ema_appendix1.json
 
@@ -151,6 +153,8 @@ MolSim_ver10/
 9. Navegue pelas abas cPCA, Nitrosaminas e Espaço Químico, Quantum e Metabolism para consultar os resultados separadamente; módulos futuros ficam explicitamente identificados como em desenvolvimento.
 10. Marque `Espaço Químico N-nitroso` quando quiser consultar, sob demanda, compostos semelhantes no PubChem e visualizar o espaço químico.
 11. Informe a dose diária máxima em mg/dia quando desejar a conversão do AI para ppm.
+12. Marque `Deep-PK` junto com `Metabolism` para consultar, depois da análise local, somente os endpoints externos de substrato e inibição CYP.
+13. Leia a tabela Deep-PK como uma previsão probabilística complementar; ela não gera metabólitos nem intermediários e não substitui confirmação experimental.
 
 ---
 
@@ -190,12 +194,37 @@ A implementação atual usa `prediction_mode: rule_based` e o identificador vers
 
 Estados relevantes do módulo são `ok`, `invalid_smiles`, `not_nitrosamine` e `no_alpha_sites`. Em todos os casos, o painel informa os limites da inferência e preserva a distinção entre uma hipótese computacional e uma conclusão toxicológica.
 
+## Nitro.RA — Deep-PK complementar
+
+O complemento **Deep-PK** é opcional e só é consultado quando o usuário marca `Deep-PK` junto com `Metabolism`. A interface primeiro mostra a estrutura molecular, os sítios α, as hipóteses de α-hidroxilação e os intermediários locais; abaixo desse conteúdo, exibe uma tabela externa com as previsões de **Substrato?**, **Probabilidade**, **Inibidor?** e **Probabilidade** para as isoformas CYP documentadas pelo serviço. A confiança textual retornada pelo Deep-PK aparece sob cada classificação.
+
+O Deep-PK não substitui o motor local e não é usado para gerar os SMILES dos metabólitos ou do diazônio-surrogate. A resposta é marcada como proveniente de serviço externo, pode permanecer em processamento por meio de `job_id` e pode retornar `deep_pk_unavailable`, `deep_pk_error` ou `deep_pk_timeout`. Falhas externas não invalidam o resultado local de Metabolism. O fluxo envia o SMILES canônico ao serviço público somente após ação explícita do usuário.
+
+### Endpoints Deep-PK
+
+#### `/nitro-ra/deep-pk`
+
+- Recebe `POST` em JSON com `smiles`.
+- Sanitiza e canonicaliza o SMILES localmente antes do envio.
+- Submete `pred_type=metabolism` em `multipart/form-data` ao Deep-PK.
+- Retorna `status: running` e um `job_id`, ou um estado explícito de indisponibilidade/erro.
+
+#### `/nitro-ra/deep-pk/<job_id>`
+
+- Recebe `GET` para consultar o `job_id` assíncrono.
+- Envia o identificador ao Deep-PK no formato multipart documentado.
+- Normaliza os endpoints de substrato e inibição para CYP1A2, CYP2C19, CYP2C9, CYP2D6 e CYP3A4.
+- Não retorna produtos metabólicos nem interpreta a classificação como prova de biotransformação.
+
+A URL padrão é `https://biosig.lab.uq.edu.au/deeppk/api/predict` e pode ser sobrescrita com `DEEP_PK_API_URL`. O timeout individual pode ser ajustado por `MOLSIM_DEEP_PK_TIMEOUT`; a consulta continua opcional e não é executada para o usuário que não marcar o checkbox. A documentação oficial do serviço deve ser consultada antes de uso operacional [5].
+
 ### Referências científicas
 
 [1] [Chakravarti et al. — Computational Prediction of Metabolic α-Carbon Hydroxylation Potential of N-Nitrosamines](https://pmc.ncbi.nlm.nih.gov/articles/PMC10283024/).
 [2] [BioTransformer — Overview and CYP450 Help](https://biotransformer.ca/help).
 [3] [Wishart et al. — BioTransformer 3.0, Nucleic Acids Research](https://pmc.ncbi.nlm.nih.gov/articles/PMC9252798/).
 [4] [Ridder & Wagener — SyGMa, PubMed PMID 18311745](https://pubmed.ncbi.nlm.nih.gov/18311745/).
+[5] [Deep-PK — API Documentation](https://biosig.lab.uq.edu.au/deeppk/api_docs).
 
 ---
 
@@ -246,6 +275,17 @@ Atenção:
 - O PubChem fornece o lote de CIDs; o ranking final de Tanimoto é recalculado localmente com MACCS, usando o pipeline de similaridade do Mol.Sim, e a seleção final também considera a distância global normalizada
 - Falhas de rede/timeout retornam `status: pubchem_unavailable`; nenhum resultado retorna `status: no_nitrosamines`; esses estados não bloqueiam o cPCA nem inventam candidatos
 - Metabolism pode retornar `not_nitrosamine`, `no_alpha_sites` ou `invalid_smiles`; quando `ok`, informa `alpha_sites`, `metabolites`, `reactive_intermediates`, `rule_id`, contexto enzimático e avisos de triagem
+- O complemento Deep-PK não é incluído em `modules` do endpoint local; quando selecionado na UI, o frontend chama `/nitro-ra/deep-pk` depois da resposta local e consulta `/nitro-ra/deep-pk/<job_id>` até concluir ou atingir o limite de espera
+
+### /nitro-ra/deep-pk
+- Requer JSON válido em `application/json` e recebe `smiles`
+- Canonicaliza o SMILES localmente e submete `pred_type=metabolism` ao Deep-PK
+- Retorna `running` com `job_id`, ou estados `deep_pk_unavailable`, `deep_pk_error` e `invalid_smiles`
+
+### /nitro-ra/deep-pk/<job_id>
+- Consulta um job assíncrono do Deep-PK via `GET`
+- Retorna cinco isoformas com objetos separados de `substrate` e `inhibitor`, cada um com `prediction`, `probability` e `interpretation`
+- Não altera nem mistura as hipóteses estruturais locais de Metabolism
 
 ### /report-preview
 - Gera o preview do relatório visual

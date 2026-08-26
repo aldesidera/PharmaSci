@@ -28,6 +28,7 @@ from analysis import compare, bulk_compare, build_chemical_space, validate_finge
 from chemo_suite.apps.mol_sim.pairwise import run_pairwise_compare
 from chemo_suite.apps.mol_sim.batch import run_batch_compare
 from chemo_suite.apps.nitro_ra.cpca import calculate_cpca
+from chemo_suite.apps.nitro_ra.deep_pk import get_deep_pk_metabolism, submit_deep_pk_metabolism
 from chemo_suite.apps.nitro_ra.metabolism import evaluate_metabolism
 from chemo_suite.apps.nitro_ra.quantum import evaluate_quantum
 from chemo_suite.apps.nitro_ra.nitrosamine_space import search_nitrosamine_space
@@ -69,7 +70,7 @@ def _is_api_route(path: str) -> bool:
     return path in API_JSON_ROUTES
 
 
-API_JSON_ROUTES = {"/compare", "/bulk-compare", "/report-preview", "/export-pdf", "/lookup-name", "/nitro-ra/cpca", "/nitro-ra/analyze"}
+API_JSON_ROUTES = {"/compare", "/bulk-compare", "/report-preview", "/export-pdf", "/lookup-name", "/nitro-ra/cpca", "/nitro-ra/analyze", "/nitro-ra/deep-pk"}
 
 
 @app.before_request
@@ -595,6 +596,37 @@ def api_nitro_ra_analyze():
     except Exception:
         logger.error("Erro não tratado em /nitro-ra/analyze: %s", traceback.format_exc())
         return _error_response(500, "Erro interno ao executar módulos Nitro.RA.", code="internal_error")
+
+
+@app.route('/nitro-ra/deep-pk', methods=['POST'])
+def api_deep_pk_submit():
+    try:
+        data, parse_error = _parse_json_object_payload()
+        if parse_error:
+            return parse_error
+
+        smiles, smiles_error = _validate_required_string(data, "smiles", MAX_SMILES_LENGTH)
+        if smiles_error:
+            return _error_response(400, smiles_error, "smiles")
+        result = submit_deep_pk_metabolism(smiles)
+        if result.get("status") == "invalid_smiles":
+            return jsonify(result), 400
+        return jsonify(result), 200
+    except Exception:
+        logger.error("Erro não tratado em /nitro-ra/deep-pk: %s", traceback.format_exc())
+        return _error_response(500, "Erro interno ao consultar o Deep-PK.", code="internal_error")
+
+
+@app.route('/nitro-ra/deep-pk/<job_id>', methods=['GET'])
+def api_deep_pk_status(job_id):
+    try:
+        result = get_deep_pk_metabolism(job_id)
+        if result.get("status") == "invalid_job_id":
+            return jsonify(result), 400
+        return jsonify(result), 200
+    except Exception:
+        logger.error("Erro não tratado em /nitro-ra/deep-pk/<job_id>: %s", traceback.format_exc())
+        return _error_response(500, "Erro interno ao consultar o status Deep-PK.", code="internal_error")
 
 
 @app.route('/report-preview', methods=['POST'])
