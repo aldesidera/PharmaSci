@@ -960,7 +960,7 @@
                             <i class="fas fa-file-lines"></i> GERAR RELATÓRIO
                         </button>
                     </div>
-                    <div id="nitro-modules-card" class="card-glass p-8 shadow-sm h-auto hidden">
+                    <div id="nitro-modules-card" class="card-glass p-8 shadow-sm h-auto hidden" style="display: none;">
                         <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-8">
                             <div>
                                 <p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Nitro.RA</p>
@@ -1480,8 +1480,13 @@
                 brandVisual.classList.toggle('is-nitro', activeApp === 'nitro');
             }
             applyModuleTheme(activeApp);
-            document.getElementById('molsim-controls')?.classList.toggle('hidden', activeApp !== 'molsim');
-            document.getElementById('nitro-modules-card')?.classList.toggle('hidden', activeApp !== 'nitro');
+            const molsimControls = document.getElementById('molsim-controls');
+            const nitroModulesCard = document.getElementById('nitro-modules-card');
+            molsimControls?.classList.toggle('hidden', activeApp !== 'molsim');
+            nitroModulesCard?.classList.toggle('hidden', activeApp !== 'nitro');
+            // A troca também usa display inline para funcionar mesmo se o Tailwind CDN não carregar.
+            if (molsimControls) molsimControls.style.display = activeApp === 'molsim' ? '' : 'none';
+            if (nitroModulesCard) nitroModulesCard.style.display = activeApp === 'nitro' ? '' : 'none';
             document.getElementById('result-content')?.classList.add('hidden');
             document.getElementById('nitro-module-results')?.classList.add('hidden');
             document.getElementById('batch-result-panel')?.classList.add('hidden');
