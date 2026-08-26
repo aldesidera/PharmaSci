@@ -78,6 +78,8 @@
             --theme-focus-ring: rgba(255, 111, 97, 0.25);
         }
         body {
+            padding-top: clamp(0.75rem, 2vh, 1.5rem);
+            padding-bottom: clamp(0.75rem, 2vh, 1.5rem);
             background-image: url('/static/background.svg');
             background-repeat: no-repeat;
             background-position: center center;
@@ -212,6 +214,24 @@
             display: grid;
             place-items: center;
             overflow: hidden;
+            border-radius: 26px;
+            border: 1px solid rgba(255,255,255,0.34);
+            background: linear-gradient(145deg, rgba(2, 12, 17, 0.34), rgba(15, 23, 42, 0.16));
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.30),
+                inset 0 0 0 1px rgba(255,255,255,0.08),
+                0 16px 30px rgba(2, 12, 17, 0.18),
+                0 0 0 1px rgba(148,163,184,0.12);
+            isolation: isolate;
+        }
+        .brand-collage::after {
+            content: "";
+            position: absolute;
+            inset: 1px;
+            z-index: 3;
+            border-radius: 25px;
+            pointer-events: none;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18), inset 0 -18px 28px rgba(2,12,17,0.10);
         }
         .brand-logo-image {
             position: absolute;
@@ -225,7 +245,7 @@
             max-height: 100%;
             object-fit: contain;
             filter: drop-shadow(0 0 24px rgba(64, 201, 255, 0.28));
-            border-radius: 22px;
+            border-radius: 24px;
             opacity: 0.92;
             transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.7s ease, filter 0.7s ease, visibility 0.7s ease;
             visibility: visible;
@@ -269,7 +289,7 @@
                 0 12px 24px rgba(15, 23, 42, 0.06);
             justify-self: center;
             flex-shrink: 0;
-            margin: 18px auto 26px;
+            margin: 32px auto 12px;
             transform: translateY(0);
             backdrop-filter: blur(8px);
         }
@@ -839,13 +859,13 @@
         }
     </style>
 </head>
-<body class="py-12 theme-molsim">
+<body class="theme-molsim">
     <button id="pdf-export-btn" class="pdf-export-btn hidden" type="button" onclick="downloadReport()" title="Baixar Relatório em PDF" aria-label="Exportar relatório em PDF">
         <i class="fas fa-file-pdf"></i>
     </button>
 
     <div class="max-w-[1700px] mx-auto px-2 md:px-4">
-        <div class="main-container is-ghost p-8 md:p-12">
+        <div class="main-container is-ghost p-4 sm:p-6 lg:p-8">
             <div class="app-layout">
                 <div class="brand-panel">
                 <div class="brand-stack">
