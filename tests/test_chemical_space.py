@@ -80,3 +80,40 @@ def test_build_chemical_space_displays_at_most_ten_nearest_neighbors():
     assert len(space["points"]) == 11
     assert space["points"][0]["role"] == "reference"
     assert space["displayed_candidates"] == 10
+
+
+def test_pair_endpoint_does_not_return_batch_chemical_space():
+    client = app.test_client()
+    response = client.post("/compare", json={
+        "smiles_ref": "CCO",
+        "smiles_test": "CCN",
+        "name_ref": "Etanol",
+        "name_test": "Etilamina",
+        "fp_type": "MACCS",
+        "metric": "Tanimoto",
+        "show_similarity_map": False,
+    })
+    assert response.status_code == 200, response.get_json()
+    payload = response.get_json()
+    assert "chemical_space" not in payload
+    assert "ema_space" not in payload
+    assert "nitro_ra" not in payload
+
+
+def test_batch_chemical_space_is_user_batch_only_contract():
+    client = app.test_client()
+    response = client.post("/bulk-compare", json={
+        "ref_smiles": "CCO",
+        "smiles_list": ["CCN", "CCCl"],
+        "names_list": ["Amina", "Clorado"],
+        "fp_type": "MACCS",
+        "metric": "Tanimoto",
+        "show_chemical_space": True,
+    })
+    assert response.status_code == 200, response.get_json()
+    space = response.get_json()["chemical_space"]
+    assert space["reference_included"] is True
+    assert space["displayed_candidates"] == 2
+    assert "PubChem" not in space.get("method", "")
+    assert "EMA" not in space.get("method", "")
+    assert "source" not in space or space.get("source") in (None, "")

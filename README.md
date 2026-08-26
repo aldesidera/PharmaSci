@@ -148,13 +148,15 @@ MolSim_ver10/
 4. Clique em comparar.
 5. Visualize o score, classificação, mapa e propriedades.
 6. Use o preview de relatório para revisar o conteúdo e exportar para PDF.
-7. No modo batch, informe a referência e a lista de moléculas.
-8. Para o Nitro.RA, ative o módulo, informe um SMILES, marque um ou mais checkboxes e execute as análises.
-9. Navegue pelas abas cPCA, Espaço Químico, Quantum e Metabolism para consultar os resultados separadamente; módulos futuros ficam explicitamente identificados como em desenvolvimento.
-10. Marque `Espaço Químico` quando quiser consultar, sob demanda, compostos estruturalmente semelhantes no PubChem; a busca interna mantém o filtro específico para candidatos N-nitroso.
-11. Informe a dose diária máxima em mg/dia quando desejar a conversão do AI para ppm.
-12. Marque `Deep-PK` junto com `Metabolism` para consultar, depois da análise local, somente os endpoints externos de substrato e inibição CYP.
-13. Leia a tabela Deep-PK como uma previsão probabilística complementar; ela não gera metabólitos nem intermediários e não substitui confirmação experimental.
+7. No modo Batch do Mol.Sim, informe a referência e a lista de moléculas do usuário.
+8. Opcionalmente marque `Construir espaço químico 2D` no Batch para gerar o gráfico estatístico somente com a referência e o lote fornecidos; esse fluxo não consulta PubChem nem EMA.
+9. No modo Par a Par do Mol.Sim, informe os dois SMILES e use a comparação de similaridade; o espaço químico não é exibido nesse modo.
+10. Para o Nitro.RA, ative o módulo, informe um SMILES, marque um ou mais checkboxes e execute as análises.
+11. Navegue pelas abas cPCA, Espaço Químico, Quantum e Metabolism do Nitro.RA para consultar os resultados separadamente; módulos futuros ficam explicitamente identificados como em desenvolvimento.
+12. No Nitro.RA, marque `Espaço Químico` quando quiser consultar, sob demanda, a vizinhança PubChem e a biblioteca EMA Appendix 1.
+13. Informe a dose diária máxima em mg/dia quando desejar a conversão do AI para ppm.
+14. Marque `Deep-PK` junto com `Metabolism` para consultar, depois da análise local, somente os endpoints externos de substrato e inibição CYP.
+15. Leia a tabela Deep-PK como uma previsão probabilística complementar; ela não gera metabólitos nem intermediários e não substitui confirmação experimental.
 
 ---
 

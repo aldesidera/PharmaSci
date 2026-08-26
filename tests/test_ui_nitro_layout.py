@@ -40,3 +40,26 @@ def test_module_switch_has_local_display_fallback():
     assert 'id="nitro-modules-card" class="card-glass p-8 shadow-sm h-auto hidden" style="display: none;"' in html
     assert "molsimControls.style.display = activeApp === 'molsim' ? '' : 'none'" in html
     assert "nitroModulesCard.style.display = activeApp === 'nitro' ? '' : 'none'" in html
+
+
+def test_molsim_chemical_space_is_explicitly_batch_only_and_independent():
+    html = TEMPLATE.read_text(encoding="utf-8")
+    batch_section = html[html.index('id="batch-mode"'):html.index('id="nitro-modules-card"')]
+    pair_section = html[html.index('id="pair-mode"'):html.index('id="batch-mode"')]
+    nitro_section = html[html.index('id="nitro-modules-card"'):html.index('id="result-content"')]
+
+    assert 'id="batch-show-chemical-space"' in batch_section
+    assert 'id="batch-show-chemical-space"' not in pair_section
+    assert 'id="batch-show-chemical-space"' not in nitro_section
+    assert 'data-nitro-module="cpca"' in nitro_section
+    assert 'data-nitro-module="quantum"' in nitro_section
+    assert 'data-nitro-module="metabolism"' in nitro_section
+    assert 'id="nitro-module-results"' in html
+
+
+def test_molsim_space_text_excludes_external_sources():
+    html = TEMPLATE.read_text(encoding="utf-8")
+    space_start = html.index('id="batch-chemical-space-panel"')
+    space_end = html.index('id="batch-properties-panel"')
+    space_section = html[space_start:space_end]
+    assert "não consulta PubChem nem EMA" in space_section

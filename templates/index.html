@@ -1261,7 +1261,7 @@
                             <div class="mb-4 flex items-start justify-between gap-3">
                                 <div>
                                     <h3 class="section-title mb-1"><i class="fas fa-project-diagram text-sky-500"></i> Espaço químico 2D</h3>
-                                    <p class="batch-card-caption">MDS (*Multidimensional Scaling*): transforma a matriz de distâncias em uma projeção 2D. Base: 60% estrutural + 40% Dist.FQ normalizada, incluindo ligações rotacionáveis.</p>
+                                    <p class="batch-card-caption">Disponível somente no modo Batch. Usa exclusivamente a referência e o lote fornecidos pelo usuário: 60% estrutural + 40% Dist.FQ normalizada, incluindo ligações rotacionáveis; não consulta PubChem nem EMA.</p>
                                 </div>
                                 <span id="chemical-space-method" class="batch-header-pill">MDS</span>
                             </div>
@@ -1604,9 +1604,12 @@
             if (molsimControls) molsimControls.style.display = activeApp === 'molsim' ? '' : 'none';
             if (nitroModulesCard) nitroModulesCard.style.display = activeApp === 'nitro' ? '' : 'none';
             document.getElementById('result-content')?.classList.add('hidden');
-            document.getElementById('nitro-module-results')?.classList.add('hidden');
+            const nitroResultsPanel = document.getElementById('nitro-module-results');
+            nitroResultsPanel?.classList.add('hidden');
+            if (nitroResultsPanel) nitroResultsPanel.style.display = 'none';
             document.getElementById('batch-result-panel')?.classList.add('hidden');
             document.getElementById('batch-properties-panel')?.classList.add('hidden');
+            document.getElementById('batch-chemical-space-panel')?.classList.add('hidden');
             document.getElementById('bottom-results')?.classList.add('hidden');
             document.getElementById('placeholder-results')?.classList.remove('hidden');
             currentResult = null;
@@ -2100,7 +2103,10 @@
             document.getElementById('bottom-results')?.classList.add('hidden');
             document.getElementById('batch-result-panel')?.classList.add('hidden');
             document.getElementById('batch-properties-panel')?.classList.add('hidden');
-            document.getElementById('nitro-module-results')?.classList.remove('hidden');
+            document.getElementById('batch-chemical-space-panel')?.classList.add('hidden');
+            const nitroResultsPanel = document.getElementById('nitro-module-results');
+            nitroResultsPanel?.classList.remove('hidden');
+            if (nitroResultsPanel) nitroResultsPanel.style.display = 'grid';
 
             const selectedModules = Array.isArray(payload.modules) ? payload.modules : [];
             const results = payload.results || {};
@@ -2464,6 +2470,9 @@
         function renderResults(r) {
             document.getElementById('placeholder-results').classList.add('hidden');
             document.getElementById('result-content').classList.remove('hidden');
+            document.getElementById('batch-result-panel')?.classList.add('hidden');
+            document.getElementById('batch-properties-panel')?.classList.add('hidden');
+            document.getElementById('batch-chemical-space-panel')?.classList.add('hidden');
             document.getElementById('bottom-results').classList.remove('hidden');
             const similarityValue = Number.isFinite(Number(r.similarity)) ? Number(r.similarity).toFixed(4) : '—';
             document.getElementById('similarity-score').textContent = similarityValue;
