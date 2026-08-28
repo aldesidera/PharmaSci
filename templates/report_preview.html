@@ -31,6 +31,7 @@
             --accent: {% if is_nitro %}#f97316{% else %}#0284c7{% endif %};
             --accent-dark: {% if is_nitro %}#c2410c{% else %}#0369a1{% endif %};
             --accent-soft: {% if is_nitro %}#fff7ed{% else %}#eff6ff{% endif %};
+            --accent-border: {% if is_nitro %}#fed7aa{% else %}#bae6fd{% endif %};
             --ink: #172033;
             --muted: #5d6b82;
             --line: #dbe3ee;
@@ -95,6 +96,137 @@
             width: 297mm;
             min-height: 210mm;
             padding: 10mm;
+        }
+        body.batch-report .section { margin-top: 9px; }
+        body.batch-report .summary-box { min-height: 56px; }
+        body.batch-report .reference-card--with-structure { grid-template-columns: minmax(0, 1fr) 88px; gap: 8px; }
+        body.batch-report .reference-structure { width: 88px; height: 56px; }
+        body.batch-report .section-intro { margin-bottom: 5px; }
+        body.batch-report .section h2 { margin-bottom: 7px; }
+        body.batch-report .summary-box--accent { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        body.pair-report .page { width: 210mm; min-height: 297mm; padding: 13mm; }
+        body.pair-report .section { margin-top: 11px; }
+        body.pair-report .pair-summary-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, .72fr) minmax(0, 1fr); gap: 10px; }
+        body.pair-report .pair-summary-molecule, body.pair-report .pair-summary-result { min-height: 86px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+        body.pair-report .pair-summary-result { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-color: var(--accent-border); background: var(--accent-soft); }
+        body.pair-report .pair-summary-molecule { display: flex; flex-direction: column; justify-content: center; }
+        body.pair-report .pair-summary-molecule strong, body.pair-report .pair-summary-result strong { display: block; margin-top: 3px; font-size: 17px; }
+        body.pair-report .pair-summary-molecule code { display: block; margin-top: 5px; color: #334155; font-family: "Courier New", monospace; font-size: 10px; overflow-wrap: anywhere; }
+        body.pair-report .pair-summary-result .summary-value { margin-top: 2px; font-size: 27px; }
+        body.pair-report .pair-summary-result .status-badge { margin-top: 5px; }
+        body.pair-report .pair-structure-card, body.pair-report .pair-analysis-card { padding: 8px; }
+        body.pair-report .pair-structure-box { height: 105px; }
+        body.pair-report .pair-structure-card .mono { margin-top: 4px; font-size: 8px; }
+        body.pair-report .pair-map-box { height: 245px; }
+        body.pair-report .pair-analysis-grid { grid-template-columns: 1fr; }
+        body.pair-report .pair-fingerprint-inline .pair-analysis-card { padding: 6px; }
+        body.pair-report .pair-fingerprint-inline .pair-analysis-card h3 { margin-bottom: 4px; font-size: 10px; }
+        body.pair-report .pair-summary-note { margin-top: 4px; color: var(--muted); font-size: 9px; }
+        body.batch-report .batch-similarity-section { break-inside: auto; }
+        body.batch-report .batch-similarity-table { break-inside: auto; }
+        body.batch-report .batch-similarity-table tr { break-inside: avoid; }
+        body.nitro-report .page { padding: 12mm; }
+        body.nitro-report .section { margin-top: 12px; }
+        body.nitro-report .summary-box { min-height: 92px; }
+        body.nitro-report .module-section { margin-top: 12px; padding: 10px; }
+        body.nitro-report .module-section--break { break-before: page; page-break-before: always; }
+        body.nitro-report .report-mark { text-align: center; }
+        .nitro-target-card { display: grid; grid-template-columns: minmax(13rem, .8fr) minmax(0, 1.2fr); gap: 12px; align-items: stretch; padding: 10px; border: 1px solid var(--accent-border); border-radius: 10px; background: var(--accent-soft); }
+        .nitro-target-structure { display: flex; min-height: 132px; align-items: center; justify-content: center; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: #fff; overflow: hidden; }
+        .nitro-target-structure svg { display: block; width: 100%; height: 132px; }
+        .nitro-target-meta { display: flex; flex-direction: column; justify-content: center; }
+        .nitro-target-name { margin: 4px 0 7px; color: var(--ink); font-size: 16px; font-weight: 800; }
+        .nitro-target-smiles { display: block; color: #334155; font-family: "Courier New", monospace; font-size: 9px; line-height: 1.35; overflow-wrap: anywhere; }
+        .nitro-target-caption { margin: 7px 0 0; color: var(--muted); font-size: 9px; }
+        .nitro-summary-grid { grid-template-columns: minmax(11rem, .8fr) minmax(0, 1.6fr); align-items: stretch; }
+        .nitro-summary-grid .summary-box { min-height: 104px; }
+        .nitro-summary-grid .nitro-analyzed-box { display: flex; flex-direction: column; justify-content: center; }
+        .nitro-summary-grid .nitro-modules-box { display: flex; flex-direction: column; justify-content: center; }
+        .nitro-metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+        .nitro-cpca-metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .nitro-metric-card { min-height: 63px; padding: 8px 9px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+        .nitro-metric-card span { display: block; color: var(--muted); font-size: 8px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+        .nitro-metric-card strong { display: block; margin-top: 4px; color: var(--accent-dark); font-size: 15px; line-height: 1.15; overflow-wrap: anywhere; }
+        .nitro-module-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 10px; align-items: start; }
+        .nitro-panel { padding: 9px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+        .nitro-panel h3 { margin: 0 0 6px; color: #243149; font-size: 11px; }
+        .nitro-panel p { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.45; }
+        .nitro-panel a { color: #1d4ed8; text-decoration: underline; }
+        .nitro-cpca-grid { grid-template-columns: minmax(0, 1.16fr) minmax(225px, .84fr); }
+        .nitro-cpca-panel { display: flex; flex-direction: column; justify-content: center; text-align: center; }
+        .nitro-cpca-panel .nitro-detail-list { width: 100%; }
+        .nitro-cpca-panel .nitro-detail-list li { grid-template-columns: 1fr; gap: 2px; text-align: center; }
+        .nitro-cpca-panel .nitro-detail-list strong { display: block; }
+        .nitro-cpca-panel .nitro-source-line { text-align: center; }
+        .nitro-panel--ema { border-color: var(--accent-border); background: var(--accent-soft); }
+        .nitro-ema-center { display: flex; flex-direction: column; justify-content: center; text-align: center; }
+        .nitro-ema-center h3 { text-align: center; }
+        .nitro-panel--ema .nitro-ai-value { margin-top: 5px; color: var(--accent-dark); font-size: 20px; font-weight: 800; }
+        .nitro-panel--ema .nitro-ai-value small { font-size: 10px; font-weight: 700; }
+        .nitro-panel--ema .nitro-ai-meta { margin-top: 4px; color: var(--muted); font-size: 8px; line-height: 1.4; }
+        .nitro-detail-list { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
+        .nitro-detail-list li { display: grid; grid-template-columns: minmax(7rem, .45fr) minmax(0, 1fr); gap: 8px; padding-bottom: 5px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 9px; }
+        .nitro-detail-list li:last-child { border-bottom: 0; padding-bottom: 0; }
+        .nitro-detail-list strong { color: var(--ink); }
+        .nitro-evidence-table, .nitro-space-table, .nitro-metabolism-table, .nitro-deep-pk-table { font-size: 8px; }
+        .nitro-evidence-table th, .nitro-space-table th, .nitro-metabolism-table th, .nitro-deep-pk-table th { padding: 4px 5px; text-align: center; font-size: 8px; line-height: 1.15; }
+        .nitro-evidence-table td, .nitro-space-table td, .nitro-metabolism-table td, .nitro-deep-pk-table td { padding: 4px 5px; vertical-align: top; }
+        .nitro-evidence-table td:not(:first-child), .nitro-space-table td.numeric, .nitro-metabolism-table td.numeric, .nitro-deep-pk-table td.numeric { text-align: center; }
+        .nitro-section-intro { margin: 0 0 8px; color: var(--muted); font-size: 9px; line-height: 1.45; }
+        .nitro-source-line { margin-top: 7px; color: var(--muted); font-size: 8px; line-height: 1.35; }
+        .nitro-status-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+        .nitro-status-line .status-badge { flex: 0 0 auto; }
+        .nitro-status-line span:last-child { color: var(--muted); font-size: 8px; text-align: right; }
+        .nitro-product-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .nitro-product-card { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 8px; align-items: center; padding: 7px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+        .nitro-product-card svg { width: 74px; height: 60px; display: block; }
+        .nitro-product-card strong { display: block; color: var(--ink); font-size: 9px; }
+        .nitro-product-card span { display: block; margin-top: 3px; color: var(--muted); font-size: 8px; line-height: 1.35; overflow-wrap: anywhere; }
+        .nitro-metabolism-summary-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 8px; align-items: stretch; }
+        .nitro-metabolism-summary-grid .nitro-panel { min-height: 0; }
+        .nitro-metabolism-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+        .nitro-metabolism-metrics .nitro-metric-card { min-height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; text-align: center; }
+        .nitro-metabolism-metrics .nitro-metric-card span, .nitro-metabolism-metrics .nitro-metric-card strong { width: 100%; text-align: center; }
+        .nitro-metabolism-metrics .nitro-metric-card span { font-size: 7px; }
+        .nitro-metabolism-metrics .nitro-metric-card strong { margin-top: 3px; font-size: 12px; }
+        .nitro-metabolism-sites { margin-top: 8px; break-inside: avoid; }
+        .nitro-metabolism-sites h3 { margin-bottom: 5px; }
+        .nitro-simulation-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 8px; break-inside: avoid; }
+        .nitro-simulation-panel { min-width: 0; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; break-inside: avoid; }
+        .nitro-simulation-panel h3 { margin: 0; color: #243149; font-size: 10px; text-align: center; }
+        .nitro-simulation-panel > p { margin: 3px 0 4px; color: var(--muted); font-size: 7px; line-height: 1.3; text-align: center; }
+        .nitro-simulation-item { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 6px; align-items: center; padding: 5px 0; border-top: 1px solid var(--line); }
+        .nitro-simulation-item:first-of-type { border-top: 0; }
+        .nitro-simulation-item svg { display: block; width: 56px; height: 48px; }
+        .nitro-simulation-item strong { display: block; color: var(--ink); font-size: 8px; line-height: 1.2; }
+        .nitro-simulation-item span { display: block; margin-top: 2px; color: var(--muted); font-size: 7px; line-height: 1.25; overflow-wrap: anywhere; }
+        .nitro-simulation-item .mono { font-size: 6.5px; }
+        .nitro-metabolism-note { margin-top: 7px; }
+        .nitro-callout { margin-top: 8px; padding: 7px 9px; border-left: 3px solid var(--accent); border-radius: 5px; background: var(--accent-soft); color: #46556b; font-size: 9px; line-height: 1.45; }
+        .nitro-callout--warning { border-left-color: #d97706; background: #fffbeb; color: #92400e; }
+        .nitro-callout--error { border-left-color: #dc2626; background: #fef2f2; color: #991b1b; }
+        .nitro-disclaimer { margin-top: 7px; color: #64748b; font-size: 8px; font-style: italic; line-height: 1.4; }
+        .nitro-space-source { margin-bottom: 8px; padding: 7px 9px; border-top: 3px solid var(--accent); border-radius: 5px; background: #fff; color: var(--muted); font-size: 8px; line-height: 1.4; text-align: center; }
+        .nitro-space-source strong { color: var(--ink); }
+        .nitro-space-pair { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; align-items: start; }
+        .nitro-space-pair .chemical-space-report-card { padding: 7px; }
+        .nitro-space-pair .chemical-space-report-svg { height: 340px; }
+        .nitro-space-pair .space-meta { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 5px 0 8px; }
+        .nitro-space-pair .space-meta div { display: flex; min-height: 58px; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .nitro-space-pair .space-meta span, .nitro-space-pair .space-meta strong { width: 100%; text-align: center; }
+        .nitro-space-pair .space-meta span { font-size: 9px; }
+        .nitro-space-pair .space-meta strong { font-size: 12px; line-height: 1.2; }
+        .nitro-space-pair .space-metric-help { display: block; width: 100%; margin-top: 3px; color: var(--muted); font-size: 7px; line-height: 1.2; text-align: center; }
+        .quantum-unimplemented-note { display: flex; min-height: 58px; align-items: center; justify-content: center; text-align: center; }
+        .quantum-unimplemented-note p { margin: 0; }
+        .nitro-space-pair .chemical-space-report-chart { width: 100%; }
+        .nitro-space-pair .chemical-space-report-table-wrap { display: block; width: 100%; }
+        .nitro-space-pair .chemical-space-report-table { width: 100%; margin-top: 8px; table-layout: fixed; font-size: 8.5px; }
+        .nitro-space-pair .chemical-space-report-table th, .nitro-space-pair .chemical-space-report-table td { text-align: center; vertical-align: middle; overflow-wrap: anywhere; }
+        .nitro-space-pair .chemical-space-report-table th { white-space: normal; font-size: 8.5px; line-height: 1.15; }
+        .nitro-report .page-break { break-before: page; page-break-before: always; }
+        @media print {
+            body.nitro-report .nitro-target-card, body.nitro-report .module-section, body.nitro-report .nitro-panel, body.nitro-report .nitro-product-card { break-inside: avoid; }
         }
 
         .report-header {
@@ -165,17 +297,46 @@
             letter-spacing: .13em;
             text-transform: uppercase;
         }
-        .summary-box--accent { border-color: color-mix(in srgb, var(--accent) 35%, white); background: var(--accent-soft); }
+        .summary-box--accent { border-color: var(--accent-border); background: var(--accent-soft); }
         .summary-value { display: block; margin-top: 8px; color: var(--accent-dark); font-size: 27px; font-weight: 800; line-height: 1; }
         .summary-note { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; }
         .reference-card { padding: 9px 10px; border: 1px solid #d4deeb; border-radius: 8px; background: #fff; }
+        .reference-card--with-structure { display: grid; grid-template-columns: minmax(0, 1fr) 112px; gap: 10px; align-items: center; }
         .reference-name { margin-bottom: 5px; font-size: 13px; font-weight: 800; }
         .reference-smiles { color: #334155; font-family: "Courier New", monospace; font-size: 12px; overflow-wrap: anywhere; }
+        .reference-structure { display: flex; align-items: center; justify-content: center; width: 112px; height: 76px; padding: 4px; overflow: hidden; border: 1px solid var(--line); border-radius: 7px; background: #fff; }
+        .reference-structure img { display: block; width: 100%; height: 100%; object-fit: contain; }
 
         .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
         .metric-card { padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
         .metric-card span { display: block; color: var(--muted); font-size: 9px; }
         .metric-card strong { display: block; margin-top: 4px; font-size: 17px; line-height: 1; }
+
+        /* Nitro.RA: proporção do topo e altura natural dos painéis científicos */
+        body.nitro-report .section { margin-top: 9px; }
+        body.nitro-report .summary-grid.nitro-summary-grid { grid-template-columns: minmax(0, 1fr) minmax(7.25rem, 8.5rem); gap: 8px; }
+        body.nitro-report .summary-grid.nitro-summary-grid .summary-box { min-height: 0; padding: 8px 10px; }
+        body.nitro-report .summary-grid.nitro-summary-grid .summary-value { margin-top: 5px; font-size: 24px; }
+        body.nitro-report .summary-grid.nitro-summary-grid .reference-card { width: 100%; padding: 8px 10px; }
+        body.nitro-report .summary-grid.nitro-summary-grid .nitro-modules-box { align-items: center; justify-self: end; width: 100%; max-width: 8.5rem; text-align: center; }
+        body.nitro-report .summary-grid.nitro-summary-grid .nitro-analyzed-box { align-items: flex-start; text-align: left; }
+        body.nitro-report .summary-grid.nitro-summary-grid .nitro-analyzed-box .reference-card { text-align: left; }
+        body.nitro-report #report-cpca { margin-top: 10px; padding: 8px; }
+        body.nitro-report #report-cpca .nitro-status-line { margin-bottom: 5px; }
+        body.nitro-report #report-cpca .nitro-module-grid { align-items: stretch; }
+        body.nitro-report #report-cpca .nitro-panel { align-self: stretch; padding: 7px; }
+        body.nitro-report #report-cpca .nitro-cpca-panel { display: block; }
+        body.nitro-report #report-cpca .nitro-metric-grid { align-items: stretch; gap: 6px; }
+        body.nitro-report #report-cpca .nitro-metric-card { min-height: 48px; height: 100%; align-self: stretch; display: flex; flex-direction: column; justify-content: center; padding: 6px 7px; }
+        body.nitro-report #report-cpca .nitro-metric-card span { font-size: 7px; line-height: 1.2; }
+        body.nitro-report #report-cpca .nitro-metric-card strong { margin-top: 3px; font-size: 13px; }
+        body.nitro-report #report-cpca .nitro-ema-center { height: 100%; }
+        body.nitro-report #report-cpca .nitro-detail-list { gap: 3px; margin-top: 6px !important; }
+        body.nitro-report #report-cpca .nitro-detail-list li { grid-template-columns: minmax(6.5rem, .8fr) minmax(0, 1.2fr); gap: 5px; padding-bottom: 3px; font-size: 8px; line-height: 1.25; text-align: center; align-items: center; }
+        body.nitro-report #report-cpca .nitro-detail-list strong { display: block; }
+        body.nitro-report #report-cpca .nitro-source-line { margin-top: 4px; }
+        body.nitro-report #report-cpca .nitro-evidence-table th,
+        body.nitro-report #report-cpca .nitro-evidence-table td { padding-top: 3px; padding-bottom: 3px; }
 
         .molecule-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--molecule-box-gap); }
         .molecule-card { break-inside: avoid; padding: 8px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
@@ -203,20 +364,65 @@
         .compact-table th, .compact-table td { padding: 4px 5px; }
         .table-wrap { overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
         .batch-report-table { table-layout: fixed; font-size: 9px; }
+        .batch-similarity-table { table-layout: fixed; width: 100%; max-width: 100%; font-size: 8px; break-inside: auto; }
+        .batch-similarity-table thead { display: table-header-group; }
+        .batch-similarity-table tbody { display: table-row-group; }
+        .batch-similarity-section, .batch-properties-section { break-inside: avoid; }
+        .table-wrap--fit { display: block; width: 100%; max-width: 100%; vertical-align: top; }
+        .batch-similarity-table .batch-molecule-cell { width: 17%; }
+        .batch-similarity-table th, .batch-similarity-table td { padding: 2px 3px; text-align: center; vertical-align: middle; }
+        .batch-similarity-table td:first-child { text-align: left; }
+        .batch-similarity-table th { font-size: 8px; line-height: 1.1; }
+        .batch-similarity-table td { font-size: 8px; }
+        .batch-similarity-table .batch-molecule-name { font-size: 7.5px; }
+        .batch-similarity-table .batch-structure-thumb { width: 70px; height: 46px; }
+        .batch-similarity-table .property-cell { white-space: nowrap; }
+        .pair-structure-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .pair-structure-card, .pair-analysis-card { break-inside: avoid; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+        .pair-structure-card h3, .pair-analysis-card h3 { margin: 0 0 7px; color: #243149; font-size: 12px; text-align: center; }
+        .pair-structure-card .mono { display: block; margin-top: 6px; color: var(--muted); font-size: 9px; text-align: center; }
+        .pair-structure-box { display: flex; align-items: center; justify-content: center; height: 145px; padding: 7px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; }
+        .pair-structure-box img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+        .pair-properties-section { break-before: page; page-break-before: always; }
+        .pair-properties-table { table-layout: fixed; font-size: 9px; break-inside: avoid; }
+        .pair-properties-table thead { display: table-header-group; }
+        .pair-properties-table th, .pair-properties-table td { padding: 3px 5px; }
+        .pair-properties-table th { text-align: center; line-height: 1.15; }
+        .pair-properties-table td:not(:first-child) { text-align: center; }
+        .pair-analysis-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(260px, .65fr); gap: 10px; align-items: stretch; }
+        .pair-map-box { display: flex; align-items: center; justify-content: center; height: 225px; padding: 12px; overflow: hidden; border: 1px solid #dbe5ef; border-radius: 8px; background: #fff; }
+        .pair-map-box svg { display: block; width: 100%; height: 100%; max-width: 100%; max-height: 100%; overflow: visible; }
+        .pair-map-method { margin: 0 0 6px; color: var(--muted); font-size: 9px; line-height: 1.3; text-align: center; }
+        .pair-map-box img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+        .pair-metric-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+        .pair-metric-card { padding: 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); }
+        .pair-metric-card span { display: block; color: var(--muted); font-size: 8px; }
+        .pair-metric-card strong { display: block; margin-top: 3px; font-size: 13px; }
+        .pair-warning-list { margin: 9px 0 0; padding: 8px 10px 8px 25px; border-left: 3px solid #d97706; border-radius: 5px; background: #fffbeb; color: #92400e; font-size: 9px; line-height: 1.45; }
+        .pair-fingerprint-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .pair-fingerprint-inline { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 8px; }
+        .pair-fingerprint-box { display: flex; align-items: center; justify-content: center; height: 70px; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+        .pair-fingerprint-inline .pair-fingerprint-box { height: 48px; }
+        .pair-fingerprint-box img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+        .pair-disclaimer { margin-top: 4px; color: #64748b; font-size: 9px; font-style: italic; }
+        body.pair-report .pair-fingerprint-grid { gap: 8px; }
         .batch-report-table th { text-align: center; line-height: 1.15; }
         .batch-molecule-cell { width: 150px; }
-        .batch-molecule-report { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .batch-molecule-report { display: flex; flex-direction: column; align-items: center; gap: 1px; }
         .batch-molecule-name { color: #172033; text-align: center; font-size: 10px; font-weight: 800; overflow-wrap: anywhere; }
-        .batch-structure-thumb { display: flex; align-items: center; justify-content: center; width: 92px; height: 64px; padding: 3px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
-        .batch-structure-thumb img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+        .batch-structure-thumb { display: flex; align-items: center; justify-content: center; width: 118px; height: 72px; padding: 5px; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+        .batch-structure-thumb img { display: block; width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; }
         .batch-structure-placeholder { color: #94a3b8; font-size: 9px; text-align: center; }
         .status-badge { display: inline-block; padding: 3px 7px; border-radius: 999px; background: #e2e8f0; color: #334155; font-size: 9px; font-weight: 800; }
         .status-badge--ok { background: #dcfce7; color: #166534; }
+        .status-badge--low { background: #fee2e2; color: #b91c1c; }
+        .status-badge--moderate { background: #fef3c7; color: #a16207; }
+        .status-badge--high { background: #dcfce7; color: #166534; }
         .status-badge--warn { background: #fef3c7; color: #92400e; }
         .status-badge--error { background: #fee2e2; color: #b91c1c; }
 
         .report-card, .module-section { break-inside: avoid; padding: 11px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
-        .report-card--accent { border-color: color-mix(in srgb, var(--accent) 33%, white); background: var(--accent-soft); }
+        .report-card--accent { border-color: var(--accent-border); background: var(--accent-soft); }
         .module-section { margin-top: 14px; }
         .module-section--break { break-before: page; page-break-before: always; }
         .module-meta-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 9px 0; }
@@ -229,11 +435,18 @@
         .muted { color: var(--muted); }
         .mono { font-family: "Courier New", monospace; overflow-wrap: anywhere; }
 
-        .chemical-space-report-card { padding: 10px; border: 1px solid color-mix(in srgb, var(--accent) 30%, white); border-radius: 9px; background: var(--accent-soft); }
+        .chemical-space-report-card { padding: 6px; border: 1px solid var(--accent-border); border-radius: 9px; background: var(--accent-soft); break-inside: avoid; }
         .chemical-space-report-svg { display: block; width: 100%; height: 205px; border: 1px solid #dbe5ef; border-radius: 8px; background: #fff; }
-        .space-legend { margin-top: 5px; color: #536176; font-size: 9px; }
-        .chemical-space-report-table { margin-top: 8px; font-size: 8px; }
-        .chemical-space-report-table th, .chemical-space-report-table td { padding: 4px 5px; }
+        .chemical-space-report-svg--batch { height: 285px; }
+        .space-legend { margin-top: 5px; color: #536176; font-size: 9px; text-align: center; }
+        .chemical-space-report-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(330px, .9fr); gap: 9px; align-items: stretch; }
+        .chemical-space-report-chart { min-width: 0; }
+        .chemical-space-report-table-wrap { min-width: 0; display: flex; align-items: stretch; }
+        .chemical-space-report-table { width: 100%; table-layout: fixed; margin-top: 4px; font-size: 8px; }
+        .chemical-space-report-table--side { margin-top: 0; align-self: stretch; }
+        .chemical-space-report-table th, .chemical-space-report-table td { padding: 2px 5px; overflow-wrap: anywhere; }
+        .chemical-space-report-table--side th, .chemical-space-report-table--side td { vertical-align: middle; }
+        .chemical-space-report-table--side th { white-space: nowrap; text-align: center; font-size: 8px; line-height: 1.1; }
         .space-meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin: 8px 0; }
         .space-meta div { padding: 6px 7px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
         .space-meta span { display: block; color: var(--muted); font-size: 8px; }
@@ -242,17 +455,22 @@
         .page-break { break-before: page; page-break-before: always; }
         .footer-line { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; padding-top: 7px; border-top: 1px solid var(--line); color: #8290a5; font-size: 9px; }
 
-        @media (max-width: 850px) {
+        @media screen and (max-width: 850px) {
             .page, body.batch-report .page { width: auto; min-height: auto; margin: 0; padding: 22px 16px; box-shadow: none; }
+            .chemical-space-report-layout, .reference-card--with-structure, .pair-summary-grid, .pair-analysis-grid { grid-template-columns: 1fr; }
+            .pair-structure-grid, .pair-fingerprint-grid { grid-template-columns: 1fr; }
+            .reference-structure { width: 100%; max-width: 112px; justify-self: end; }
             .report-header, .summary-grid, .summary-grid--two, .metric-grid, .module-meta-grid, .space-meta { grid-template-columns: 1fr; }
             .designer-controls { position: static; }
         }
         @media print {
             body { background: #fff; }
             .designer-controls { display: none !important; }
-            .page, body.batch-report .page { width: auto; min-height: auto; margin: 0; padding: 0; box-shadow: none; }
+            .page, body.batch-report .page, body.pair-report .page, body.nitro-report .page { width: auto; min-height: auto; margin: 0; padding: 0; box-shadow: none; }
             {% if is_batch %}
-            @page { size: A4 landscape; margin: 10mm; }
+            @page { size: A4 landscape; margin: 8mm; }
+            {% elif is_pair %}
+            @page { size: A4 portrait; margin: 11mm; }
             {% else %}
             @page { size: A4 portrait; margin: 11mm; }
             {% endif %}
@@ -289,7 +507,7 @@
             <div class="report-mark">{% if is_nitro %}TRIAGEM CIENTÍFICA{% elif is_batch %}BATCH DO USUÁRIO{% else %}COMPARAÇÃO PAR A PAR{% endif %}</div>
         </header>
 
-        {% macro space_section(space, title, source_label) %}
+        {% macro space_section(space, title, source_label, show_warnings=True, reference_name='Molécula alvo') %}
             {% set points = space.get('points', []) %}
             {% set candidates = space.get('candidates', []) %}
             {% set search = space.get('search', {}) %}
@@ -297,165 +515,234 @@
             {% for point in points %}
                 {% set bounds.max_abs = [bounds.max_abs, (point.get('x', 0) or 0)|abs, (point.get('y', 0) or 0)|abs]|max %}
             {% endfor %}
+            {% set ticks = [-bounds.max_abs, -(bounds.max_abs / 2), 0, bounds.max_abs / 2, bounds.max_abs] %}
             <div class="chemical-space-report-card">
                 <div class="space-meta">
                     <div><span>Fonte</span><strong>{{ source_label }}</strong></div>
-                    <div><span>Estruturas pontuadas</span><strong>{{ search.get('scored_candidates', candidates|length) }}</strong></div>
-                    <div><span>Exibidas</span><strong>{{ search.get('selected_candidates', candidates|length) }}</strong></div>
-                    <div><span>Stress MDS</span><strong>{{ search.get('mds_stress', '-') }}</strong></div>
+                    <div><span>Estruturas Avaliadas</span><strong>{{ search.get('scored_candidates', candidates|length) }}</strong></div>
+                    <div><span>Estruturas Consideradas</span><strong>{{ search.get('selected_candidates', candidates|length) }}</strong></div>
+                    <div><span>Stress MDS</span><strong>{{ '%.4f'|format(search.get('mds_stress')) if search.get('mds_stress') is not none else '-' }}</strong><span class="space-metric-help">Diferença entre as distâncias originais e a projeção 2D; quanto menor, melhor.</span></div>
                 </div>
-                <p class="section-intro"><strong>Método:</strong> {{ search.get('selection_method', space.get('message', 'Distância multimodal e MDS clássico.')) }}</p>
-                {% if points %}
-                <svg class="chemical-space-report-svg" viewBox="0 0 920 410" role="img" aria-label="{{ title }}">
-                    <line x1="460" y1="15" x2="460" y2="395" stroke="#cbd5e1" stroke-width="1" />
-                    <line x1="20" y1="205" x2="900" y2="205" stroke="#cbd5e1" stroke-width="1" />
-                    <text x="872" y="198" font-size="11" fill="#64748b">Eixo 1</text>
-                    <text x="466" y="28" font-size="11" fill="#64748b">Eixo 2</text>
-                    {% for point in points %}
-                        {% set px = 460 + ((point.get('x', 0) or 0) / bounds.max_abs) * 405 %}
-                        {% set py = 205 - ((point.get('y', 0) or 0) / bounds.max_abs) * 175 %}
-                        {% set is_target = point.get('is_target') or point.get('role') == 'reference' %}
-                        {% set point_color = '#f97316' if is_target else '#2563eb' %}
-                        <circle cx="{{ '%.2f'|format(px) }}" cy="{{ '%.2f'|format(py) }}" r="{{ 6 if is_target else 4 }}" fill="{{ point_color }}" stroke="#ffffff" stroke-width="1.5" />
-                        <text x="{{ '%.2f'|format(px + 8) }}" y="{{ '%.2f'|format(py - 7) }}" font-size="9" fill="#1e293b">{{ point.get('name', point.get('label', '-'))|truncate(25, True, '…') }}</text>
-                    {% endfor %}
-                </svg>
-                <div class="space-legend"><span style="color:#f97316;">●</span> Alvo/referência &nbsp;&nbsp; <span style="color:#2563eb;">●</span> Referências mais próximas. O MDS é uma projeção visual; o ranking usa a distância calculada antes da projeção.</div>
-                {% else %}
-                <div class="notice notice--warning">{{ space.get('message', 'Nenhuma estrutura elegível foi encontrada para este espaço químico.') }}</div>
-                {% endif %}
-                {% if candidates %}
-                <table class="chemical-space-report-table compact-table">
-                    <thead><tr><th>#</th><th>Molécula</th><th>Distância global</th><th>MACCS/Tanimoto</th><th>AI / metadado</th><th>Fonte</th></tr></thead>
-                    <tbody>
-                    {% for candidate in candidates %}
-                        <tr>
-                            <td class="center">{{ loop.index }}</td>
-                            <td>{{ candidate.get('name', '-') }}</td>
-                            <td class="center">{{ '%.4f'|format(candidate.get('global_distance', 0)) if candidate.get('global_distance') is not none else '-' }}</td>
-                            <td class="center">{{ '%.4f'|format(candidate.get('similarity', 0)) if candidate.get('similarity') is not none else '-' }}</td>
-                            <td class="center">{% if candidate.get('ai_ng_day') is not none %}{{ candidate.get('ai_ng_day') }} ng/dia{% elif candidate.get('cpca_category') %}Categoria {{ candidate.get('cpca_category') }}{% else %}—{% endif %}</td>
-                            <td>{{ candidate.get('source', source_label) }}</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-                {% endif %}
-                {% if space.get('warnings') %}<div class="notice notice--warning">{% for warning in space.get('warnings', []) %}{{ warning }}{% if not loop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
+                <div class="nitro-space-pair">
+                    <div class="chemical-space-report-chart">
+                    {% if points %}
+                    <svg class="chemical-space-report-svg" viewBox="0 0 920 410" role="img" aria-label="{{ title }}">
+                        <line x1="460" y1="15" x2="460" y2="395" stroke="#cbd5e1" stroke-width="1" />
+                        <line x1="20" y1="205" x2="900" y2="205" stroke="#cbd5e1" stroke-width="1" />
+                        {% for tick in ticks %}{% set tx = 460 + ((tick / bounds.max_abs) * 405) %}<line x1="{{ '%.2f'|format(tx) }}" y1="199" x2="{{ '%.2f'|format(tx) }}" y2="211" stroke="#94a3b8" stroke-width="1" /><text x="{{ '%.2f'|format(tx) }}" y="226" text-anchor="middle" font-size="10" fill="#64748b">{{ '%.3f'|format(tick) }}</text>{% set ty = 205 - ((tick / bounds.max_abs) * 175) %}<line x1="454" y1="{{ '%.2f'|format(ty) }}" x2="466" y2="{{ '%.2f'|format(ty) }}" stroke="#94a3b8" stroke-width="1" /><text x="448" y="{{ '%.2f'|format(ty + 3.5) }}" text-anchor="end" font-size="10" fill="#64748b">{{ '%.3f'|format(tick) }}</text>{% endfor %}
+                        <text x="872" y="198" font-size="10" fill="#64748b">MDS 1</text>
+                        <text x="466" y="28" font-size="10" fill="#64748b">MDS 2</text>
+                        {% set occupied_labels = [] %}
+                        {% for point in points %}
+                            {% set px = 460 + ((point.get('x', 0) or 0) / bounds.max_abs) * 405 %}
+                            {% set py = 205 - ((point.get('y', 0) or 0) / bounds.max_abs) * 175 %}
+                            {% set is_target = point.get('is_target') or point.get('role') == 'reference' %}
+                            {% set point_color = '#f97316' if is_target else '#2563eb' %}
+                            {% set point_display_name = reference_name if is_target else point.get('name', point.get('label', '-')) %}
+                            {% set label_name = point_display_name|truncate(28, True, '…') %}
+                            {% set label_width = [48, (label_name|length * 6.2)]|max %}
+                            {% set candidates = [[12, -14, 'start'], [12, 25, 'start'], [-12, -14, 'end'], [-12, 25, 'end'], [22, -30, 'start'], [22, 40, 'start'], [-22, -30, 'end'], [-22, 40, 'end'], [0, -32, 'middle'], [0, 42, 'middle']] %}
+                            {% set chosen = namespace(dx=12, dy=-14, anchor='start', left=0, top=0, right=0, bottom=0, found=false) %}
+                            {% for candidate in candidates %}{% if not chosen.found %}{% set cdx = candidate[0] %}{% set cdy = candidate[1] %}{% set canchor = candidate[2] %}{% if canchor == 'end' %}{% set cleft = px + cdx - label_width %}{% set cright = px + cdx %}{% elif canchor == 'middle' %}{% set cleft = px + cdx - (label_width / 2) %}{% set cright = px + cdx + (label_width / 2) %}{% else %}{% set cleft = px + cdx %}{% set cright = px + cdx + label_width %}{% endif %}{% set ctop = py + cdy - 12 %}{% set cbottom = py + cdy + 4 %}{% set collision = namespace(value=false) %}{% for box in occupied_labels %}{% if cleft < box[2] and cright > box[0] and ctop < box[3] and cbottom > box[1] %}{% set collision.value = true %}{% endif %}{% endfor %}{% set touches_axis = (cleft < 468 and cright > 452) or (ctop < 211 and cbottom > 199) %}{% set out_of_bounds = cleft < 24 or cright > 896 or ctop < 18 or cbottom > 392 %}{% if not collision.value and not touches_axis and not out_of_bounds %}{% set chosen.dx = cdx %}{% set chosen.dy = cdy %}{% set chosen.anchor = canchor %}{% set chosen.left = cleft %}{% set chosen.top = ctop %}{% set chosen.right = cright %}{% set chosen.bottom = cbottom %}{% set chosen.found = true %}{% endif %}{% endif %}{% endfor %}{% if not chosen.found %}{% set chosen.left = px + 12 %}{% set chosen.top = py - 26 %}{% set chosen.right = chosen.left + label_width %}{% set chosen.bottom = py - 8 %}{% endif %}{% set _ = occupied_labels.append([chosen.left, chosen.top, chosen.right, chosen.bottom]) %}
+                            <circle cx="{{ '%.2f'|format(px) }}" cy="{{ '%.2f'|format(py) }}" r="{{ 7 if is_target else 5 }}" fill="{{ point_color }}" stroke="#ffffff" stroke-width="1.5"><title>{{ point_display_name }}</title></circle>
+                            <text x="{{ '%.2f'|format(px + chosen.dx) }}" y="{{ '%.2f'|format(py + chosen.dy) }}" text-anchor="{{ chosen.anchor }}" font-size="12" fill="#1e293b" style="fill:#1e293b;">{{ label_name }}</text>
+                        {% endfor %}
+                    </svg>
+                    <div class="space-legend"><span style="color:#f97316;">●</span> Alvo/referência &nbsp;&nbsp; <span style="color:#2563eb;">●</span> Até 10 referências mais próximas. O MDS é uma projeção visual; o ranking usa a distância calculada antes da projeção.</div>
+                    {% else %}
+                    <div class="nitro-callout nitro-callout--warning">{{ space.get('message', 'Nenhuma estrutura elegível foi encontrada para este espaço químico.') }}</div>
+                    {% endif %}
+                    </div>
+                    <div class="chemical-space-report-table-wrap">
+                    {% if candidates %}
+                    <table class="chemical-space-report-table nitro-space-table compact-table">
+                        <colgroup><col style="width:34%;"><col style="width:22%;"><col style="width:22%;"><col style="width:22%;"></colgroup>
+                        <thead><tr><th>Molécula</th><th>Distância de similaridade</th><th>Distância físico-química</th><th>Distância global</th></tr></thead>
+                        <tbody>
+                        {% for candidate in candidates %}
+                            <tr>
+                                <td>{{ candidate.get('name', '-') }}</td>
+                                <td class="numeric">{{ '%.4f'|format(candidate.get('structural_distance') if candidate.get('structural_distance') is not none else (1 - (candidate.get('similarity', 0) or 0))) if candidate.get('structural_distance') is not none or candidate.get('similarity') is not none else '-' }}</td>
+                                <td class="numeric">{{ '%.4f'|format(candidate.get('physicochemical_distance', 0)) if candidate.get('physicochemical_distance') is not none else '-' }}</td>
+                                <td class="numeric">{{ '%.4f'|format(candidate.get('global_distance', 0)) if candidate.get('global_distance') is not none else '-' }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                    </div>
+                </div>
+                {% if show_warnings and space.get('warnings') %}<div class="notice notice--warning">{% for warning in space.get('warnings', []) %}{{ warning }}{% if not loop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
             </div>
         {% endmacro %}
 
         {% if is_nitro %}
+            {% set nitro_target_svg = cpca_result.get('structure_svg') or metabolism_result.get('target', {}).get('svg') or space_result.get('target', {}).get('svg') %}
+            {% set nitro_canonical_smiles = cpca_result.get('canonical_smiles') or metabolism_result.get('canonical_smiles') or space_result.get('target', {}).get('canonical_smiles') or report.get('smiles', '-') %}
             <section class="section">
                 <h2>Resumo executivo <small>resultados efetivamente executados</small></h2>
-                <div class="summary-grid">
-                    <div class="summary-box">
+                <div class="summary-grid nitro-summary-grid">
+                    <div class="summary-box nitro-analyzed-box">
                         <strong>Molécula analisada</strong>
                         <div class="reference-card">
                             <div class="reference-name">{{ report.get('name', 'Alvo Nitro.RA') }}</div>
-                            <div class="reference-smiles mono">{{ report.get('smiles', '-') }}</div>
+                            <div class="reference-smiles mono">{{ nitro_canonical_smiles }}</div>
                         </div>
                     </div>
-                    <div class="summary-box summary-box--accent">
+                    <div class="summary-box summary-box--accent nitro-modules-box">
                         <strong>Módulos selecionados</strong>
                         <span class="summary-value">{{ nitro_modules|length }}</span>
                         <span class="summary-note">{% for module in nitro_modules %}{{ module_label(module) }}{% if not loop.last %} · {% endif %}{% else %}Nenhum módulo informado{% endfor %}</span>
                     </div>
-                    <div class="summary-box">
-                        <strong>Estado da análise</strong>
-                        <span class="summary-value" style="font-size:18px;">{{ report.get('status', '—') }}</span>
-                        <span class="summary-note">Cada módulo conserva seu próprio estado.</span>
+                </div>
+                <div class="nitro-target-card">
+                    <div class="nitro-target-structure">{% if nitro_target_svg %}{{ nitro_target_svg|safe }}{% else %}<span class="muted">Estrutura 2D indisponível</span>{% endif %}</div>
+                    <div class="nitro-target-meta">
+                        <span class="meta-label">Alvo molecular</span>
+                        <div class="nitro-target-name">{{ report.get('name', 'Alvo Nitro.RA') }}</div>
+                        <span class="meta-label">SMILES canônico</span>
+                        <span class="nitro-target-smiles">{{ nitro_canonical_smiles }}</span>
                     </div>
                 </div>
-                {% if 'cpca' not in nitro_modules and space_result.get('target', {}).get('svg') %}
-                <div class="target-summary-structure"><span class="meta-label">Estrutura 2D do alvo</span><div class="structure-svg">{{ space_result.get('target', {}).get('svg')|safe }}</div></div>
-                {% endif %}
             </section>
 
             {% if 'cpca' in nitro_modules %}
+            {% set cpca_ema = cpca_result.get('ema') or {} %}
             <section class="module-section" id="report-cpca">
-                <h2>cPCA <small>{{ cpca_result.get('rule_version', 'versão não informada') }}</small></h2>
-                <div class="summary-grid summary-grid--two">
-                    <div>
-                        {% if cpca_result.get('structure_svg') %}<div class="structure-svg">{{ cpca_result.get('structure_svg')|safe }}</div>{% endif %}
-                        <p class="section-intro"><strong>SMILES canônico:</strong> <span class="mono">{{ cpca_result.get('canonical_smiles', report.get('smiles', '-')) }}</span></p>
+                <h2>cPCA <small>Carcinogenic Potency Categorisation Approach (CPCA) · referência EMA</small></h2>
+                <div class="nitro-module-grid nitro-cpca-grid">
+                    <div class="nitro-panel nitro-cpca-panel">
+                        <h3>Resultado estrutural cPCA</h3>
+                        <div class="nitro-metric-grid nitro-cpca-metric-grid">
+                            <div class="nitro-metric-card"><span>Categoria cPCA</span><strong>{{ cpca_result.get('potency_category', '—') }}</strong></div>
+                            <div class="nitro-metric-card"><span>Limite de ingestão cPCA</span><strong>{{ cpca_result.get('ai_ng_day', '—') }}{% if cpca_result.get('ai_ng_day') is not none %} ng/dia{% endif %}</strong></div>
+                            <div class="nitro-metric-card"><span>Limite em ppm</span><strong>{{ cpca_result.get('ppm_limit', '—') }}</strong></div>
+                        </div>
+                        <ul class="nitro-detail-list" style="margin-top:8px;">
+                            <li><strong>Versão da regra</strong><span><a href="https://www.ema.europa.eu/en/documents/other/appendix-2-carcinogenic-potency-categorisation-approach-n-nitrosamines_en.pdf" rel="noreferrer">Apêndice 2 da EMA</a></span></li>
+                            <li><strong>Fundamento</strong><span>Carcinogenic Potency Categorization Approach (CPCA)</span></li>
+                            <li><strong>Centros N-nitroso</strong><span>{{ cpca_result.get('center_count', '—') }}</span></li>
+                        </ul>
                     </div>
-                    <div class="metric-grid" style="grid-template-columns:repeat(2,minmax(0,1fr)); align-content:start;">
-                        <div class="metric-card"><span>Categoria de potência</span><strong>{{ cpca_result.get('potency_category', '—') }}</strong></div>
-                        <div class="metric-card"><span>AI EMA</span><strong>{{ cpca_result.get('ema', {}).get('ai_ng_day', '—') }}{% if cpca_result.get('ema', {}).get('ai_ng_day') is not none %} ng/dia{% endif %}</strong></div>
-                        <div class="metric-card"><span>AI cPCA</span><strong>{{ cpca_result.get('ai_ng_day', '—') }}{% if cpca_result.get('ai_ng_day') is not none %} ng/dia{% endif %}</strong></div>
-                        <div class="metric-card"><span>PPM</span><strong>{{ cpca_result.get('ppm_limit', '—') }}</strong></div>
+                    <div class="nitro-panel nitro-panel--ema nitro-ema-center">
+                        <h3>Limite de ingestão aceitável — Apêndice I da EMA</h3>
+                        {% if cpca_ema.get('listed') and cpca_ema.get('ai_ng_day') is not none %}
+                        <div class="nitro-ai-value">{{ cpca_ema.get('ai_ng_day') }} <small>ng/dia</small></div>
+                        <div class="nitro-ai-meta">{{ cpca_ema.get('name', 'Estrutura listada') }}{% if cpca_ema.get('ppm_limit') is not none %} · {{ cpca_ema.get('ppm_limit') }} ppm para a dose informada{% endif %}</div>
+                        {% else %}
+                        <div class="nitro-ai-value">—</div>
+                        <div class="nitro-ai-meta">{{ cpca_ema.get('message', 'Nitrosamina não listada no Apêndice I da EMA.') }}</div>
+                        {% endif %}
+                        <p class="nitro-source-line">{{ cpca_ema.get('reference_number', 'EMA Appendix 1') }} · revisão {{ cpca_ema.get('last_updated', '—') }}.</p>
                     </div>
                 </div>
-                <div class="module-meta-grid">
-                    <div class="module-meta"><span class="meta-label">Status</span><strong>{{ cpca_result.get('status', '—') }}</strong></div>
-                    <div class="module-meta"><span class="meta-label">Base regulatória</span><strong>{{ cpca_result.get('regulatory_basis', '—') }}</strong></div>
-                    <div class="module-meta"><span class="meta-label">Fundamento</span><strong>{{ cpca_result.get('category_basis', '—') }}</strong></div>
+                {% if cpca_result.get('centers') %}
+                <div class="nitro-panel" style="margin-top:8px;">
+                    <h3>Motivos e evidências estruturais</h3>
+                    <table class="nitro-evidence-table">
+                        <thead><tr><th>Centro</th><th>Hα</th><th>Características</th><th>Fundamento / estado</th></tr></thead>
+                        <tbody>{% for center in cpca_result.get('centers', []) %}<tr><td class="numeric">{{ loop.index }}</td><td class="numeric">{{ center.get('alpha_hydrogen_counts', '—') }}</td><td>{% for feature in center.get('features', []) %}{{ feature.get('detail', feature.get('name', '—')) }}{% if not loop.last %}<br>{% endif %}{% else %}Nenhuma característica adicional.{% endfor %}</td><td>{{ center.get('category_basis', center.get('message', 'Centro avaliado segundo os critérios estruturais do CPCA.'))|replace('Potency Score mapeado pela Figura 1 da FDA.', 'Classificação estrutural segundo os critérios do CPCA.') }}</td></tr>{% endfor %}</tbody>
+                    </table>
                 </div>
-                {% if cpca_result.get('ema') %}<div class="notice"><strong>Appendix 1 EMA:</strong> {{ cpca_result.get('ema', {}).get('message', 'Metadado EMA disponível.') }}{% if cpca_result.get('ema', {}).get('reference_number') %} Referência {{ cpca_result.get('ema', {}).get('reference_number') }}.{% endif %}</div>{% endif %}
-                {% if cpca_result.get('warnings') %}<div class="notice notice--warning">{% for warning in cpca_result.get('warnings', []) %}{{ warning }}{% if not loop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
+                {% endif %}
             </section>
             {% endif %}
 
             {% if 'nitrosamine_space' in nitro_modules %}
             <section class="module-section module-section--break" id="report-chemical-space">
-                <h2>Espaço Químico <small>PubChem e referência EMA independentes</small></h2>
+                <h2>Espaço Químico <small>fontes PubChem e EMA apresentadas separadamente</small></h2>
                 {% set pubchem_space = space_result %}
-                {% if pubchem_space %}{{ space_section(pubchem_space, 'Espaço químico PubChem', 'PubChem · lote limitado a 40 CIDs') }}{% endif %}
+                {% if pubchem_space %}
+                {{ space_section(pubchem_space, 'Espaço químico PubChem', 'PubChem - Lote de 40 CIDs', false, report.get('name', 'Molécula analisada')) }}
+                {% else %}<div class="nitro-callout nitro-callout--warning">O espaço PubChem não foi incluído no payload desta análise.</div>{% endif %}
                 {% if pubchem_space.get('ema_space') %}
                     <div class="page-break"></div>
-                    {{ space_section(pubchem_space.get('ema_space'), 'Espaço químico EMA', 'EMA Appendix 1 · biblioteca versionada') }}
+                    <div class="nitro-space-source"><strong>Biblioteca EMA:</strong> Appendix 1 versionado e pontuado localmente, sem misturar candidatos ou métricas da busca PubChem.</div>
+                    {{ space_section(pubchem_space.get('ema_space'), 'Espaço químico EMA', 'EMA Appendix 1 · biblioteca versionada', false, report.get('name', 'Molécula analisada')) }}
                 {% endif %}
             </section>
             {% endif %}
 
             {% if 'quantum' in nitro_modules %}
             <section class="module-section module-section--break" id="report-quantum">
-                <h2>Quantum <small>estado do motor eletrônico</small></h2>
-                {% if quantum_result.get('status') == 'ok' and (quantum_result.get('homo') or quantum_result.get('lumo')) %}
-                    <div class="module-meta-grid">
-                        <div class="module-meta"><span class="meta-label">HOMO</span><strong>{{ quantum_result.get('homo', {}).get('value', '—') }} {{ quantum_result.get('homo', {}).get('unit', '') }}</strong></div>
-                        <div class="module-meta"><span class="meta-label">LUMO</span><strong>{{ quantum_result.get('lumo', {}).get('value', '—') }} {{ quantum_result.get('lumo', {}).get('unit', '') }}</strong></div>
-                        <div class="module-meta"><span class="meta-label">Gap HOMO–LUMO</span><strong>{{ quantum_result.get('homo_lumo_gap', {}).get('value', '—') }} {{ quantum_result.get('homo_lumo_gap', {}).get('unit', '') }}</strong></div>
-                    </div>
-                {% else %}
-                    <div class="notice notice--warning"><strong>{{ quantum_result.get('status', 'not_implemented') }}</strong> — {{ quantum_result.get('message', 'O cálculo Quantum não foi executado.') }}</div>
-                {% endif %}
-                <div class="module-meta-grid">
-                    <div class="module-meta"><span class="meta-label">Motor</span><strong>{{ quantum_result.get('engine', '—') }}</strong></div>
-                    <div class="module-meta"><span class="meta-label">Método</span><strong>{{ quantum_result.get('method', '—') }}</strong></div>
-                    <div class="module-meta"><span class="meta-label">SMILES</span><strong class="mono">{{ quantum_result.get('smiles', report.get('smiles', '—')) }}</strong></div>
-                </div>
-                <p class="disclaimer">HOMO/LUMO e outros descritores eletrônicos, quando disponíveis, são dependentes do método e não constituem conclusão toxicológica ou regulatória.</p>
+                <h2>Quantum</h2>
+                <div class="nitro-panel quantum-unimplemented-note"><p>O modelo Quantum ainda não foi implementado nesta versão do aplicativo.</p></div>
             </section>
             {% endif %}
 
             {% if 'metabolism' in nitro_modules %}
             <section class="module-section module-section--break" id="report-metabolism">
                 <h2>Metabolism <small>predição estrutural CYP450</small></h2>
-                <div class="module-meta-grid">
-                    <div class="module-meta"><span class="meta-label">Status</span><strong>{{ metabolism_result.get('status', '—') }}</strong></div>
-                    <div class="module-meta"><span class="meta-label">Sítios α candidatos</span><strong>{{ metabolism_result.get('summary', {}).get('alpha_sites', metabolism_result.get('alpha_sites', '—')) }}</strong></div>
-                    <div class="module-meta"><span class="meta-label">Motor</span><strong>{{ metabolism_result.get('engine', 'RDKit rule-based') }}</strong></div>
+                <div class="nitro-status-line"><span class="status-badge{% if metabolism_result.get('status') == 'ok' %} status-badge--ok{% elif metabolism_result.get('status') in ['invalid_smiles', 'not_nitrosamine'] %} status-badge--error{% else %} status-badge--warn{% endif %}">{{ metabolism_result.get('status', '—') }}</span><span>{{ metabolism_result.get('message', 'Resultado metabólico não informado.') }}</span></div>
+                <div class="nitro-metabolism-summary-grid">
+                    <div class="nitro-panel">
+                        <h3>Resumo da predição</h3>
+                        <div class="nitro-metabolism-metrics">
+                            <div class="nitro-metric-card"><span>Sítios α</span><strong>{{ metabolism_result.get('summary', {}).get('alpha_sites', 0) }}</strong></div>
+                            <div class="nitro-metric-card"><span>Metabólitos</span><strong>{{ metabolism_result.get('summary', {}).get('metabolites', 0) }}</strong></div>
+                            <div class="nitro-metric-card"><span>Intermediários</span><strong>{{ metabolism_result.get('summary', {}).get('reactive_intermediates', 0) }}</strong></div>
+                            <div class="nitro-metric-card"><span>Modo</span><strong>{{ metabolism_result.get('prediction_mode', 'rule_based') }}</strong></div>
+                        </div>
+                    </div>
+                    <div class="nitro-panel">
+                        <h3>Regra e contexto enzimático</h3>
+                        <ul class="nitro-detail-list">
+                            <li><strong>Regra</strong><span>{{ metabolism_result.get('rule_id', '—') }}</span></li>
+                            <li><strong>Enzimas</strong><span>{{ metabolism_result.get('enzyme_context', [])|join(', ') }}</span></li>
+                            <li><strong>SMIRKS</strong><span class="mono">{{ metabolism_result.get('reaction_smarts', '—') }}</span></li>
+                        </ul>
+                    </div>
                 </div>
-                <p class="section-intro">{{ metabolism_result.get('message', 'Resultado metabólico não informado.') }}</p>
-                {% if metabolism_result.get('sites') %}
-                <table class="compact-table">
-                    <thead><tr><th>Sítio</th><th>Hα</th><th>Anel</th><th>Enzimas</th><th>Metabólito</th><th>Intermediário</th></tr></thead>
-                    <tbody>{% for site in metabolism_result.get('sites', []) %}<tr><td>{{ site.get('atom_index', site.get('site', '—')) }}</td><td>{{ site.get('alpha_hydrogens', site.get('hydrogens', '—')) }}</td><td>{{ site.get('ring', '—') }}</td><td>{{ site.get('enzymes', '—') }}</td><td class="mono">{{ site.get('metabolite_smiles', '—') }}</td><td class="mono">{{ site.get('intermediate_smiles', '—') }}</td></tr>{% endfor %}</tbody>
-                </table>
-                {% else %}<div class="notice notice--warning">{{ metabolism_result.get('message', 'Nenhum sítio α elegível foi informado.') }}</div>{% endif %}
-                <p class="disclaimer">A saída representa uma hipótese estrutural de metabolismo e não confirma formação do metabólito in vivo.</p>
+                {% if metabolism_result.get('alpha_sites') %}
+                <div class="nitro-panel nitro-metabolism-sites">
+                    <h3>Sítios alfa elegíveis</h3>
+                    <table class="nitro-metabolism-table">
+                        <thead><tr><th>Sítio</th><th>H no carbono</th><th>Em anel</th><th>Enzimas em contexto</th><th>Confiança</th></tr></thead>
+                        <tbody>{% for site in metabolism_result.get('alpha_sites', []) %}<tr><td class="numeric">{{ site.get('atom_index_display', site.get('atom_index', '—')) }}</td><td class="numeric">{{ site.get('carbon_hydrogens', '—') }}</td><td class="numeric">{{ 'sim' if site.get('is_in_ring') else 'não' }}</td><td>{{ site.get('enzyme_hypotheses', [])|join(', ') }}</td><td>{{ site.get('confidence', '—') }}</td></tr>{% endfor %}</tbody>
+                    </table>
+                </div>
+                <div class="nitro-simulation-grid">
+                    <div class="nitro-simulation-panel">
+                        <h3>Simulação 1 · α-hidroxilação</h3>
+                        <p>Metabólitos hipotéticos gerados pela adição de OH em cada sítio α elegível.</p>
+                        {% for site in metabolism_result.get('alpha_sites', []) %}
+                            {% set metabolite = site.get('metabolite') or {} %}
+                            <div class="nitro-simulation-item">
+                                <div>{% if metabolite.get('svg') %}{{ metabolite.get('svg')|safe }}{% else %}<span class="muted">Sem SVG</span>{% endif %}</div>
+                                <div><strong>Sítio α {{ site.get('atom_index_display', site.get('atom_index', '—')) }} · produto hipotético</strong><span>{{ metabolite.get('kind', 'alpha_hydroxynitrosamine') }}</span><span class="mono">{{ metabolite.get('smiles', 'SMILES não disponível') }}</span></div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="nitro-simulation-panel">
+                        <h3>Simulação 2 · intermediário diazônio</h3>
+                        <p>Surrogates mecanísticos hipotéticos do fragmento alquilante; não são evidência experimental.</p>
+                        {% for site in metabolism_result.get('alpha_sites', []) %}
+                            {% set intermediate = site.get('reactive_intermediate') or {} %}
+                            <div class="nitro-simulation-item">
+                                <div>{% if intermediate.get('svg') %}{{ intermediate.get('svg')|safe }}{% else %}<span class="muted">Sem SVG</span>{% endif %}</div>
+                                <div><strong>Sítio α {{ site.get('atom_index_display', site.get('atom_index', '—')) }} · surrogate</strong><span>{{ intermediate.get('kind', 'alkyl_diazonium_surrogate') }} · {{ intermediate.get('mechanistic_status', 'hipotético') }}</span><span class="mono">{{ intermediate.get('smiles', 'SMILES não disponível') }}</span></div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}<div class="nitro-callout nitro-callout--warning">{{ metabolism_result.get('message', 'Nenhum sítio α elegível foi informado.') }}</div>{% endif %}
+                {% if metabolism_result.get('warnings') %}<div class="nitro-callout nitro-callout--warning">{% for warning in metabolism_result.get('warnings', []) %}{{ warning }}{% if not loop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
+                <p class="nitro-disclaimer nitro-metabolism-note">{{ metabolism_result.get('disclaimer', 'A saída representa hipóteses estruturais in silico e não confirma formação do metabólito in vivo.') }}</p>
             </section>
             {% endif %}
 
             {% if 'deep_pk' in nitro_modules or deep_pk_result %}
             <section class="module-section module-section--break" id="report-deep-pk">
-                <h2>Deep-PK <small>complemento externo</small></h2>
+                <h2>Deep-PK <small>complemento externo pós-Metabolism</small></h2>
+                <div class="nitro-status-line"><span class="status-badge{% if deep_pk_result.get('status') == 'ok' %} status-badge--ok{% elif deep_pk_result.get('status') in ['deep_pk_unavailable', 'deep_pk_error', 'invalid_job_id'] %} status-badge--error{% else %} status-badge--warn{% endif %}">{{ deep_pk_result.get('status', '—') }}</span><span>{{ deep_pk_result.get('message', 'O Deep-PK não foi concluído ou não foi incluído no payload do relatório.') }}</span></div>
                 {% if deep_pk_result.get('isoforms') %}
-                <table class="compact-table"><thead><tr><th>Isoforma</th><th>Substrato?</th><th>Probabilidade</th><th>Inibidor?</th><th>Probabilidade</th></tr></thead><tbody>{% for item in deep_pk_result.get('isoforms', []) %}<tr><td>{{ item.get('isoform', '—') }}</td><td>{{ item.get('substrate', {}).get('prediction', '—') }}</td><td>{{ item.get('substrate', {}).get('probability', '—') }}</td><td>{{ item.get('inhibitor', {}).get('prediction', '—') }}</td><td>{{ item.get('inhibitor', {}).get('probability', '—') }}</td></tr>{% endfor %}</tbody></table>
-                {% else %}<div class="notice notice--warning">{{ deep_pk_result.get('message', 'O Deep-PK não foi concluído ou não foi incluído no payload do relatório.') }}</div>{% endif %}
-                {% if deep_pk_result.get('warnings') %}<div class="notice notice--warning">{% for warning in deep_pk_result.get('warnings', []) %}{{ warning }}{% if not loop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
+                <table class="nitro-deep-pk-table">
+                    <thead><tr><th>Isoforma CYP</th><th>Substrato</th><th>Inibidor</th></tr></thead>
+                    <tbody>{% for item in deep_pk_result.get('isoforms', []) %}<tr><td class="numeric">{{ item.get('isoform', '—') }}</td><td><strong>{{ item.get('substrate', {}).get('prediction', '—') }}</strong><br><span>Probabilidade: {{ item.get('substrate', {}).get('probability', '—') }}</span>{% if item.get('substrate', {}).get('interpretation') %}<br><span>{{ item.get('substrate', {}).get('interpretation') }}</span>{% endif %}</td><td><strong>{{ item.get('inhibitor', {}).get('prediction', '—') }}</strong><br><span>Probabilidade: {{ item.get('inhibitor', {}).get('probability', '—') }}</span>{% if item.get('inhibitor', {}).get('interpretation') %}<br><span>{{ item.get('inhibitor', {}).get('interpretation') }}</span>{% endif %}</td></tr>{% endfor %}</tbody>
+                </table>
+                {% else %}<div class="nitro-callout nitro-callout--warning">{{ deep_pk_result.get('message', 'O Deep-PK não foi concluído ou não foi incluído no payload do relatório.') }}</div>{% endif %}
+                {% if deep_pk_result.get('warnings') %}<div class="nitro-callout nitro-callout--warning">{% for warning in deep_pk_result.get('warnings', []) %}{{ warning }}{% if not loop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
+                <p class="nitro-disclaimer">O Deep-PK é um complemento externo e deve ser interpretado separadamente das hipóteses locais de Metabolism.</p>
             </section>
             {% endif %}
 
@@ -465,50 +752,78 @@
             </section>
 
         {% elif is_batch %}
+            {% set reference_png = report.get('reference_png') %}
             <section class="section">
                 <h2>Resumo <small>lote fornecido pelo usuário</small></h2>
                 <div class="summary-grid summary-grid--two">
-                    <div class="summary-box"><strong>Referência</strong><div class="reference-card"><div class="reference-name">{{ report.get('ref_name', '-') }}</div><div class="reference-smiles mono">{{ report.get('ref_smiles', '-') }}</div></div></div>
+                    <div class="summary-box"><strong>Referência</strong><div class="reference-card{% if reference_png %} reference-card--with-structure{% endif %}"><div><div class="reference-name">{{ report.get('ref_name', '-') }}</div><div class="reference-smiles mono">{{ report.get('ref_smiles', '-') }}</div></div>{% if reference_png %}<div class="reference-structure"><img src="data:image/png;base64,{{ reference_png }}" alt="Estrutura 2D da referência {{ report.get('ref_name', 'molécula alvo') }}"></div>{% endif %}</div></div>
                     <div class="summary-box summary-box--accent"><strong>Resultados</strong><span class="summary-value">{{ report.get('results', [])|length }}</span><span class="summary-note">moléculas avaliadas no Batch</span></div>
                 </div>
             </section>
 
+            <section class="section batch-similarity-section">
+                <h2>Similaridade e Propriedades Físico-Químicas <small>comparação com a referência e descritores do lote</small></h2>
+                <div class="table-wrap table-wrap--fit"><table class="batch-similarity-table"><colgroup><col style="width:18%;"><col style="width:8%;"><col style="width:9%;"><col style="width:11%;"><col style="width:7%;"><col style="width:8%;"><col style="width:8%;"><col style="width:8%;"><col style="width:7%;"><col style="width:7%;"><col style="width:5%;"></colgroup><thead><tr><th rowspan="2">Molécula</th><th colspan="2">Similaridade estrutural</th><th colspan="8">Propriedades físico-químicas</th></tr><tr><th>Similaridade</th><th>Classificação</th><th>Massa Molecular<br>(g/mol)</th><th>LogP</th><th>TPSA<br>(Å²)</th><th>pKa ácido</th><th>pKa básico</th><th>HBD</th><th>HBA</th><th>RotB</th></tr></thead><tbody>{% for item in report.get('results', []) %}{% set properties = item.get('properties') or {} %}<tr><td class="batch-molecule-cell"><div class="batch-molecule-report"><div class="batch-structure-thumb">{% if item.get('png') %}<img src="data:image/png;base64,{{ item.get('png') }}" alt="Estrutura 2D de {{ item.get('name', 'molécula') }}">{% else %}<span class="batch-structure-placeholder">Estrutura indisponível</span>{% endif %}</div><span class="batch-molecule-name">{{ item.get('name', '-') }}</span></div></td><td><strong>{{ '%.4f'|format(item.get('similarity', 0.0)) if item.get('similarity') is not none else '-' }}</strong></td><td>{% set classification = item.get('classification', '') %}{% if item.get('error') %}<span class="status-badge status-badge--error">Erro</span>{% elif classification in ['Muito Baixa', 'Baixa'] %}<span class="status-badge status-badge--low">{{ classification }}</span>{% elif classification == 'Moderada' %}<span class="status-badge status-badge--moderate">{{ classification }}</span>{% elif classification in ['Alta', 'Muito Alta'] %}<span class="status-badge status-badge--high">{{ classification }}</span>{% else %}<span class="status-badge">{{ classification or '—' }}</span>{% endif %}</td><td class="property-cell">{{ properties.get('Massa Molecular (g/mol)', '-') }}</td><td class="property-cell">{{ properties.get('Coeficiente de Partição (LogP)', '-') }}</td><td class="property-cell">{{ properties.get('Área de Superfície Polar (Å²)', '-') }}</td><td class="property-cell">{{ properties.get('pKa ácido', '-') }}</td><td class="property-cell">{{ properties.get('pKa básico', '-') }}</td><td class="property-cell">{{ properties.get('Doadores de H (HBD)', '-') }}</td><td class="property-cell">{{ properties.get('Receptores de H (HBA)', '-') }}</td><td class="property-cell">{{ properties.get('Ligações rotacionáveis (RotB)', '-') }}</td></tr>{% endfor %}</tbody></table></div>
+            </section>
+
+
             {% if report.get('chemical_space') and report.get('chemical_space', {}).get('points') %}
-            <section class="section">
+            <section class="section chemical-space-section">
                 <h2>Espaço Químico 2D <small>somente lote do usuário</small></h2>
                 {% set points = report.get('chemical_space', {}).get('points', []) %}
                 {% set bounds = namespace(max_abs=0.25) %}{% for point in points %}{% set bounds.max_abs = [bounds.max_abs, (point.get('x', 0) or 0)|abs, (point.get('y', 0) or 0)|abs]|max %}{% endfor %}
+                {% set ticks = [-bounds.max_abs, -(bounds.max_abs / 2), 0, bounds.max_abs / 2, bounds.max_abs] %}
                 <div class="chemical-space-report-card">
-                    <p class="section-intro"><strong>Projeção:</strong> {{ report.get('chemical_space', {}).get('method', 'MDS clássico sobre distância composta') }}.</p>
-                    <p class="section-intro"><strong>Fórmula:</strong> 60% de distância estrutural + 40% de Dist.FQ normalizada, combinadas quadraticamente: sqrt(0,6 × D_struct² + 0,4 × D_FQ²). A Dist.FQ usa Z-scores populacionais de MW, LogP, TPSA, HBD, HBA e RotB; o gráfico exibe os 10 vizinhos mais próximos.</p>
-                    <svg class="chemical-space-report-svg" viewBox="0 0 920 410" role="img" aria-label="Espaço químico 2D">
-                        <line x1="460" y1="15" x2="460" y2="395" stroke="#cbd5e1" stroke-width="1" /><line x1="20" y1="205" x2="900" y2="205" stroke="#cbd5e1" stroke-width="1" />
-                        {% for point in points %}{% set px = 460 + ((point.get('x', 0) or 0) / bounds.max_abs) * 405 %}{% set py = 205 - ((point.get('y', 0) or 0) / bounds.max_abs) * 175 %}{% set is_ref = point.get('role') == 'reference' or point.get('is_target') %}<circle cx="{{ '%.2f'|format(px) }}" cy="{{ '%.2f'|format(py) }}" r="{{ 6 if is_ref else 4 }}" fill="{{ '#f97316' if is_ref else '#2563eb' }}" stroke="#fff" stroke-width="1.5" /><text x="{{ '%.2f'|format(px + 8) }}" y="{{ '%.2f'|format(py - 7) }}" font-size="9" fill="#1e293b">{{ point.get('name', '-')|truncate(24, True, '…') }}</text>{% endfor %}
+                    <p class="section-intro"><strong>Projeção:</strong> MDS clássico sobre a distância multimodal.</p>
+                    <p class="section-intro"><strong>Descritores:</strong> Massa Molecular (MW), LogP, TPSA, HBD, HBA e RotB. O gráfico apresenta até 10 vizinhos mais próximos do lote.</p>
+                    <p class="section-intro"><strong>Distância de similaridade:</strong> corresponde a 1 − similaridade MACCS/Tanimoto e é uma das componentes usadas no ranking; a distância global também considera a distância físico-química.</p>
+                    <div class="chemical-space-report-layout"><div class="chemical-space-report-chart"><svg class="chemical-space-report-svg chemical-space-report-svg--batch" viewBox="0 0 920 470" role="img" aria-label="Espaço químico 2D com escalas nos eixos">
+                        <line x1="460" y1="18" x2="460" y2="420" stroke="#cbd5e1" stroke-width="1.2" />
+                        <line x1="28" y1="238" x2="892" y2="238" stroke="#cbd5e1" stroke-width="1.2" />
+                        {% for tick in ticks %}{% set tx = 460 + ((tick / bounds.max_abs) * 400) %}<line x1="{{ '%.2f'|format(tx) }}" y1="232" x2="{{ '%.2f'|format(tx) }}" y2="244" stroke="#94a3b8" stroke-width="1" /><text x="{{ '%.2f'|format(tx) }}" y="264" text-anchor="middle" font-size="12" fill="#64748b">{{ '%.3f'|format(tick) }}</text>{% set ty = 238 - ((tick / bounds.max_abs) * 185) %}<line x1="454" y1="{{ '%.2f'|format(ty) }}" x2="466" y2="{{ '%.2f'|format(ty) }}" stroke="#94a3b8" stroke-width="1" /><text x="444" y="{{ '%.2f'|format(ty + 4) }}" text-anchor="end" font-size="12" fill="#64748b">{{ '%.3f'|format(tick) }}</text>{% endfor %}
+                        <text x="856" y="232" font-size="13" fill="#475569">MDS 1</text><text x="468" y="31" font-size="13" fill="#475569">MDS 2</text>
+                        {% set occupied_labels = [] %}{% for point in points %}{% set px = 460 + ((point.get('x', 0) or 0) / bounds.max_abs) * 400 %}{% set py = 238 - ((point.get('y', 0) or 0) / bounds.max_abs) * 185 %}{% set is_ref = point.get('role') == 'reference' or point.get('is_target') %}{% set label_name = point.get('name', '-')|truncate(28, True, '…') %}{% set label_width = [46, (label_name|length * 7.1)]|max %}{% set candidates = [[12, -14, 'start'], [12, 25, 'start'], [-12, -14, 'end'], [-12, 25, 'end'], [22, -30, 'start'], [22, 40, 'start'], [-22, -30, 'end'], [-22, 40, 'end'], [0, -32, 'middle'], [0, 42, 'middle']] %}{% set chosen = namespace(dx=12, dy=-14, anchor='start', left=0, top=0, right=0, bottom=0, found=false) %}{% for candidate in candidates %}{% if not chosen.found %}{% set cdx = candidate[0] %}{% set cdy = candidate[1] %}{% set canchor = candidate[2] %}{% if canchor == 'end' %}{% set cleft = px + cdx - label_width %}{% set cright = px + cdx %}{% elif canchor == 'middle' %}{% set cleft = px + cdx - (label_width / 2) %}{% set cright = px + cdx + (label_width / 2) %}{% else %}{% set cleft = px + cdx %}{% set cright = px + cdx + label_width %}{% endif %}{% set ctop = py + cdy - 14 %}{% set cbottom = py + cdy + 5 %}{% set collision = namespace(value=false) %}{% for box in occupied_labels %}{% if cleft < box[2] and cright > box[0] and ctop < box[3] and cbottom > box[1] %}{% set collision.value = true %}{% endif %}{% endfor %}{% set touches_axis = (cleft < 468 and cright > 452) or (ctop < 246 and cbottom > 230) %}{% set out_of_bounds = cleft < 30 or cright > 890 or ctop < 22 or cbottom > 428 %}{% if not collision.value and not touches_axis and not out_of_bounds %}{% set chosen.dx = cdx %}{% set chosen.dy = cdy %}{% set chosen.anchor = canchor %}{% set chosen.left = cleft %}{% set chosen.top = ctop %}{% set chosen.right = cright %}{% set chosen.bottom = cbottom %}{% set chosen.found = true %}{% endif %}{% endif %}{% endfor %}{% if not chosen.found %}{% set chosen.dx = 12 %}{% set chosen.dy = -14 %}{% set chosen.anchor = 'start' %}{% set chosen.left = px + 12 %}{% set chosen.top = py - 28 %}{% set chosen.right = chosen.left + label_width %}{% set chosen.bottom = py - 9 %}{% endif %}{% set _ = occupied_labels.append([chosen.left, chosen.top, chosen.right, chosen.bottom]) %}<circle cx="{{ '%.2f'|format(px) }}" cy="{{ '%.2f'|format(py) }}" r="{{ 8 if is_ref else 5.5 }}" fill="{{ '#f97316' if is_ref else '#2563eb' }}" stroke="#fff" stroke-width="1.8"><title>{{ point.get('name', '-') }}</title></circle><text x="{{ '%.2f'|format(px + chosen.dx) }}" y="{{ '%.2f'|format(py + chosen.dy) }}" text-anchor="{{ chosen.anchor }}" font-size="14" font-weight="700" fill="#1e293b" style="fill:#1e293b;">{{ label_name }}</text>{% endfor %}
                     </svg>
-                    <div class="space-legend"><span style="color:#f97316;">●</span> Referência &nbsp;&nbsp; <span style="color:#2563eb;">●</span> 10 vizinhos mais próximos do lote. A projeção é uma ferramenta de triagem visual.</div>
-                    <table class="chemical-space-report-table"><thead><tr><th>Molécula</th><th>Dist.FQ normalizada</th><th>Distância global</th><th>RotB</th></tr></thead><tbody>{% for point in points if point.get('role') != 'reference' and not point.get('is_target') %}<tr><td>{{ point.get('name', '-') }}</td><td>{{ '%.4f'|format(point.get('physicochemical_distance', 0)) }}</td><td>{{ '%.4f'|format(point.get('global_distance', 0)) }}</td><td>{{ point.get('rotatable_bonds', '-') }}</td></tr>{% endfor %}</tbody></table>
+                    <div class="space-legend"><span style="color:#f97316;">●</span> Referência &nbsp;&nbsp; <span style="color:#2563eb;">●</span> Até 10 vizinhos mais próximos do lote. As escalas são coordenadas da projeção MDS; o ranking usa as distâncias calculadas antes da projeção.</div></div>
+                                        <div class="chemical-space-report-table-wrap"><table class="chemical-space-report-table chemical-space-report-table--side"><colgroup><col style="width:15%;"><col style="width:31%;"><col style="width:33%;"><col style="width:21%;"></colgroup><thead><tr><th>Molécula</th><th>Distância de similaridade</th><th>Distância físico-química</th><th>Distância global</th></tr></thead><tbody>
+{% for point in points if point.get('role') != 'reference' and not point.get('is_target') %}<tr><td>{{ point.get('name', '-') }}</td><td class="center">{{ '%.4f'|format(point.get('structural_distance', 1 - (point.get('similarity_to_reference', 0) or 0))) }}</td><td class="center">{{ '%.4f'|format(point.get('physicochemical_distance', 0)) }}</td><td class="center">{{ '%.4f'|format(point.get('global_distance', 0)) }}</td></tr>{% endfor %}</tbody></table></div></div>
                 </div>
             </section>
             {% endif %}
 
-            <section class="section">
-                <h2>Resultado de Similaridade <small>comparação com a referência</small></h2>
-                <div class="table-wrap"><table class="batch-report-table"><colgroup><col style="width:52%;"><col style="width:16%;"><col style="width:32%;"></colgroup><thead><tr><th>Molécula</th><th>Similaridade</th><th>Classificação</th></tr></thead><tbody>{% for item in report.get('results', []) %}<tr><td class="batch-molecule-cell"><div class="batch-molecule-report"><div class="batch-structure-thumb">{% if item.get('png') %}<img src="data:image/png;base64,{{ item.get('png') }}" alt="Estrutura 2D de {{ item.get('name', 'molécula') }}">{% else %}<span class="batch-structure-placeholder">Estrutura indisponível</span>{% endif %}</div><span class="batch-molecule-name">{{ item.get('name', '-') }}</span></div></td><td class="center"><strong>{{ '%.4f'|format(item.get('similarity', 0.0)) if item.get('similarity') is not none else '-' }}</strong></td><td class="center">{% if item.get('error') %}<span class="status-badge status-badge--error">Erro</span>{% elif item.get('classification') %}<span class="status-badge status-badge--ok">{{ item.get('classification') }}</span>{% else %}<span class="status-badge">—</span>{% endif %}</td></tr>{% endfor %}</tbody></table></div>
-            </section>
-
-            <section class="section">
-                <h2>Propriedades Físico-Químicas <small>seis descritores e demais campos disponíveis</small></h2>
-                <div class="table-wrap"><table class="batch-report-table"><colgroup><col style="width:22%;"><col style="width:9.75%;"><col style="width:8.75%;"><col style="width:10%;"><col style="width:8.75%;"><col style="width:8.75%;"><col style="width:8%;"><col style="width:8%;"><col style="width:14%;"></colgroup><thead><tr><th>Molécula</th><th>Massa Molecular<br>(g/mol)</th><th>LogP</th><th>TPSA<br>(Å²)</th><th>pKa ácido</th><th>pKa básico</th><th>HBD</th><th>HBA</th><th>RotB</th></tr></thead><tbody>{% for item in report.get('results', []) %}<tr><td class="batch-molecule-cell">{{ item.get('name', '-') }}</td><td class="center">{{ item.get('properties', {}).get('Massa Molecular (g/mol)', '-') if item.get('properties') else '-' }}</td><td class="center">{{ item.get('properties', {}).get('Coeficiente de Partição (LogP)', '-') if item.get('properties') else '-' }}</td><td class="center">{{ item.get('properties', {}).get('Área de Superfície Polar (Å²)', '-') if item.get('properties') else '-' }}</td><td class="center">{{ item.get('properties', {}).get('pKa ácido', '-') if item.get('properties') else '-' }}</td><td class="center">{{ item.get('properties', {}).get('pKa básico', '-') if item.get('properties') else '-' }}</td><td class="center">{{ item.get('properties', {}).get('Doadores de H (HBD)', '-') if item.get('properties') else '-' }}</td><td class="center">{{ item.get('properties', {}).get('Receptores de H (HBA)', '-') if item.get('properties') else '-' }}</td><td class="center">{{ item.get('properties', {}).get('Ligações rotacionáveis (RotB)', '-') if item.get('properties') else '-' }}</td></tr>{% endfor %}</tbody></table></div>
-            </section>
-
         {% else %}
+            {% set pair_properties = report.get('properties', []) %}
+            {% set pair_warnings = report.get('warnings', [])|rejectattr('code', 'equalto', 'pka_heuristic_estimate')|list %}
             <section class="section">
-                <h2>Resumo <small>comparação direta</small></h2>
-                <div class="summary-grid summary-grid--two"><div class="summary-box"><strong>Referência</strong><div class="reference-card"><div class="reference-name">{{ report.get('name_ref', '-') }}</div><div class="reference-smiles mono">{{ report.get('smiles_ref', '-') }}</div></div></div><div class="summary-box summary-box--accent"><strong>Resultado</strong><span class="summary-value">{{ '%.4f'|format(report.get('similarity', 0.0)) }}</span><span class="summary-note">{{ report.get('classification', '-') }}</span></div></div>
+                <h2>Resumo <small>comparação direta entre duas moléculas</small></h2>
+                <div class="pair-summary-grid">
+                    <div class="pair-summary-molecule"><span class="meta-label">Referência</span><strong>{{ report.get('name_ref', '-') }}</strong><code>{{ report.get('smiles_ref', '-') }}</code></div>
+                    <div class="pair-summary-result"><span class="meta-label">Similaridade</span><span class="summary-value">{{ '%.4f'|format(report.get('similarity', 0.0)) }}</span>{% set classification = report.get('classification', '') %}{% if classification in ['Muito Baixa', 'Baixa'] %}<span class="status-badge status-badge--low">{{ classification }}</span>{% elif classification == 'Moderada' %}<span class="status-badge status-badge--moderate">{{ classification }}</span>{% elif classification in ['Alta', 'Muito Alta'] %}<span class="status-badge status-badge--high">{{ classification }}</span>{% else %}<span class="status-badge">{{ classification or '—' }}</span>{% endif %}</div>
+                    <div class="pair-summary-molecule"><span class="meta-label">Molécula teste</span><strong>{{ report.get('name_test', '-') }}</strong><code>{{ report.get('smiles_test', '-') }}</code></div>
+                </div>
             </section>
-            <section class="section"><h2>Estruturas Moleculares</h2><div class="molecule-grid"><article class="molecule-card"><p class="molecule-name">{{ report.get('name_ref', 'Referência') }}</p><div class="molecule-box">{% if report.get('png_ref') %}<img src="data:image/png;base64,{{ report.get('png_ref') }}" alt="Estrutura referência">{% else %}<span>Imagem não disponível</span>{% endif %}</div></article><article class="molecule-card"><p class="molecule-name">{{ report.get('name_test', 'Teste') }}</p><div class="molecule-box">{% if report.get('png_test') %}<img src="data:image/png;base64,{{ report.get('png_test') }}" alt="Estrutura teste">{% else %}<span>Imagem não disponível</span>{% endif %}</div></article></div></section>
-            <section class="section"><h2>Propriedades Físico-Químicas</h2><table><thead><tr><th>Propriedade</th><th class="center">Referência</th><th class="center">Teste</th><th class="center">Diferença</th></tr></thead><tbody>{% for prop in report.get('properties', []) %}<tr><td>{{ prop.get('Propriedade', '-') }}</td><td class="center">{{ prop.get('Referência', '-') }}</td><td class="center">{{ prop.get('Teste', '-') }}</td><td class="center">{{ prop.get('Diferença', '-') }}</td></tr>{% endfor %}</tbody></table></section>
-            {% if report.get('fingerprint_ref_png') or report.get('fingerprint_test_png') %}<section class="section"><h2>Fingerprints</h2><div class="molecule-grid"><div class="report-card">{% if report.get('fingerprint_ref_png') %}<img style="display:block;max-width:100%;height:100px;margin:auto;object-fit:contain;" src="data:image/png;base64,{{ report.get('fingerprint_ref_png') }}" alt="Fingerprint da referência">{% endif %}</div><div class="report-card">{% if report.get('fingerprint_test_png') %}<img style="display:block;max-width:100%;height:100px;margin:auto;object-fit:contain;" src="data:image/png;base64,{{ report.get('fingerprint_test_png') }}" alt="Fingerprint do teste">{% endif %}</div></div></section>{% endif %}
+
+            <section class="section">
+                <h2>Estruturas Moleculares <small>referência e molécula teste</small></h2>
+                <div class="pair-structure-grid">
+                    <article class="pair-structure-card"><h3>{{ report.get('name_ref', 'Referência') }}</h3><div class="pair-structure-box">{% if report.get('png_ref') %}<img src="data:image/png;base64,{{ report.get('png_ref') }}" alt="Estrutura 2D da referência {{ report.get('name_ref', 'molécula') }}">{% else %}<span>Imagem não disponível</span>{% endif %}</div></article>
+                    <article class="pair-structure-card"><h3>{{ report.get('name_test', 'Teste') }}</h3><div class="pair-structure-box">{% if report.get('png_test') %}<img src="data:image/png;base64,{{ report.get('png_test') }}" alt="Estrutura 2D da molécula teste {{ report.get('name_test', 'molécula') }}">{% else %}<span>Imagem não disponível</span>{% endif %}</div></article>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Similaridade Estrutural <small>{{ report.get('similarity_map_fingerprint', 'Morgan2') }} / {{ report.get('similarity_map_metric', 'Tanimoto') }}</small></h2>
+                <div class="pair-analysis-grid">
+                    <div class="pair-analysis-card"><h3>Mapa de similaridade (heatmap)</h3><p class="pair-map-method"><strong>Métrica adotada:</strong> {{ report.get('similarity_map_metric', 'Tanimoto') }} sobre fingerprint {{ report.get('similarity_map_fingerprint', 'Morgan2') }}.</p><div class="pair-map-box">{% if report.get('similarity_map') %}{{ report.get('similarity_map')|safe }}{% elif report.get('similarity_map_png') %}<img src="data:image/png;base64,{{ report.get('similarity_map_png') }}" alt="Mapa de similaridade estrutural usando {{ report.get('similarity_map_fingerprint', 'Morgan2') }} e {{ report.get('similarity_map_metric', 'Tanimoto') }}">{% else %}<span class="muted">Mapa de similaridade indisponível</span>{% endif %}</div><p class="pair-summary-note">A visualização destaca regiões estruturais associadas à comparação selecionada.</p></div>
+                </div>
+                {% if pair_warnings %}<ul class="pair-warning-list">{% for warning in pair_warnings %}<li>{{ warning.get('message', warning) if warning is mapping else warning }}</li>{% endfor %}</ul>{% endif %}
+            </section>
+
+            <section class="section pair-properties-section">
+                <h2>Propriedades Físico-Químicas <small>valores calculados para referência e teste</small></h2>
+                <table class="pair-properties-table"><thead><tr><th>Propriedade</th><th>Referência</th><th>Teste</th><th>Diferença</th></tr></thead><tbody>{% for prop in pair_properties %}<tr><td>{{ prop.get('Propriedade', '-') }}</td><td>{{ prop.get('Referência', '-') }}</td><td>{{ prop.get('Teste', '-') }}</td><td>{{ prop.get('Diferença', '-') }}</td></tr>{% endfor %}</tbody></table>
+            </section>
+
         {% endif %}
 
         <div class="footer-line"><span>PharmaSci · relatório gerado a partir do payload da análise</span><span>{% if is_nitro %}Nitro.RA{% else %}Mol.Sim{% endif %} · {{ report.get('generated_at', '-') }}</span></div>

@@ -24,7 +24,7 @@ from flask_cors import CORS
 from fpdf import FPDF
 from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
 
-from analysis import compare, bulk_compare, build_chemical_space, validate_fingerprint_type, validate_metric
+from analysis import compare, bulk_compare, build_chemical_space, get_mol, mol_to_png, validate_fingerprint_type, validate_metric
 from chemo_suite.apps.mol_sim.pairwise import run_pairwise_compare
 from chemo_suite.apps.mol_sim.batch import run_batch_compare
 from chemo_suite.apps.nitro_ra.cpca import calculate_cpca
@@ -500,6 +500,10 @@ def api_bulk_compare():
             return _error_response(400, error, "smiles")
 
         payload = {"results": results}
+        reference_mol, reference_error = get_mol(data["ref_smiles"])
+        if reference_mol is not None and not reference_error:
+            reference_png = mol_to_png(reference_mol, size=220)
+            payload["reference_png"] = base64.b64encode(reference_png).decode("utf-8") if reference_png else None
         if data.get("show_chemical_space", False):
             payload["chemical_space"] = build_chemical_space(
                 data["ref_smiles"],

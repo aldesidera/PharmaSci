@@ -200,6 +200,7 @@ def _rank_and_project(
         candidate["classification"] = classify_similarity(candidate["similarity"], SPACE_METRIC)
         candidate["physicochemical_distance"] = round(float(metrics["normalized_physicochemical_distances"][0, original_index]), 6)
         candidate["global_distance"] = round(float(metrics["reference_global_distances"][original_index]), 6)
+        candidate["global_similarity"] = round(float(1.0 - metrics["reference_global_distances"][original_index]), 6)
         candidate["pca"] = {
             "x": round(float(coordinates[local_index, 0]), 6),
             "y": round(float(coordinates[local_index, 1]), 6),
@@ -208,6 +209,9 @@ def _rank_and_project(
             candidate["svg"] = mol_to_svg(valid_molecules[candidate_index], size=220)
         selected_candidates.append(candidate)
 
+    # A maior similaridade global equivale à menor distância global; manter essa
+    # ordem explícita garante que tabelas e gráficos iniciem pelo vizinho mais similar.
+    selected_candidates.sort(key=lambda item: (-float(item.get("global_similarity", 0.0)), float(item.get("global_distance", 1.0))))
     target = {"properties": _property_rows(target_properties)}
     points = _build_points(target, selected_candidates)
     return selected_candidates, points, {
@@ -228,19 +232,23 @@ def _ema_profile() -> Optional[Dict[str, Any]]:
     return payload
 
 
-def _ema_candidates() -> Tuple[Optional[Dict[str, Any]], List[Dict[str, Any]], List[Chem.Mol]]:
+def _ema_candidates(target_canonical: Optional[str] = None) -> Tuple[Optional[Dict[str, Any]], List[Dict[str, Any]], List[Chem.Mol], bool]:
     profile = _ema_profile()
     if not profile:
-        return None, [], []
+        return None, [], [], False
     index = _ema_index()
     candidates: List[Dict[str, Any]] = []
     molecules: List[Chem.Mol] = []
+    target_excluded = False
     for canonical in profile.get("canonical_smiles", []):
         record = index.get(canonical)
         if not record:
             continue
         molecule = Chem.MolFromSmiles(canonical)
         if molecule is None:
+            continue
+        if target_canonical and _canonical(molecule) == target_canonical:
+            target_excluded = True
             continue
         properties = get_properties(molecule) or {}
         if _descriptor_vector(properties) is None:
@@ -261,7 +269,7 @@ def _ema_candidates() -> Tuple[Optional[Dict[str, Any]], List[Dict[str, Any]], L
             "fingerprint": SPACE_FINGERPRINT,
         })
         molecules.append(molecule)
-    return profile, candidates, molecules
+    return profile, candidates, molecules, target_excluded
 
 
 def _ema_space(
@@ -270,7 +278,8 @@ def _ema_space(
     *,
     display_limit: int = DISPLAY_LIMIT,
 ) -> Dict[str, Any]:
-    profile, candidates, molecules = _ema_candidates()
+    target_canonical = _canonical(target_mol)
+    profile, candidates, molecules, target_excluded = _ema_candidates(target_canonical)
     if not profile:
         return {
             "module": "ema_chemical_space",
@@ -278,7 +287,7 @@ def _ema_space(
             "message": "O perfil local da biblioteca EMA não está disponível.",
             "candidates": [],
             "points": [],
-            "search": {"library_size": 0, "selected_candidates": 0},
+            "search": {"library_size": 0, "source_library_size": 0, "selected_candidates": 0, "target_excluded": False},
             "warnings": ["A biblioteca EMA local não foi carregada; nenhum valor foi inferido."],
         }
     fixed_normalizer = profile.get("fq_normalizer")
@@ -304,6 +313,8 @@ def _ema_space(
         "target": {"properties": _property_rows(target_properties)},
         "search": {
             "library_size": len(candidates),
+            "source_library_size": len(profile.get("canonical_smiles", [])),
+            "target_excluded": target_excluded,
             "scored_candidates": diagnostics["scored_candidates"],
             "selected_candidates": len(selected),
             "selection_method": "MACCS/Tanimoto + distância multimodal quadrática com z-score fixo da biblioteca EMA; MDS clássico; exibição das 10 menores distâncias",
@@ -358,7 +369,7 @@ def search_nitrosamine_space(
         result = _base_result(normalized, "pubchem_unavailable", search_error["message"])
         result.update({
             "target": target,
-            "search": {"threshold": threshold, "max_records": max_records, "retrieved_cids": 0, "n_nitroso_candidates": 0, "selected_candidates": 0},
+            "search": {"threshold": threshold, "max_records": max_records, "retrieved_cids": 0, "n_nitroso_candidates": 0, "selected_candidates": 0, "target_excluded": False},
             "candidates": [],
             "points": [],
             "ema_space": _ema_space(target_mol, target_properties, display_limit=DISPLAY_LIMIT),
@@ -376,7 +387,7 @@ def search_nitrosamine_space(
         result = _base_result(normalized, "no_nitrosamines", "Nenhuma nitrosamina foi encontrada no lote amostrado do PubChem.")
         result.update({
             "target": target,
-            "search": {"threshold": threshold, "max_records": max_records, "retrieved_cids": 0, "n_nitroso_candidates": 0, "selected_candidates": 0},
+            "search": {"threshold": threshold, "max_records": max_records, "retrieved_cids": 0, "n_nitroso_candidates": 0, "selected_candidates": 0, "target_excluded": False},
             "candidates": [],
             "points": _build_points(target, []),
             "ema_space": _ema_space(target_mol, target_properties, display_limit=DISPLAY_LIMIT),
@@ -393,7 +404,7 @@ def search_nitrosamine_space(
         result = _base_result(normalized, "pubchem_unavailable", properties_error["message"])
         result.update({
             "target": target,
-            "search": {"threshold": threshold, "max_records": max_records, "retrieved_cids": len(cids), "n_nitroso_candidates": 0, "selected_candidates": 0},
+            "search": {"threshold": threshold, "max_records": max_records, "retrieved_cids": len(cids), "n_nitroso_candidates": 0, "selected_candidates": 0, "target_excluded": False},
             "candidates": [],
             "points": [],
             "ema_space": _ema_space(target_mol, target_properties, display_limit=DISPLAY_LIMIT),
@@ -402,6 +413,7 @@ def search_nitrosamine_space(
 
     candidates: List[Dict[str, Any]] = []
     candidate_molecules: List[Chem.Mol] = []
+    target_excluded = False
     raw_properties = ((properties_payload or {}).get("PropertyTable") or {}).get("Properties") or []
     for item in raw_properties:
         if not isinstance(item, dict):
@@ -417,6 +429,7 @@ def search_nitrosamine_space(
             continue
         canonical = _canonical(candidate_mol)
         if canonical == target_canonical:
+            target_excluded = True
             continue
         properties = get_properties(candidate_mol) or {}
         if _descriptor_vector(properties) is None:
@@ -464,6 +477,7 @@ def search_nitrosamine_space(
             "max_records": max_records,
             "retrieved_cids": len(cids),
             "n_nitroso_candidates": len(candidates),
+            "target_excluded": target_excluded,
             "scored_candidates": diagnostics["scored_candidates"],
             "selected_candidates": len(selected),
             "search_url": search_url,

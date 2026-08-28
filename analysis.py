@@ -11,7 +11,11 @@ import logging
 from functools import lru_cache
 from typing import Tuple, Dict, Optional, List, Any
 import base64
+import io
+import math
+import re
 import numpy as np
+from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 from chemo_suite.core.chemical_space import (
     DESCRIPTOR_KEYS,
@@ -35,6 +39,8 @@ from rdkit.Geometry import Point2D
 
 FINGERPRINT_BITS = 2048
 MORGAN_RADIUS = 2
+SIMILARITY_MAP_FINGERPRINT = "Morgan2"
+SIMILARITY_MAP_METRIC = "Tanimoto"
 MACC_KEYS = 166
 
 LOGD_PH_COEFFICIENT = 0.12
@@ -179,6 +185,31 @@ def estimate_pka(mol: Optional[Mol]) -> Optional[Dict[str, Optional[float]]]:
         return None
 
 
+def _estimate_water_solubility_ph7(mol: Mol, mw: float, logp: float, rotatable_bonds: int, pka: Optional[Dict[str, Any]]) -> float:
+    """Estima solubilidade em água a pH 7 em mg/L; não substitui medida experimental."""
+    heavy_atoms = max(mol.GetNumHeavyAtoms(), 1)
+    aromatic_atoms = sum(1 for atom in mol.GetAtoms() if atom.GetIsAromatic())
+    aromatic_proportion = aromatic_atoms / heavy_atoms
+    log_s_neutral = (
+        0.16
+        - 1.5 * logp
+        - 0.01 * (mw - 40.0)
+        + 0.066 * rotatable_bonds
+        + 0.066 * aromatic_proportion
+    )
+    ionization_factor = 1.0
+    if pka:
+        pka_acid = pka.get("pKa ácido")
+        pka_basic = pka.get("pKa básico")
+        if isinstance(pka_acid, (int, float)):
+            ionization_factor = 1.0 + 10 ** (7.0 - float(pka_acid))
+        elif isinstance(pka_basic, (int, float)):
+            ionization_factor = 1.0 + 10 ** (float(pka_basic) - 7.0)
+    log_s_ph7 = log_s_neutral + math.log10(max(ionization_factor, 1.0))
+    solubility_mg_l = (10 ** min(log_s_ph7, 12.0)) * mw * 1000.0
+    return round(max(solubility_mg_l, 0.0), 2)
+
+
 @lru_cache(maxsize=512)
 def _compute_property_payload(smiles_key: str) -> Optional[Dict[str, Any]]:
     try:
@@ -193,6 +224,7 @@ def _compute_property_payload(smiles_key: str) -> Optional[Dict[str, Any]]:
         hba = Descriptors.NumHAcceptors(mol_work)
         rotatable_bonds = Descriptors.NumRotatableBonds(mol_work)
         pka = estimate_pka(mol_work)
+        water_solubility_ph7 = _estimate_water_solubility_ph7(mol_work, mw, logp, rotatable_bonds, pka)
 
         return {
             "Massa Molecular (g/mol)": round(mw, 2),
@@ -203,6 +235,7 @@ def _compute_property_payload(smiles_key: str) -> Optional[Dict[str, Any]]:
             "Doadores de H (HBD)": int(hbd),
             "Receptores de H (HBA)": int(hba),
             "Ligações rotacionáveis (RotB)": int(rotatable_bonds),
+            "Solubilidade em água (pH 7, estimada) (mg/L)": water_solubility_ph7,
         }
     except Exception:
         return None
@@ -284,15 +317,20 @@ def fingerprint_to_png(mol: Optional[Mol], fp_type: str, size: int = FINGERPRINT
         on_bits = list(fp.GetOnBits()) if hasattr(fp, "GetOnBits") else []
         bit_count = len(on_bits)
 
-        drawer = rdMolDraw2D.MolDraw2DCairo(size, 120)
-        drawer.DrawString(f"Fingerprint: {fp_type}", Point2D(12, 90), rawCoords=True)
-        drawer.DrawString(f"Bits ativos: {bit_count}", Point2D(12, 60), rawCoords=True)
-        drawer.DrawString(f"Tamanho: {size}px", Point2D(12, 30), rawCoords=True)
-        drawer.FinishDrawing()
-        png_bytes = drawer.GetDrawingText()
-        if not png_bytes:
-            return None
-        return base64.b64encode(png_bytes).decode("utf-8")
+        canvas = Image.new("RGB", (size, 120), "white")
+        draw = ImageDraw.Draw(canvas)
+        try:
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 18)
+            small_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
+        except OSError:
+            font = ImageFont.load_default()
+            small_font = font
+        draw.text((12, 12), f"Fingerprint: {fp_type}", fill="#172033", font=font)
+        draw.text((12, 48), f"Bits ativos: {bit_count}", fill="#334155", font=small_font)
+        draw.text((12, 76), f"Tamanho: {size}px", fill="#64748b", font=small_font)
+        output = io.BytesIO()
+        canvas.save(output, format="PNG", optimize=True)
+        return base64.b64encode(output.getvalue()).decode("utf-8")
     except Exception as e:
         logger.error(f"Erro ao gerar imagem do fingerprint: {str(e)}")
         return None
@@ -355,6 +393,31 @@ def _mol_to_svg_cached(smiles_key: str, size: int) -> str:
 
 
 @lru_cache(maxsize=256)
+def _trim_png_whitespace(encoded: bytes, padding: int = 12) -> bytes:
+    """Trim empty canvas around a molecule while preserving a small readable margin."""
+    try:
+        image = Image.open(io.BytesIO(encoded)).convert("RGBA")
+        white = Image.new("RGBA", image.size, (255, 255, 255, 255))
+        composited = Image.alpha_composite(white, image).convert("RGB")
+        background = Image.new("RGB", composited.size, (255, 255, 255))
+        diff = ImageChops.difference(composited, background)
+        bbox = diff.getbbox()
+        if not bbox:
+            return encoded
+        left = max(0, bbox[0] - padding)
+        top = max(0, bbox[1] - padding)
+        right = min(image.width, bbox[2] + padding)
+        bottom = min(image.height, bbox[3] + padding)
+        cropped = composited.crop((left, top, right, bottom))
+        output = io.BytesIO()
+        cropped.save(output, format="PNG", optimize=True)
+        return output.getvalue()
+    except Exception as exc:
+        logger.warning(f"Não foi possível recortar margens do PNG molecular: {exc}")
+        return encoded
+
+
+@lru_cache(maxsize=256)
 def _mol_to_png_cached(smiles_key: str, size: int) -> bytes:
     try:
         mol = Chem.MolFromSmiles(smiles_key)
@@ -374,7 +437,7 @@ def _mol_to_png_cached(smiles_key: str, size: int) -> bytes:
         options.fixedBondLength = 30
         drawer.DrawMolecule(mol_no_h)
         drawer.FinishDrawing()
-        return drawer.GetDrawingText()
+        return _trim_png_whitespace(drawer.GetDrawingText())
     except Exception as e:
         logger.error(f"Erro ao gerar PNG cacheado: {str(e)}")
         return b""
@@ -394,10 +457,13 @@ def mol_to_svg(mol: Optional[Mol], size: int = SVG_SIZE_MOLECULE) -> str:
 
 
 def _get_similarity_map_drawer(size: int):
-    drawer = rdMolDraw2D.MolDraw2DSVG(size, size)
+    canvas_height = max(480, int(size * 0.625))
+    drawer = rdMolDraw2D.MolDraw2DSVG(size, canvas_height)
     opts = drawer.drawOptions()
     opts.bondLineWidth = 3
     opts.minFontSize = 14
+    opts.padding = 0.22
+    opts.additionalAtomLabelPadding = 0.06
     return drawer
 
 
@@ -409,6 +475,66 @@ def _similarity_map_fingerprint(mol, idx):
         useFeatures=True,
         useChirality=True,
     )
+
+
+def _crop_similarity_map_svg(svg: str, canvas_width: int, canvas_height: int) -> str:
+    """Ajusta o viewBox ao conteúdo do heatmap sem remover a margem de segurança."""
+    try:
+        bounds = [float(canvas_width), float(canvas_height), 0.0, 0.0]
+        found = False
+
+        def include(x: float, y: float, radius: float = 0.0) -> None:
+            nonlocal found
+            bounds[0] = min(bounds[0], x - radius)
+            bounds[1] = min(bounds[1], y - radius)
+            bounds[2] = max(bounds[2], x + radius)
+            bounds[3] = max(bounds[3], y + radius)
+            found = True
+
+        number_pattern = r"[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?"
+        for path_data in re.findall(r"<path\b[^>]*\bd=['\"]([^'\"]+)['\"]", svg):
+            values = [float(value) for value in re.findall(number_pattern, path_data)]
+            for index in range(0, len(values) - 1, 2):
+                include(values[index], values[index + 1])
+
+        for cx, cy, radius in re.findall(
+            rf"<circle\b[^>]*\bcx=['\"]({number_pattern})['\"][^>]*\bcy=['\"]({number_pattern})['\"][^>]*\br=['\"]({number_pattern})['\"]",
+            svg,
+        ):
+            include(float(cx), float(cy), float(radius))
+
+        for x1, y1, x2, y2 in re.findall(
+            rf"<line\b[^>]*\bx1=['\"]({number_pattern})['\"][^>]*\by1=['\"]({number_pattern})['\"][^>]*\bx2=['\"]({number_pattern})['\"][^>]*\by2=['\"]({number_pattern})['\"]",
+            svg,
+        ):
+            include(float(x1), float(y1))
+            include(float(x2), float(y2))
+
+        for x, y in re.findall(rf"<text\b[^>]*\bx=['\"]({number_pattern})['\"][^>]*\by=['\"]({number_pattern})['\"]", svg):
+            include(float(x), float(y), 8.0)
+
+        if not found:
+            return svg
+
+        min_x, min_y, max_x, max_y = bounds
+        content_width = max(max_x - min_x, 1.0)
+        content_height = max(max_y - min_y, 1.0)
+        margin = max(12.0, min(28.0, 0.07 * max(content_width, content_height)))
+        min_x = max(0.0, min_x - margin)
+        min_y = max(0.0, min_y - margin)
+        max_x = min(float(canvas_width), max_x + margin)
+        max_y = min(float(canvas_height), max_y + margin)
+        cropped_width = max(max_x - min_x, 1.0)
+        cropped_height = max(max_y - min_y, 1.0)
+        return re.sub(
+            r"viewBox=['\"][^'\"]+['\"]",
+            f'viewBox="{min_x:.2f} {min_y:.2f} {cropped_width:.2f} {cropped_height:.2f}"',
+            svg,
+            count=1,
+        )
+    except Exception as exc:
+        logger.warning(f"Não foi possível recortar o viewBox do heatmap: {exc}")
+        return svg
 
 
 @lru_cache(maxsize=128)
@@ -431,6 +557,7 @@ def _similarity_map_cached(ref_key: str, test_key: str, size: int) -> Optional[s
                 mol_ref_no_h,
                 mol_test_no_h,
                 _similarity_map_fingerprint,
+                metric=DataStructs.TanimotoSimilarity,
                 draw2d=drawer,
             )
         except Exception as inner_e:
@@ -439,7 +566,11 @@ def _similarity_map_cached(ref_key: str, test_key: str, size: int) -> Optional[s
 
         drawer.FinishDrawing()
         svg = drawer.GetDrawingText()
-        return svg.replace(f'width="{size}px"', 'width="100%"').replace(f'height="{size}px"', 'height="100%"')
+        if '<svg ' in svg and 'preserveAspectRatio=' not in svg:
+            svg = svg.replace('<svg ', '<svg preserveAspectRatio="xMidYMid meet" ', 1)
+        svg = re.sub(r"width=['\"][^'\"]+['\"]", 'width="100%"', svg, count=1)
+        svg = re.sub(r"height=['\"][^'\"]+['\"]", 'height="100%"', svg, count=1)
+        return _crop_similarity_map_svg(svg, size, max(480, int(size * 0.625)))
     except Exception as e:
         logger.error(f"Erro ao gerar SimilarityMap cacheado: {str(e)}")
         return None
@@ -487,17 +618,21 @@ def _similarity_map_png_cached(ref_key: str, test_key: str, size: int) -> Option
             return None
 
         canvas_size = max(size, 800)
-        drawer = rdMolDraw2D.MolDraw2DCairo(canvas_size, canvas_size)
+        canvas_height = max(480, int(canvas_size * 0.625))
+        drawer = rdMolDraw2D.MolDraw2DCairo(canvas_size, canvas_height)
         opts = drawer.drawOptions()
         opts.bondLineWidth = 3
         opts.minFontSize = 16
         opts.annotationFontScale = 0.9
+        opts.padding = 0.22
+        opts.additionalAtomLabelPadding = 0.06
 
         try:
             SimilarityMaps.GetSimilarityMapForFingerprint(
                 mol_ref_no_h,
                 mol_test_no_h,
                 _similarity_map_fingerprint,
+                metric=DataStructs.TanimotoSimilarity,
                 draw2d=drawer,
             )
         except Exception as inner_e:
@@ -679,6 +814,9 @@ def compare(
         "molblock_ref": molblock_ref,
         "molblock_test": molblock_test,
         "fp_type": fp_type,
+        "metric": metric,
+        "similarity_map_fingerprint": SIMILARITY_MAP_FINGERPRINT,
+        "similarity_map_metric": SIMILARITY_MAP_METRIC,
         "logd_ref": logd_ref,
         "logd_test": logd_test,
         "warnings": warnings,
@@ -756,6 +894,7 @@ def build_chemical_space(
             "x": round(float(coordinates[local_index, 0]), 6),
             "y": round(float(coordinates[local_index, 1]), 6),
             "similarity_to_reference": round(float(1.0 - metrics["reference_structural_distances"][original_index]), 6),
+            "structural_distance": round(float(metrics["reference_structural_distances"][original_index]), 6),
             "physicochemical_distance": round(float(metrics["normalized_physicochemical_distances"][0, original_index]), 6),
             "global_distance": round(float(metrics["reference_global_distances"][original_index]), 6),
             "rotatable_bonds": entry["properties"].get("Ligações rotacionáveis (RotB)"),

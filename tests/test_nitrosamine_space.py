@@ -24,13 +24,14 @@ def _property_item(cid, smiles, title):
 def test_search_filters_n_nitroso_and_builds_space(monkeypatch):
     def fake_get_json(url):
         if "/cids/JSON" in url:
-            return {"IdentifierList": {"CID": [101, 102, 103]}}, None
+            return {"IdentifierList": {"CID": [101, 102, 103, 104]}}, None
         return {
             "PropertyTable": {
                 "Properties": [
                     _property_item(101, "O=NN1CCOCC1", "N-nitrosomorpholine"),
                     _property_item(102, "CCN(CC)N=O", "N-nitrosodiethylamine"),
                     _property_item(103, "CCO", "Ethanol"),
+                    _property_item(104, "O=NN1CCCCC1", "N-nitroso-piperidina"),
                 ]
             }
         }, None
@@ -49,10 +50,12 @@ def test_search_filters_n_nitroso_and_builds_space(monkeypatch):
     )
 
     assert result["status"] == "ok"
-    assert result["search"]["retrieved_cids"] == 3
+    assert result["search"]["retrieved_cids"] == 4
     assert result["search"]["n_nitroso_candidates"] == 2
+    assert result["search"]["target_excluded"] is True
     assert result["search"]["selected_candidates"] == 2
     assert len(result["candidates"]) == 2
+    assert [candidate["global_distance"] for candidate in result["candidates"]] == sorted(candidate["global_distance"] for candidate in result["candidates"])
     assert all(candidate["is_n_nitroso"] for candidate in result["candidates"])
     assert all(candidate["similarity"] >= 0 for candidate in result["candidates"])
     assert all(candidate["global_distance"] is not None for candidate in result["candidates"])
@@ -132,6 +135,7 @@ def test_pubchem_caps_retrieval_and_selects_ten_after_multimodal_scoring(monkeyp
     assert result["search"]["scored_candidates"] == len(cids)
     assert result["search"]["selected_candidates"] == 10
     assert len(result["candidates"]) == 10
+    assert [candidate["global_distance"] for candidate in result["candidates"]] == sorted(candidate["global_distance"] for candidate in result["candidates"])
     assert len(result["points"]) == 11
     assert result["search"]["display_limit"] == 10
     distances = [candidate["global_distance"] for candidate in result["candidates"]]
@@ -146,7 +150,9 @@ def test_ema_reference_space_is_offline_fixed_and_limited_to_ten():
     assert result["source"] == "EMA Appendix 1"
     assert result["sheet"] == "N-nitrosamines"
     assert result["search"]["profile_n_structures"] == 243
-    assert result["search"]["library_size"] == 243
+    assert result["search"]["source_library_size"] == 243
+    assert result["search"]["library_size"] == 242
+    assert result["search"]["target_excluded"] is True
     assert result["search"]["selected_candidates"] == 10
     assert len(result["candidates"]) == 10
     assert len(result["points"]) == 11
