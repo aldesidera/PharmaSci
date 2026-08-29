@@ -37,11 +37,17 @@ def test_nitro_report_layout_renders_cpca_ema_and_metabolism_contracts():
     assert "Surrogates mecanísticos hipotéticos" in html
     metabolism_html = html.split('id="report-metabolism"', 1)[1].split('id="report-', 1)[0]
     assert "nitro-product-grid" not in metabolism_html
-    assert "Sítios alfa elegíveis" in html
+    assert "Teste de identificação do sítio de ligação" in html
     assert "CYP2E1" in html
     assert "CYP3A4" in html
     assert "nitro-metabolism-summary-grid" in html
     assert "nitro-metabolism-sites" in html
+    assert "Atendimento da regra" in metabolism_html
+    assert "Sítio identificado" in metabolism_html
+    assert "rule_based" not in metabolism_html
+    assert "Sítios α candidatos e produtos de α-hidroxilação gerados por regra estrutural." not in metabolism_html
+    assert '<div class="nitro-status-line">' not in metabolism_html
+    assert "overflow-wrap: anywhere; word-break: break-word; white-space: normal;" in html
     assert "mechanistic_status" not in html
     assert "Quantum" not in html
     assert "Carcinogenic Potency Categorisation Approach (CPCA)" in html
@@ -61,3 +67,5 @@ def test_nitro_report_layout_renders_cpca_ema_and_metabolism_contracts():
     assert "A estrutura é apresentada como referência comum" not in html
     assert "Deep-PK" not in html
     assert html.index("id=\"report-cpca\"") < html.index("id=\"report-metabolism\"")
+    assert "Limitações e interpretação" not in html
+    assert "nitro-deep-pk-section { break-before: avoid; page-break-before: avoid;" in html

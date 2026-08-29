@@ -1,22 +1,28 @@
 #import "report-theme.typ": report-accent, report-theme
 
 #show: report-theme.with(
-  title: "Racional estatístico do espaço químico 2D",
+  title: "Racional estatístico dos espaços químicos",
   author: "Manus AI",
   rhythm: "report",
   running-header: true,
 )
 
+#set par(first-line-indent: 0em)
+#show link: set text(fill: report-accent)
+
 #page(margin: (top: 30%, x: 2.2cm), numbering: none, header: none)[
-  #set par(first-line-indent: 0em)
   #align(center)[
-    #text(size: 26pt, weight: "bold", fill: report-accent)[Racional estatístico do espaço químico 2D]
-    #v(0.5em)
-    #text(size: 14pt, fill: luma(80))[Mol.Sim — comparação molecular em lote]
+    #text(size: 28pt, weight: "bold", fill: report-accent)[Racional estatístico]
+    #v(0.25em)
+    #text(size: 19pt, weight: "bold")[Dos espaços químicos]
+    #v(0.8em)
+    #text(size: 13pt, fill: luma(80))[Mol.Sim Batch · Mol.Sim Par a Par · Nitro.RA]
     #v(2em)
-    #line(length: 40%, stroke: 0.5pt + luma(160))
+    #line(length: 42%, stroke: 0.7pt + report-accent)
     #v(2em)
-    #text(size: 12pt)[Manus AI  •  25 de agosto de 2026]
+    #text(size: 11pt)[Documento técnico de abordagem e interpretação]
+    #v(0.4em)
+    #text(size: 10pt, fill: luma(85))[PharmaSci · versão revisada · 28 de agosto de 2026]
   ]
 ]
 
@@ -25,125 +31,188 @@
 ]
 #counter(page).update(1)
 
-= Objetivo e escopo
+= 1. Objetivo e escopo
 
-Este documento registra o racional estatístico utilizado pelo módulo *Mol.Sim* para construir um espaço químico bidimensional a partir de uma comparação molecular em lote. O objetivo não é produzir uma classificação farmacológica automática, mas oferecer uma representação auditável da proximidade estrutural e físico-química entre a molécula de referência e as moléculas testadas.
+Este documento descreve o racional estatístico atualmente adotado para as três formas de exploração de espaço químico disponíveis no PharmaSci: o mapa multimodal do *Mol.Sim Batch*, a comparação estrutural *Par a Par* e os mapas relativos do *Nitro.RA*. O objetivo é registrar, de forma auditável, quais dados entram em cada abordagem, como as distâncias são construídas, qual algoritmo de projeção é utilizado e quais interpretações não devem ser feitas.
 
-A análise combina duas fontes de informação. A primeira é a similaridade estrutural calculada sobre fingerprints moleculares. A segunda é a distância entre descritores físico-químicos padronizados. A combinação atualmente adotada no aplicativo é de 60% para a componente estrutural e 40% para a componente físico-química.
+A expressão “espaço químico” não representa uma única análise no aplicativo. O *Batch* e os espaços PubChem/EMA do *Nitro.RA* geram mapas 2D por MDS clássico sobre uma matriz de distância global. O *Par a Par* não gera um MDS: ele apresenta uma matriz/heatmap de similaridade estrutural entre duas moléculas, usando Morgan2 e Tanimoto. Essa distinção é central para evitar que uma métrica de um módulo seja atribuída a outro.
 
-= Padronização dos descritores por Z-score
+#block(fill: rgb("eef5ff"), stroke: (left: 3pt + report-accent), inset: 10pt, radius: 5pt)[
+  *Regra de separação científica.* O Batch representa relações dentro do lote fornecido pelo usuário; o Par a Par representa uma comparação estrutural direta; o Nitro.RA cria dois espaços externos independentes, PubChem e EMA, com bibliotecas, perfis e interpretações próprios. Nenhum desses mapas transfere automaticamente atividade, toxicidade, AI ou equivalência regulatória.
+]
 
-Os descritores apresentam escalas e unidades diferentes. Massa molecular, LogP, TPSA, HBD, HBA e RotB não podem ser combinados diretamente sem padronização, pois uma variável com maior amplitude numérica dominaria a distância. Por isso, cada descritor é convertido em Z-score usando a média e o desvio padrão populacional calculados sobre o conjunto formado pela referência e pelo lote.
+= 2. Visão comparativa das três abordagens
 
-A transformação aplicada a um valor $x_i$ é:
-
-$ z_i = (x_i - μ) / σ $
-
-em que $μ$ é a média do descritor no conjunto analisado e $σ$ é o desvio padrão populacional. O uso do desvio populacional corresponde a considerar o lote fornecido para aquela análise como o universo de comparação, e não como uma amostra destinada a estimar uma população externa.
-
-Quando um descritor não está disponível, o valor ausente é substituído pela mediana observada para aquele descritor no conjunto. Quando os valores são constantes, o desvio padrão é substituído por 1 apenas para evitar divisão por zero; nessa situação, a coluna não gera diferença entre as moléculas.
+A tabela resume as diferenças de entrada, métrica e saída. Ela é uma visão de arquitetura estatística, não uma tentativa de fundir os módulos em um único modelo.
 
 #table(
-  columns: (2.3fr, 1fr, 2.7fr),
+  columns: (1.35fr, 1.55fr, 1.7fr, 1.55fr),
   inset: 7pt,
-  fill: luma(242),
-  [*Descritor*], [*Unidade/forma*], [*Uso no modelo*],
-  [Massa molecular], [g/mol], [Z-score],
-  [LogP], [adimensional], [Z-score],
-  [TPSA], [Å²], [Z-score],
-  [HBD e HBA], [contagem], [Z-score],
-  [RotB], [contagem], [Z-score; inclui ligações rotacionáveis],
+  align: (left, left, left, left),
+  fill: (x, y) => if y == 0 { rgb("dbeafe") } else { none },
+  [*Abordagem*], [*Biblioteca / conjunto*], [*Métrica de entrada*], [*Saída principal*],
+  [*Mol.Sim Batch*], [Lote fornecido pelo usuário + referência], [MACCS/Tanimoto no mapa; distância multimodal quadrática], [MDS 2D, até 10 vizinhos e tabela de distâncias],
+  [*Mol.Sim Par a Par*], [Duas moléculas fornecidas pelo usuário], [Morgan2/Tanimoto], [Heatmap de similaridade estrutural; sem MDS],
+  [*Nitro.RA PubChem*], [Até 40 CIDs recuperados e filtrados], [MACCS/Tanimoto + seis descritores], [MDS relativo, até 10 candidatos e ranking],
+  [*Nitro.RA EMA*], [Perfil fixo do Apêndice I da EMA], [MACCS/Tanimoto + perfil z-score versionado], [MDS relativo, até 10 referências e ranking],
 )
 
-= Distância físico-química
+== 2.1 Vocabulário comum
 
-Para cada par de moléculas $i$ e $j$, calcula-se a diferença entre os Z-scores correspondentes. Como a planilha utiliza variações absolutas, a implementação usa diferenças absolutas antes da agregação. A distância físico-química é a norma Euclidiana desses seis deltas:
-
-$ d_"FQ"(i,j) = sqrt(sum_(k=1)^6 (z_(i, k) - z_(j, k))^2) $
-
-Os seis descritores são MM, LogP, TPSA, HBD, HBA e RotB. Portanto, $d_"FQ"$ é sempre maior ou igual a zero. Em seguida, a distância é normalizada pelo maior valor da distância físico-química em relação à referência no lote:
-
-$ d^* _"FQ"(i,j) = d_"FQ"(i,j) / max_l d_"FQ"(r,l), quad 0 ≤ d^* _"FQ" ≤ 1 $
-
-A normalização coloca a componente físico-química em uma escala comparável à distância estrutural, que também varia entre zero e um para fingerprints binários.
-
-= Similaridade, dissimilaridade e distância global
-
-O fingerprint produz uma *similaridade*: quanto maior o valor, mais características moleculares são compartilhadas. Para construir uma matriz de distâncias, o aplicativo converte essa medida em dissimilaridade por complemento:
+A *similaridade estrutural* $S_(i,j)$ varia entre 0 e 1 quando calculada por Tanimoto em fingerprints binários. Para construir uma matriz de distâncias, o aplicativo usa a dissimilaridade estrutural:
 
 $ d_"estrutural"(i,j) = 1 - S_(i,j) $
 
-Assim, similaridade 1 corresponde a distância 0, enquanto similaridade 0 corresponde a distância 1. Essa transformação não muda a ordenação dos pares; apenas inverte a orientação para que valores maiores signifiquem maior afastamento.
+Assim, similaridade 1 corresponde a distância 0, enquanto similaridade 0 corresponde a distância 1. A transformação não muda a ordenação dos pares; apenas orienta a métrica para que valores maiores representem maior afastamento.
 
-A distância global utilizada pelo espaço químico é:
+Os seis descritores físico-químicos compartilhados pela análise multimodal são massa molecular (MW), LogP, TPSA, HBD, HBA e ligações rotacionáveis (RotB). O Par a Par é uma exceção deliberada: seu heatmap é estrutural e não incorpora esses seis descritores.
 
-$ d_"global"(i,j) = 0.60 d_"estrutural"(i,j) + 0.40 d^* _"FQ"(i,j) $
+= 3. Mol.Sim Batch — espaço do lote do usuário
 
-A escolha da dissimilaridade, em vez da similaridade, é necessária porque o MDS recebe uma matriz de dissimilaridades/distâncias e procura pontos cujas distâncias geométricas reproduzam essa matriz. Se a similaridade fosse fornecida diretamente, moléculas muito parecidas seriam tratadas como geometricamente afastadas, invertendo o significado do mapa. A similaridade original continua preservada nos resultados, tooltips e tabelas; somente o insumo da projeção é convertido para distância.
+== 3.1 Escopo e entrada
 
-#table(
-  columns: (2.2fr, 1.2fr, 3fr),
-  inset: 7pt,
-  fill: luma(242),
-  [*Métrica*], [*Faixa típica*], [*Interpretação*],
-  [Similaridade], [0–1], [1 = mais semelhante],
-  [Dissimilaridade estrutural], [0–1], [0 = mais semelhante; 1 = mais distante],
-  [Dist.FQ normalizada], [0–1], [0 = mesmas propriedades no modelo],
-  [Distância global], [0–1], [0 = maior proximidade composta],
-)
+O Batch começa com uma molécula de referência e uma lista de moléculas fornecida pelo usuário. O espaço químico só é calculado quando a opção correspondente é ativada e é independente de qualquer biblioteca PubChem ou EMA. Cada entrada válida é sanitizada pelo RDKit, recebe o fingerprint selecionado para o mapa — atualmente MACCS/Tanimoto na chamada do endpoint — e tem seus seis descritores calculados.
 
-= Como funciona o MDS
+A referência é sempre incluída como primeiro ponto. Entradas inválidas ou com erro são descartadas do espaço calculado, mas continuam identificáveis no resultado geral da comparação quando aplicável.
 
-*MDS* significa *Multidimensional Scaling*, ou escala multidimensional. É uma técnica de ordenação que recebe uma matriz de dissimilaridades e procura representar seus objetos em um espaço com menos dimensões. Neste caso, a matriz é convertida em duas coordenadas para formar o gráfico X/Y.
+== 3.2 Padronização dos descritores
 
-A entrada do MDS não é a tabela de similaridades isoladas em relação à referência. É a matriz completa de distâncias globais entre os pares do conjunto: referência–teste, teste–teste e referência–referência. Essa característica permite que o mapa represente também a organização interna do lote.
+Como os descritores possuem unidades e amplitudes distintas, o Batch ajusta um perfil populacional sobre a referência e o lote. A transformação é:
 
-No MDS clássico, a matriz de distâncias $D$ é elevada ao quadrado e duplamente centralizada para produzir uma matriz de produtos escalares:
+$ z_(i,k) = (x_(i,k) - μ_k) / σ_k $
+
+em que $μ_k$ e $σ_k$ são a média e o desvio padrão populacional do descritor $k$. Valores ausentes são preenchidos pela mediana da coluna; quando a coluna é constante, o desvio é substituído por 1 para evitar divisão por zero. Nesse último caso, a coluna não cria separação entre as moléculas.
+
+== 3.3 Distância multimodal e seleção
+
+A distância físico-química é a norma Euclidiana dos seis deltas padronizados. Ela é normalizada pelo maior valor observado em relação à referência:
+
+$ d^* _"FQ"(i,j) = d_"FQ"(i,j) / max_l d_"FQ"(r,l) $
+
+A distância global é uma combinação quadrática, não uma soma linear:
+
+$ d_"global"(i,j) = sqrt(0.60 d_"estrutural"(i,j)^2 + 0.40 d^* _"FQ"(i,j)^2) $
+
+A componente estrutural recebe peso 0,60 e a físico-química, 0,40. A seleção mantém a referência e até 10 moléculas com menor distância global em relação a ela. O ranking científico é, portanto, equivalente a ordenar por maior similaridade global.
+
+== 3.4 Projeção MDS e interpretação
+
+O MDS clássico recebe a matriz completa de distâncias globais entre as estruturas selecionadas: referência–teste, teste–teste e diagonal nula. A matriz é duplamente centralizada:
 
 $ B = -1/2 J D^2 J $
 
-A decomposição espectral de $B$ fornece autovalores e autovetores. Os dois maiores autovalores não negativos são usados para construir as coordenadas:
+Os dois maiores autovalores não negativos e seus autovetores geram as coordenadas 2D. O MDS é uma projeção; seus eixos não são propriedades químicas e podem ser rotacionados, refletidos ou transladados sem modificar as distâncias.
 
-$ X_(2D) = V_(2D) sqrt(Λ_(2D)) $
-
-O resultado é um conjunto de pontos cuja distância Euclidiana tenta reproduzir as dissimilaridades originais. Como a representação é bidimensional, pode haver alguma distorção quando muitas relações não cabem exatamente em um plano. O gráfico deve, portanto, ser interpretado junto com as métricas quantitativas.
-
-Os eixos são coordenadas matemáticas, não propriedades químicas. Podem assumir valores positivos ou negativos, e a orientação pode ser refletida ou rotacionada sem alterar as distâncias. O sinal de X ou Y não significa similaridade positiva/negativa, nem atividade biológica maior/menor.
+O *stress MDS* quantifica a discrepância entre as distâncias originais e as distâncias Euclidianas no plano. Valores menores indicam melhor preservação relativa das relações; o indicador não valida toxicidade, equivalência farmacológica ou relevância regulatória.
 
 #figure(
   image("chemical-space-example.png", width: 100%),
-  caption: [Exemplo do espaço químico 2D. O gráfico é uma projeção MDS sobre a matriz de distância global; os valores `G` correspondem à distância global em relação à referência.],
-) <fig:chemical-space>
+  caption: [Exemplo de projeção MDS sobre uma matriz de distância global. A proximidade visual deve ser conferida junto às métricas da tabela.],
+) <fig:batch-mds>
 
-#quote(block: true)[
-  *Como ler o gráfico:* pontos próximos representam moléculas próximas segundo a combinação definida de estrutura e propriedades. A referência é destacada em laranja; as moléculas comparadoras aparecem em azul. As coordenadas MDS podem ser negativas, mas as métricas de similaridade e distância mostradas nos rótulos/tabelas permanecem nas suas escalas próprias.
+= 4. Mol.Sim Par a Par — comparação estrutural direta
+
+== 4.1 Escopo independente
+
+O Par a Par compara duas moléculas fornecidas pelo usuário. Ele não utiliza a biblioteca PubChem, a biblioteca EMA, a seleção de vizinhos do Batch ou a distância multimodal de seis descritores. Seu objetivo é mostrar, de forma direta, quais regiões estruturais são responsáveis pela semelhança calculada.
+
+== 4.2 Morgan2 e Tanimoto
+
+O fingerprint é Morgan2, isto é, um fingerprint circular de raio 2. A similaridade é calculada por Tanimoto entre os fingerprints binários. Para bits de presença, a interpretação é:
+
+$ T(A,B) = c / (a + b - c) $
+
+em que $a$ e $b$ são os números de bits ativos em cada molécula e $c$ é o número de bits ativos compartilhados. A escala varia de 0, nenhuma interseção observada, a 1, fingerprints idênticos.
+
+== 4.3 Heatmap e mapa de contribuição
+
+O heatmap mostra a similaridade estrutural da comparação, enquanto o mapa molecular destaca regiões que contribuem para a comparação do fingerprint. A implementação utiliza Tanimoto explicitamente nas rotinas de similaridade do mapa. O enquadramento da estrutura é adaptativo para reduzir cortes do contorno em moléculas pequenas ou grandes.
+
+Não há eixo MDS, stress, distância físico-química ou ranking de vizinhos no Par a Par. O valor estrutural pode ser acompanhado pelas propriedades físico-químicas exibidas no relatório, mas essas propriedades não alteram o heatmap.
+
+= 5. Nitro.RA — dois espaços químicos independentes
+
+O Nitro.RA possui dois espaços químicos que não devem ser combinados: um espaço relativo baseado em candidatos PubChem e um espaço de referência baseado no perfil fixo do Apêndice I da EMA. Ambos usam MACCS/Tanimoto e a mesma combinação multimodal de seis descritores, mas diferem na origem da biblioteca e no tratamento estatístico do perfil.
+
+#block(fill: rgb("fff7ed"), stroke: (left: 3pt + rgb("d97706")), inset: 10pt, radius: 5pt)[
+  *Regra do alvo.* Quando o alvo já está presente em uma biblioteca, sua estrutura é removida dos candidatos por comparação de SMILES canônico. O alvo continua como referência do mapa, mas não é contado como vizinho nem incluído duas vezes no ranking ou nos cálculos comparativos.
 ]
 
-= Racional estatístico e limitações
+= 6. Nitro.RA PubChem — lote relativo recuperado
 
-O procedimento de Z-score reduz o efeito das unidades e das diferenças de escala entre os descritores, mas a média e o desvio padrão dependem do conjunto analisado. Por isso, a posição de uma molécula pode mudar quando o lote é alterado. A inclusão de RotB é deliberada: o número de ligações rotacionáveis captura uma dimensão de flexibilidade conformacional simples, complementar à informação de fingerprint e aos descritores de polaridade, tamanho e lipofilicidade.
+== 6.1 Consulta e filtros
 
-A combinação 60:40 é uma decisão explícita do modelo. Ela dá maior influência à estrutura, mas permite que diferenças físico-químicas alterem a distância final. A escolha não deve ser interpretada como uma validação universal desses pesos; idealmente, eles devem ser avaliados em um conjunto de referência adequado ao objetivo regulatório ou toxicológico específico.
+A busca consulta o endpoint de similaridade 2D do PubChem com até 40 CIDs. Os candidatos recuperados são convertidos pelo RDKit e filtrados pela presença do grupo N-nitroso usando o padrão SMARTS `[N;X3][N;X2]=O`. O próprio alvo é excluído quando seu SMILES canônico coincide com o de um candidato PubChem.
 
-O MDS é uma ferramenta exploratória e de triagem. Proximidade no plano não constitui prova de equivalência farmacológica, toxicológica ou regulatória. A interpretação deve considerar a estrutura molecular, a qualidade dos fingerprints, as propriedades calculadas, as incertezas dos descritores e as evidências experimentais disponíveis.
+Após o filtro estrutural, são mantidas as moléculas com os seis descritores e fingerprints válidos. O candidato é ranqueado pela distância global; até 10 candidatos são exibidos. A tabela é apresentada por maior similaridade global de cima para baixo, enquanto a coluna de distância global cresce no sentido equivalente de menor para maior distância.
 
-= Referências
+== 6.2 Perfil estatístico relativo
+
+O perfil z-score é ajustado sobre o conjunto usado naquela análise, formado pela referência e pelos candidatos PubChem válidos. A distância físico-química é normalizada em relação ao maior valor observado contra a referência nesse conjunto. Portanto, a escala é relativa à consulta e pode mudar quando o lote recuperado ou os candidatos elegíveis mudam.
+
+A matriz selecionada é projetada por MDS clássico após a seleção dos 10 menores valores de distância global. O alvo é transladado para coordenadas `(0, 0)` somente para facilitar a leitura relativa do mapa; essa translação não altera nenhuma distância entre pontos.
+
+== 6.3 Limitações
+
+PubChem é uma fonte externa sujeita a disponibilidade, cobertura e resposta da consulta. A ausência de uma estrutura no lote não prova sua ausência no universo químico. Similaridade 2D, descritores e MDS são ferramentas de triagem e não transferem automaticamente AI, cPCA ou conclusão regulatória.
+
+= 7. Nitro.RA EMA — perfil fixo do Apêndice I
+
+== 7.1 Construção da biblioteca
+
+O espaço EMA usa um snapshot local do Apêndice I da EMA. O perfil contém apenas a planilha de nitrosaminas, deduplica as estruturas por SMILES canônico e calcula os seis descritores válidos. O alvo é removido da biblioteca quando já estiver listado, mas permanece como referência do mapa. O tamanho da biblioteca de origem, a versão, a data e a URL são mantidos no resultado para auditoria.
+
+== 7.2 Perfil z-score versionado
+
+Ao contrário do PubChem, o perfil EMA é pré-ajustado e fixo. A média e o desvio padrão dos seis descritores são calculados na biblioteca de referência; o divisor físico-químico é fixado pelo maior valor de distância observado no perfil. Uma nova consulta não recalibra o perfil com os candidatos exibidos.
+
+Essa escolha melhora a comparabilidade entre consultas dentro da mesma versão da biblioteca, mas não transforma o espaço EMA em uma representação completa do universo químico. Outliers não são removidos automaticamente e a atualização do snapshot muda o perfil de forma versionada.
+
+== 7.3 Projeção e interpretação
+
+A referência e os candidatos EMA válidos entram na distância multimodal, o alvo é transladado para `(0, 0)` no mapa e até 10 menores distâncias são exibidas. PubChem e EMA aparecem em gráficos e tabelas separados. A proximidade com uma nitrosamina do Apêndice I não atribui automaticamente ao alvo o AI, a categoria cPCA ou qualquer decisão regulatória da referência.
+
+= 8. Comparação final e limitações
+
+#table(
+  columns: (1.5fr, 1.35fr, 1.35fr, 1.8fr),
+  inset: 7pt,
+  align: (left, left, left, left),
+  fill: (x, y) => if y == 0 { rgb("dbeafe") } else { none },
+  [*Dimensão*], [*Batch*], [*Par a Par*], [*Nitro.RA PubChem / EMA*],
+  [Projeção], [MDS clássico], [Nenhuma; heatmap], [MDS clássico relativo],
+  [Fingerprint], [MACCS/Tanimoto no mapa], [Morgan2/Tanimoto], [MACCS/Tanimoto],
+  [Descritores], [MW, LogP, TPSA, HBD, HBA, RotB], [Não entram no heatmap], [Os mesmos seis descritores],
+  [Biblioteca], [Lote do usuário], [Duas moléculas], [PubChem relativo ou EMA fixo],
+  [Exibição], [Referência + até 10 vizinhos], [Duas estruturas], [Referência + até 10 candidatos],
+)
+
+A maior limitação comum é que uma projeção 2D comprime relações multidimensionais. O mapa deve ser lido junto com as distâncias quantitativas e com a qualidade dos dados de entrada. Nenhuma das abordagens substitui avaliação toxicológica, confirmação analítica, modelagem mecanística ou decisão regulatória.
+
+A distância global é uma decisão de modelo com pesos explícitos, não uma verdade universal. Os valores 0,60 e 0,40 devem ser reavaliados caso o objetivo científico, o conjunto de referência ou a política de validação mude. O mesmo vale para a escolha de fingerprint, para o limite de 10 estruturas e para a versão do perfil EMA.
+
+= 9. Referências
 
 [1] Gower, J. C. (1966). *Some Distance Properties of Latent Root and Vector Methods Used in Multivariate Analysis*. Biometrika, 53(3–4), 325–338. #link("https://doi.org/10.2307/2333639")[doi:10.2307/2333639]
 
-[2] R Core Team. *Classical (Metric) Multidimensional Scaling*. R Documentation, função `cmdscale`. A documentação descreve MDS clássico como uma representação de dissimilaridades por pontos cujas distâncias são aproximadamente iguais às dissimilaridades de entrada e destaca a indeterminação por translação, rotação e reflexão. #link("https://stat.ethz.ch/R-manual/R-devel/library/stats/html/cmdscale.html")[R Documentation]
+[2] R Core Team. *Classical (Metric) Multidimensional Scaling*. R Documentation. #link("https://stat.ethz.ch/R-manual/R-devel/library/stats/html/cmdscale.html")[R Documentation]
 
 [3] Bajusz, D.; Rácz, A.; Héberger, K. (2015). *Why is Tanimoto index an appropriate choice for fingerprint-based similarity calculations?* Journal of Cheminformatics, 7, 20. #link("https://doi.org/10.1186/s13321-015-0069-3")[doi:10.1186/s13321-015-0069-3]
 
-[4] Andrade, C. (2021). *Z-Scores, Standard Scores, and Composite Test Scores*. Indian Journal of Psychological Medicine, 43(5), 451–453. #link("https://pmc.ncbi.nlm.nih.gov/articles/PMC8826187/")[PMC8826187]
+[4] RDKit. *The RDKit Book — Molecular Fingerprints and Similarity*. #link("https://www.rdkit.org/docs/RDKit_Book.html")[RDKit documentation]
 
-= Apêndice: resumo operacional
+[5] PubChem. *PUG REST — Programmatic Access*. #link("https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest")[PubChem PUG REST]
+
+[6] EMA. *Questions and answers on nitrosamine impurities in human medicinal products — Appendix I*. #link("https://www.ema.europa.eu/en/human-regulatory-overview/post-authorisation/referral-assessment-reports-and-article-5-procedures/nitrosamine-impurities")[EMA nitrosamine guidance]
+
+= Apêndice. Resumo operacional
 
 #enum(
-  [Calcular os descritores MM, LogP, TPSA, HBD, HBA e RotB para a referência e o lote.],
-  [Substituir ausências pela mediana do descritor e calcular Z-scores com média e desvio padrão populacional.],
-  [Calcular a similaridade de fingerprint e convertê-la em dissimilaridade por $1-S$.],
-  [Calcular a Dist.FQ Euclidiana e normalizá-la em relação ao maior valor observado contra a referência.],
-  [Combinar as componentes com pesos 0,60 e 0,40.],
-  [Aplicar MDS clássico à matriz completa de distâncias globais e representar os dois primeiros eixos.],
+  [Identificar o módulo: Batch, Par a Par, Nitro.RA PubChem ou Nitro.RA EMA.],
+  [No Batch e no Nitro.RA, calcular MW, LogP, TPSA, HBD, HBA e RotB; no Par a Par, manter o heatmap Morgan2/Tanimoto separado.],
+  [Padronizar os descritores com o perfil apropriado: ajustado ao conjunto no Batch/PubChem ou fixo e versionado no EMA.],
+  [Calcular a dissimilaridade estrutural por $1-S$ e a distância físico-química Euclidiana dos seis descritores quando aplicável.],
+  [Combinar as componentes por distância quadrática com pesos 0,60 e 0,40.],
+  [Selecionar até 10 menores distâncias globais e aplicar MDS clássico nos espaços Batch/PubChem/EMA.],
+  [Interpretar o resultado como triagem quantitativa, sem transferir automaticamente atividade, toxicidade, AI ou decisão regulatória.],
 )

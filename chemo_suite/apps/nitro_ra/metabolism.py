@@ -228,6 +228,8 @@ def _site_record(mol: Mol, site: Dict[str, int], rank: int) -> Dict[str, Any]:
         "carbon_degree": int(atom.GetDegree()),
         "enzyme_hypotheses": ENZYME_CONTEXT,
         "confidence": "rule_supported",
+        "rule_match": True,
+        "rule_match_label": "Sítio identificado",
         "rule": "Carbono sp3 com hidrogênio diretamente adjacente ao N-nitroso; hipótese de α-hidroxilação CYP450.",
         "metabolite": product_record,
         "reactive_intermediate": intermediate_record,

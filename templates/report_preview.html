@@ -16,6 +16,9 @@
     {%- elif name == 'deep_pk' -%}Deep-PK
     {%- else -%}{{ name|replace('_', ' ') }}{%- endif -%}
 {%- endmacro %}
+{% macro deep_pk_prediction(value) -%}{% if value == 'Substrate' %}Substrato{% elif value == 'Non-Substrate' %}Não substrato{% elif value == 'Inhibitor' %}Inibidor{% elif value == 'Non-Inhibitor' %}Não inibidor{% else %}{{ value or '—' }}{% endif %}{%- endmacro %}
+{% macro deep_pk_interpretation(value) -%}{% if value == 'High Non-Substrative Activity' %}Alta atividade não substrativa{% elif value == 'High Non-Inhibition' %}Alta ausência de inibição{% elif value == 'High Substrate Activity' %}Alta atividade substrativa{% elif value == 'High Inhibition' %}Alta atividade inibitória{% else %}{{ value or '' }}{% endif %}{%- endmacro %}
+{% macro deep_pk_probability(raw, percent) -%}{% if percent is not none %}{{ ('%.1f'|format(percent))|replace('.', ',') }}%{% elif raw is not none %}{% set numeric = raw|float %}{{ ('%.1f'|format(numeric * 100 if numeric <= 1 else numeric))|replace('.', ',') }}%{% endif %}{%- endmacro %}
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -131,7 +134,7 @@
         body.nitro-report .module-section { margin-top: 12px; padding: 10px; }
         body.nitro-report .module-section--break { break-before: page; page-break-before: always; }
         body.nitro-report .report-mark { text-align: center; }
-        .nitro-target-card { display: grid; grid-template-columns: minmax(13rem, .8fr) minmax(0, 1.2fr); gap: 12px; align-items: stretch; padding: 10px; border: 1px solid var(--accent-border); border-radius: 10px; background: var(--accent-soft); }
+        .nitro-target-card { margin-top: 12px; display: grid; grid-template-columns: minmax(13rem, .8fr) minmax(0, 1.2fr); gap: 12px; align-items: stretch; padding: 10px; border: 1px solid var(--accent-border); border-radius: 10px; background: var(--accent-soft); }
         .nitro-target-structure { display: flex; min-height: 132px; align-items: center; justify-content: center; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: #fff; overflow: hidden; }
         .nitro-target-structure svg { display: block; width: 100%; height: 132px; }
         .nitro-target-meta { display: flex; flex-direction: column; justify-content: center; }
@@ -182,26 +185,59 @@
         .nitro-product-card svg { width: 74px; height: 60px; display: block; }
         .nitro-product-card strong { display: block; color: var(--ink); font-size: 9px; }
         .nitro-product-card span { display: block; margin-top: 3px; color: var(--muted); font-size: 8px; line-height: 1.35; overflow-wrap: anywhere; }
-        .nitro-metabolism-summary-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 8px; align-items: stretch; }
+        .nitro-metabolism-summary-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 8px; align-items: stretch; margin-top: 10px; margin-bottom: 10px; }
         .nitro-metabolism-summary-grid .nitro-panel { min-height: 0; }
+        .nitro-metabolism-summary-grid .nitro-detail-list li { grid-template-columns: minmax(4rem, .28fr) minmax(0, .72fr); }
+        .nitro-metabolism-summary-grid .nitro-detail-list li > span { min-width: 0; overflow-wrap: anywhere; word-break: break-word; white-space: normal; }
+        .nitro-metabolism-summary-grid .nitro-detail-list li > span.mono { font-size: 7px; line-height: 1.35; }
         .nitro-metabolism-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
         .nitro-metabolism-metrics .nitro-metric-card { min-height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; text-align: center; }
         .nitro-metabolism-metrics .nitro-metric-card span, .nitro-metabolism-metrics .nitro-metric-card strong { width: 100%; text-align: center; }
         .nitro-metabolism-metrics .nitro-metric-card span { font-size: 7px; }
         .nitro-metabolism-metrics .nitro-metric-card strong { margin-top: 3px; font-size: 12px; }
-        .nitro-metabolism-sites { margin-top: 8px; break-inside: avoid; }
+        .nitro-metabolism-mode-value { font-size: 10px !important; line-height: 1.15; }
+        .nitro-metabolism-sites { margin-top: 10px; break-inside: avoid; }
         .nitro-metabolism-sites h3 { margin-bottom: 5px; }
-        .nitro-simulation-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 8px; break-inside: avoid; }
+        .nitro-simulation-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px; break-inside: avoid; }
         .nitro-simulation-panel { min-width: 0; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; break-inside: avoid; }
         .nitro-simulation-panel h3 { margin: 0; color: #243149; font-size: 10px; text-align: center; }
         .nitro-simulation-panel > p { margin: 3px 0 4px; color: var(--muted); font-size: 7px; line-height: 1.3; text-align: center; }
-        .nitro-simulation-item { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 6px; align-items: center; padding: 5px 0; border-top: 1px solid var(--line); }
+        .nitro-simulation-item { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--line); }
         .nitro-simulation-item:first-of-type { border-top: 0; }
-        .nitro-simulation-item svg { display: block; width: 56px; height: 48px; }
-        .nitro-simulation-item strong { display: block; color: var(--ink); font-size: 8px; line-height: 1.2; }
-        .nitro-simulation-item span { display: block; margin-top: 2px; color: var(--muted); font-size: 7px; line-height: 1.25; overflow-wrap: anywhere; }
+        .nitro-simulation-item svg { display: block; width: 64px; height: 55px; }
+        .nitro-simulation-item strong { display: block; color: var(--ink); font-size: 8px; line-height: 1.25; }
+        .nitro-simulation-item span { display: block; margin-top: 3px; color: var(--muted); font-size: 7px; line-height: 1.3; overflow-wrap: anywhere; }
         .nitro-simulation-item .mono { font-size: 6.5px; }
         .nitro-metabolism-note { margin-top: 7px; }
+        .nitro-metabolism-section { break-after: avoid; page-break-after: avoid; }
+        .nitro-application-summary { margin-top: 8px; }
+        .nitro-application-summary h3 { margin: 0 0 5px; color: #243149; font-size: 11px; }
+        .nitro-deep-pk-section { break-before: avoid; page-break-before: avoid; margin-top: 8px; }
+        .nitro-deep-pk-section h2 { margin-bottom: 6px; }
+        .nitro-deep-pk-state { padding: 6px 8px; }
+        .nitro-deep-pk-summary { margin-bottom: 6px; }
+        .nitro-deep-pk-summary { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-bottom: 8px; }
+        .nitro-deep-pk-summary .nitro-panel { min-height: 0; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+        .nitro-deep-pk-summary h3 { margin-bottom: 4px; text-align: center; }
+        .nitro-deep-pk-summary p { margin: 0; color: var(--muted); font-size: 8px; line-height: 1.35; overflow-wrap: anywhere; }
+        .nitro-deep-pk-summary .mono { font-size: 7px; }
+        .nitro-deep-pk-table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-bottom: 2px; }
+        .nitro-deep-pk-table th, .nitro-deep-pk-table td { text-align: center; vertical-align: middle; }
+        .nitro-deep-pk-table th:first-child, .nitro-deep-pk-table td:first-child { width: 14%; }
+        .nitro-deep-pk-table th:nth-child(2), .nitro-deep-pk-table td:nth-child(2), .nitro-deep-pk-table th:nth-child(3), .nitro-deep-pk-table td:nth-child(3) { width: 43%; }
+        .nitro-deep-pk-cell strong { display: block; color: var(--ink); font-size: 9px; line-height: 1.2; }
+        .nitro-deep-pk-cell span { display: block; margin-top: 2px; color: var(--muted); font-size: 7.5px; line-height: 1.3; overflow-wrap: anywhere; }
+        .nitro-deep-pk-cell .deep-pk-probability { color: var(--accent-dark); font-size: 8px; }
+        .nitro-deep-pk-note { margin-top: 7px; }
+        .nitro-deep-pk-state { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: center; margin-bottom: 8px; padding: 7px 9px; border-left: 3px solid #64748b; border-radius: 5px; background: #f8fafc; }
+        .nitro-deep-pk-state--success { border-left-color: #059669; background: #ecfdf5; }
+        .nitro-deep-pk-state--info { border-left-color: #2563eb; background: #eff6ff; }
+        .nitro-deep-pk-state--warning { border-left-color: #d97706; background: #fffbeb; }
+        .nitro-deep-pk-state--error { border-left-color: #dc2626; background: #fef2f2; }
+        .nitro-deep-pk-state-label { color: var(--ink); font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
+        .nitro-deep-pk-state-copy { min-width: 0; }
+        .nitro-deep-pk-state-copy strong { display: block; color: var(--ink); font-size: 8px; line-height: 1.25; }
+        .nitro-deep-pk-state-copy small { display: block; margin-top: 2px; color: var(--muted); font-size: 7.5px; line-height: 1.3; }
         .nitro-callout { margin-top: 8px; padding: 7px 9px; border-left: 3px solid var(--accent); border-radius: 5px; background: var(--accent-soft); color: #46556b; font-size: 9px; line-height: 1.45; }
         .nitro-callout--warning { border-left-color: #d97706; background: #fffbeb; color: #92400e; }
         .nitro-callout--error { border-left-color: #dc2626; background: #fef2f2; color: #991b1b; }
@@ -321,6 +357,7 @@
         body.nitro-report .summary-grid.nitro-summary-grid .nitro-modules-box { align-items: center; justify-self: end; width: 100%; max-width: 8.5rem; text-align: center; }
         body.nitro-report .summary-grid.nitro-summary-grid .nitro-analyzed-box { align-items: flex-start; text-align: left; }
         body.nitro-report .summary-grid.nitro-summary-grid .nitro-analyzed-box .reference-card { text-align: left; }
+        body.nitro-report .summary-grid.nitro-summary-grid { margin-bottom: 2px; }
         body.nitro-report #report-cpca { margin-top: 10px; padding: 8px; }
         body.nitro-report #report-cpca .nitro-status-line { margin-bottom: 5px; }
         body.nitro-report #report-cpca .nitro-module-grid { align-items: stretch; }
@@ -671,17 +708,49 @@
             {% endif %}
 
             {% if 'metabolism' in nitro_modules %}
-            <section class="module-section module-section--break" id="report-metabolism">
-                <h2>Metabolism <small>predição estrutural CYP450</small></h2>
-                <div class="nitro-status-line"><span class="status-badge{% if metabolism_result.get('status') == 'ok' %} status-badge--ok{% elif metabolism_result.get('status') in ['invalid_smiles', 'not_nitrosamine'] %} status-badge--error{% else %} status-badge--warn{% endif %}">{{ metabolism_result.get('status', '—') }}</span><span>{{ metabolism_result.get('message', 'Resultado metabólico não informado.') }}</span></div>
+            <section class="module-section module-section--break nitro-metabolism-section" id="report-metabolism">
+                <h2>Metabolism</h2>
+                {% set prediction_mode = metabolism_result.get('prediction_mode', 'rule_based') %}
+            {% if 'deep_pk' in nitro_modules or deep_pk_result %}
+            <div class="nitro-deep-pk-section" id="report-deep-pk">
+                <h3>Resultado Deep-PK <small>complemento externo</small></h3>
+                {% set deep_pk_presentation = deep_pk_result.get('presentation') or {} %}
+                {% set deep_pk_tone = deep_pk_presentation.get('tone', 'warning') %}
+                {% if deep_pk_result.get('status') != 'ok' %}
+                <div class="nitro-deep-pk-state nitro-deep-pk-state--{{ deep_pk_tone }}" role="status" aria-label="Estado Deep-PK">
+                    <span class="nitro-deep-pk-state-label">{{ deep_pk_presentation.get('label', deep_pk_result.get('status', 'Revisão necessária')) }}</span>
+                    <div class="nitro-deep-pk-state-copy"><strong>{{ deep_pk_presentation.get('message', deep_pk_result.get('message', 'O Deep-PK não foi concluído ou não foi incluído no payload do relatório.')) }}</strong><small>{{ deep_pk_presentation.get('action', 'Preserve o resultado local do Metabolism e revise a consulta externa.') }}</small></div>
+                </div>
+                {% endif %}
+                <div class="nitro-deep-pk-summary">
+                    <div class="nitro-panel">
+                        <h3>Escopo da análise</h3>
+                        <p>Predição externa de metabolismo CYP para <strong>substrato</strong> e <strong>inibidor</strong>.</p>
+                        <p class="mono">{{ deep_pk_result.get('smiles', report.get('smiles', '—')) }}</p>
+                    </div>
+                    <div class="nitro-panel">
+                        <h3>Identificação da consulta</h3>
+                        <p>Provedor: <strong>{{ deep_pk_result.get('provider', 'Deep-PK') }}</strong></p>
+                        <p>Job: <span class="mono">{{ deep_pk_result.get('job_id', 'não disponível') }}</span></p>
+                    </div>
+                </div>
+                {% if deep_pk_result.get('isoforms') %}
+                <table class="nitro-deep-pk-table">
+                    <thead><tr><th>Isoforma CYP</th><th>Substrato</th><th>Inibidor</th></tr></thead>
+                    <tbody>{% for item in deep_pk_result.get('isoforms', []) %}<tr><td class="numeric">{{ item.get('isoform', '—') }}</td><td class="nitro-deep-pk-cell"><strong>{{ deep_pk_prediction(item.get('substrate', {}).get('prediction_label', item.get('substrate', {}).get('prediction'))) }}</strong>{% if item.get('substrate', {}).get('probability') is not none %}<span class="deep-pk-probability">Probabilidade: {{ deep_pk_probability(item.get('substrate', {}).get('probability'), item.get('substrate', {}).get('probability_percent')) }}</span>{% endif %}{% if item.get('substrate', {}).get('interpretation') %}<span>{{ deep_pk_interpretation(item.get('substrate', {}).get('interpretation_label', item.get('substrate', {}).get('interpretation'))) }}</span>{% endif %}</td><td class="nitro-deep-pk-cell"><strong>{{ deep_pk_prediction(item.get('inhibitor', {}).get('prediction_label', item.get('inhibitor', {}).get('prediction'))) }}</strong>{% if item.get('inhibitor', {}).get('probability') is not none %}<span class="deep-pk-probability">Probabilidade: {{ deep_pk_probability(item.get('inhibitor', {}).get('probability'), item.get('inhibitor', {}).get('probability_percent')) }}</span>{% endif %}{% if item.get('inhibitor', {}).get('interpretation') %}<span>{{ deep_pk_interpretation(item.get('inhibitor', {}).get('interpretation_label', item.get('inhibitor', {}).get('interpretation'))) }}</span>{% endif %}</td></tr>{% endfor %}</tbody>
+                </table>
+                {% else %}<div class="nitro-callout nitro-callout--warning">{{ deep_pk_result.get('message', 'O Deep-PK não foi concluído ou não foi incluído no payload do relatório.') }}</div>{% endif %}
+                {% if deep_pk_result.get('warnings') %}<div class="nitro-callout nitro-callout--warning">{% for warning in deep_pk_result.get('warnings', []) %}{{ warning }}{% if not loop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
+            </div>
+            {% endif %}
                 <div class="nitro-metabolism-summary-grid">
                     <div class="nitro-panel">
-                        <h3>Resumo da predição</h3>
+                        <h3>Ativação Enzimática</h3>
                         <div class="nitro-metabolism-metrics">
-                            <div class="nitro-metric-card"><span>Sítios α</span><strong>{{ metabolism_result.get('summary', {}).get('alpha_sites', 0) }}</strong></div>
+                            <div class="nitro-metric-card"><span>Sítios alfa</span><strong>{{ metabolism_result.get('summary', {}).get('alpha_sites', 0) }}</strong></div>
                             <div class="nitro-metric-card"><span>Metabólitos</span><strong>{{ metabolism_result.get('summary', {}).get('metabolites', 0) }}</strong></div>
                             <div class="nitro-metric-card"><span>Intermediários</span><strong>{{ metabolism_result.get('summary', {}).get('reactive_intermediates', 0) }}</strong></div>
-                            <div class="nitro-metric-card"><span>Modo</span><strong>{{ metabolism_result.get('prediction_mode', 'rule_based') }}</strong></div>
+                            <div class="nitro-metric-card"><span>Modo</span><strong class="nitro-metabolism-mode-value">{% if prediction_mode == 'rule_based' %}Regra estrutural{% else %}{{ prediction_mode|replace('_', ' ')|title }}{% endif %}</strong></div>
                         </div>
                     </div>
                     <div class="nitro-panel">
@@ -695,10 +764,10 @@
                 </div>
                 {% if metabolism_result.get('alpha_sites') %}
                 <div class="nitro-panel nitro-metabolism-sites">
-                    <h3>Sítios alfa elegíveis</h3>
+                    <h3>Teste de identificação do sítio de ligação</h3>
                     <table class="nitro-metabolism-table">
-                        <thead><tr><th>Sítio</th><th>H no carbono</th><th>Em anel</th><th>Enzimas em contexto</th><th>Confiança</th></tr></thead>
-                        <tbody>{% for site in metabolism_result.get('alpha_sites', []) %}<tr><td class="numeric">{{ site.get('atom_index_display', site.get('atom_index', '—')) }}</td><td class="numeric">{{ site.get('carbon_hydrogens', '—') }}</td><td class="numeric">{{ 'sim' if site.get('is_in_ring') else 'não' }}</td><td>{{ site.get('enzyme_hypotheses', [])|join(', ') }}</td><td>{{ site.get('confidence', '—') }}</td></tr>{% endfor %}</tbody>
+                        <thead><tr><th>Sítio</th><th>H no carbono</th><th>Em anel</th><th>Enzimas em contexto</th><th>Atendimento da regra</th></tr></thead>
+                        <tbody>{% for site in metabolism_result.get('alpha_sites', []) %}{% set confidence = site.get('confidence', '') %}<tr><td class="numeric">{{ site.get('atom_index_display', site.get('atom_index', '—')) }}</td><td class="numeric">{{ site.get('carbon_hydrogens', '—') }}</td><td class="numeric">{{ 'sim' if site.get('is_in_ring') else 'não' }}</td><td>{{ site.get('enzyme_hypotheses', [])|join(', ') }}</td><td>{{ site.get('rule_match_label') or ('Sítio identificado' if site.get('rule_match') or confidence == 'rule_supported' else ('Não identificado' if confidence else '—')) }}</td></tr>{% endfor %}</tbody>
                     </table>
                 </div>
                 <div class="nitro-simulation-grid">
@@ -726,30 +795,11 @@
                     </div>
                 </div>
                 {% else %}<div class="nitro-callout nitro-callout--warning">{{ metabolism_result.get('message', 'Nenhum sítio α elegível foi informado.') }}</div>{% endif %}
-                {% if metabolism_result.get('warnings') %}<div class="nitro-callout nitro-callout--warning">{% for warning in metabolism_result.get('warnings', []) %}{{ warning }}{% if not loop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
-                <p class="nitro-disclaimer nitro-metabolism-note">{{ metabolism_result.get('disclaimer', 'A saída representa hipóteses estruturais in silico e não confirma formação do metabólito in vivo.') }}</p>
+
             </section>
             {% endif %}
 
-            {% if 'deep_pk' in nitro_modules or deep_pk_result %}
-            <section class="module-section module-section--break" id="report-deep-pk">
-                <h2>Deep-PK <small>complemento externo pós-Metabolism</small></h2>
-                <div class="nitro-status-line"><span class="status-badge{% if deep_pk_result.get('status') == 'ok' %} status-badge--ok{% elif deep_pk_result.get('status') in ['deep_pk_unavailable', 'deep_pk_error', 'invalid_job_id'] %} status-badge--error{% else %} status-badge--warn{% endif %}">{{ deep_pk_result.get('status', '—') }}</span><span>{{ deep_pk_result.get('message', 'O Deep-PK não foi concluído ou não foi incluído no payload do relatório.') }}</span></div>
-                {% if deep_pk_result.get('isoforms') %}
-                <table class="nitro-deep-pk-table">
-                    <thead><tr><th>Isoforma CYP</th><th>Substrato</th><th>Inibidor</th></tr></thead>
-                    <tbody>{% for item in deep_pk_result.get('isoforms', []) %}<tr><td class="numeric">{{ item.get('isoform', '—') }}</td><td><strong>{{ item.get('substrate', {}).get('prediction', '—') }}</strong><br><span>Probabilidade: {{ item.get('substrate', {}).get('probability', '—') }}</span>{% if item.get('substrate', {}).get('interpretation') %}<br><span>{{ item.get('substrate', {}).get('interpretation') }}</span>{% endif %}</td><td><strong>{{ item.get('inhibitor', {}).get('prediction', '—') }}</strong><br><span>Probabilidade: {{ item.get('inhibitor', {}).get('probability', '—') }}</span>{% if item.get('inhibitor', {}).get('interpretation') %}<br><span>{{ item.get('inhibitor', {}).get('interpretation') }}</span>{% endif %}</td></tr>{% endfor %}</tbody>
-                </table>
-                {% else %}<div class="nitro-callout nitro-callout--warning">{{ deep_pk_result.get('message', 'O Deep-PK não foi concluído ou não foi incluído no payload do relatório.') }}</div>{% endif %}
-                {% if deep_pk_result.get('warnings') %}<div class="nitro-callout nitro-callout--warning">{% for warning in deep_pk_result.get('warnings', []) %}{{ warning }}{% if not loop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
-                <p class="nitro-disclaimer">O Deep-PK é um complemento externo e deve ser interpretado separadamente das hipóteses locais de Metabolism.</p>
-            </section>
-            {% endif %}
 
-            <section class="section">
-                <h2>Limitações e interpretação</h2>
-                <div class="notice notice--warning">Os resultados Nitro.RA são análises de triagem. Nenhum resultado isolado deve ser tratado como prova toxicológica, dose segura ou decisão regulatória; a interpretação deve considerar o módulo executado, sua fonte e suas limitações.</div>
-            </section>
 
         {% elif is_batch %}
             {% set reference_png = report.get('reference_png') %}

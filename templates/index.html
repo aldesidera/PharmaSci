@@ -758,6 +758,15 @@
         .deep-pk-label.is-neutral { color: #475569; background: #f1f5f9; }
         .deep-pk-muted { color: #64748b; font-size: 0.72rem; line-height: 1.55; }
         .deep-pk-warning { border: 1px solid rgba(180,83,9,0.24); border-radius: 1rem; padding: 0.85rem 1rem; color: #92400e; background: rgba(255,251,235,0.84); font-size: 0.7rem; line-height: 1.5; }
+        .deep-pk-state { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.75rem; align-items: center; margin-top: 0.9rem; padding: 0.75rem 0.9rem; border-left: 3px solid #64748b; border-radius: 0.75rem; background: #f8fafc; }
+        .deep-pk-state--success { border-left-color: #059669; background: #ecfdf5; }
+        .deep-pk-state--info { border-left-color: #2563eb; background: #eff6ff; }
+        .deep-pk-state--warning { border-left-color: #d97706; background: #fffbeb; }
+        .deep-pk-state--error { border-left-color: #dc2626; background: #fef2f2; }
+        .deep-pk-state-label { color: #0f172a; font-size: 0.63rem; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+        .deep-pk-state-copy { min-width: 0; }
+        .deep-pk-state-copy strong { display: block; color: #1e293b; font-size: 0.72rem; line-height: 1.3; }
+        .deep-pk-state-copy small { display: block; margin-top: 0.2rem; color: #64748b; font-size: 0.66rem; line-height: 1.4; }
         @media (max-width: 900px) {
             .metabolism-target-grid { grid-template-columns: 1fr; }
             .metabolism-product-grid { grid-template-columns: 1fr; }
@@ -1439,13 +1448,21 @@
             showToast('CSV exportado com sucesso!', 'success');
         }
 
+        function isDeepPkPending() {
+            if (currentApp !== 'nitro') return false;
+            const selectedModules = getSelectedNitroModules();
+            if (!selectedModules.includes('deep_pk')) return false;
+            const result = currentDeepPkResult || currentNitroResults?.results?.deep_pk;
+            return !result || result.status === 'running';
+        }
+
         function updateReportAvailability() {
             const exportButton = document.getElementById('pdf-export-btn');
             const batchReportButton = document.getElementById('btn-batch-report');
             const hasPairResult = Boolean(currentResult && typeof currentResult === 'object');
             const hasBatchResult = Array.isArray(currentBatchResults) && currentBatchResults.length > 0;
             const hasNitroResult = Boolean(currentNitroResults && typeof currentNitroResults === 'object');
-            const hasReportResult = currentApp === 'nitro' ? hasNitroResult : (currentMode === 'batch' ? hasBatchResult : hasPairResult);
+            const hasReportResult = currentApp === 'nitro' ? (hasNitroResult && !isDeepPkPending()) : (currentMode === 'batch' ? hasBatchResult : hasPairResult);
 
             if (exportButton) {
                 exportButton.disabled = !hasReportResult;
@@ -2029,7 +2046,8 @@
                 const metabolite = site.metabolite || {};
                 const intermediate = site.reactive_intermediate || {};
                 const ring = site.is_in_ring ? 'Sim' : 'Não';
-                return `<tr><td class="numeric">C${escapeHtml(site.atom_index_display)}</td><td>${escapeHtml(site.carbon_hydrogens ?? '—')}</td><td>${escapeHtml(ring)}</td><td>${escapeHtml((site.enzyme_hypotheses || []).join(', ') || '—')}</td><td><span class="metabolism-smiles">${escapeHtml(metabolite.smiles || 'N/D')}</span></td><td><span class="metabolism-smiles">${escapeHtml(intermediate.smiles || 'N/D')}</span></td></tr>`;
+                const ruleMatch = site.rule_match_label || (site.rule_match ? 'Sítio identificado' : 'Não identificado');
+                return `<tr><td class="numeric">C${escapeHtml(site.atom_index_display)}</td><td>${escapeHtml(site.carbon_hydrogens ?? '—')}</td><td>${escapeHtml(ring)}</td><td>${escapeHtml((site.enzyme_hypotheses || []).join(', ') || '—')}</td><td>${escapeHtml(ruleMatch)}</td><td><span class="metabolism-smiles">${escapeHtml(metabolite.smiles || 'N/D')}</span></td><td><span class="metabolism-smiles">${escapeHtml(intermediate.smiles || 'N/D')}</span></td></tr>`;
             }).join('');
             const productCards = metabolites.map((metabolite, index) => {
                 const svg = metabolite.svg || '<span class="nitro-space-muted">N/D</span>';
@@ -2038,7 +2056,7 @@
             }).join('');
             const intermediateCards = intermediates.map((intermediate, index) => `<div class="metabolism-section-card"><div class="metabolism-product-title">Intermediário diazônio ${index + 1}</div><div class="metabolism-product-kind">Representação mecanística hipotética</div><code class="metabolism-smiles">${escapeHtml(intermediate.smiles || 'N/D')}</code></div>`).join('');
             const warningBlock = warnings.length ? `<div class="metabolism-warning"><strong>Avisos científicos</strong><br>${warnings.map(escapeHtml).join('<br>')}</div>` : '';
-            const tableBlock = sites.length ? `<div class="metabolism-table-wrap"><table class="metabolism-table"><thead><tr><th>Sítio</th><th>H α</th><th>Anel</th><th>Enzimas em contexto</th><th>SMILES do metabólito</th><th>SMILES do intermediário</th></tr></thead><tbody>${siteRows}</tbody></table></div>` : `<div class="nitro-pending-state"><i class="fas fa-microscope"></i><strong>${escapeHtml(metabolismStatusLabel(status))}</strong><p>${escapeHtml(result?.message || 'Nenhum sítio alfa elegível foi encontrado.')}</p></div>`;
+            const tableBlock = sites.length ? `<div class="metabolism-table-wrap"><table class="metabolism-table"><thead><tr><th>Sítio</th><th>H α</th><th>Anel</th><th>Enzimas em contexto</th><th>Atendimento da regra</th><th>SMILES do metabólito</th><th>SMILES do intermediário</th></tr></thead><tbody>${siteRows}</tbody></table></div>` : `<div class="nitro-pending-state"><i class="fas fa-microscope"></i><strong>${escapeHtml(metabolismStatusLabel(status))}</strong><p>${escapeHtml(result?.message || 'Nenhum sítio alfa elegível foi encontrado.')}</p></div>`;
             const productsBlock = productCards ? `<div class="metabolism-product-grid">${productCards}</div>` : '<p class="metabolism-disclaimer">Nenhum metabólito estruturalmente válido foi gerado.</p>';
             const intermediatesBlock = intermediateCards ? `<div class="metabolism-product-grid">${intermediateCards}</div>` : '<p class="metabolism-disclaimer">Nenhum intermediário foi representado como SMILES válido.</p>';
             panel.innerHTML = `<div class="flex flex-wrap items-center justify-between gap-4 mb-6"><div><p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Predição estrutural de Fase I</p><h2 class="text-3xl font-black text-slate-800"><i class="fas fa-dna theme-accent-text"></i> CYP450 — α-hidroxilação</h2></div><span class="cpca-status">${escapeHtml(metabolismStatusLabel(status))}</span></div><p class="text-sm leading-6 text-slate-600 mb-6">${escapeHtml(result?.message || 'Predição metabólica baseada em regras estruturais.')}</p><div class="metabolism-summary-grid mb-6"><div class="metabolism-summary-card"><span>Sítios α candidatos</span><strong>${escapeHtml(summary.alpha_sites ?? sites.length)}</strong></div><div class="metabolism-summary-card"><span>Metabólitos gerados</span><strong>${escapeHtml(summary.metabolites ?? metabolites.length)}</strong></div><div class="metabolism-summary-card"><span>Intermediários hipotéticos</span><strong>${escapeHtml(summary.reactive_intermediates ?? intermediates.length)}</strong></div></div><div class="metabolism-target-card mb-6"><h3 class="section-title mb-4"><i class="fas fa-atom theme-accent-text"></i> Molécula analisada</h3><div class="metabolism-target-grid"><div class="metabolism-target-svg">${targetSvg}</div><div><div class="metabolism-meta-label">SMILES canônico</div><code class="metabolism-smiles metabolism-meta-value">${escapeHtml(targetSmiles)}</code><div class="metabolism-meta-label mt-5">Enzimas em contexto</div><div class="metabolism-meta-value">${escapeHtml(enzymes)}</div><div class="metabolism-meta-label mt-5">Motor</div><div class="metabolism-meta-value">${escapeHtml(result?.engine || 'RDKit rule-based')}</div></div></div></div><div class="metabolism-section-card mb-6"><h3 class="section-title mb-4"><i class="fas fa-location-crosshairs theme-accent-text"></i> Carbonos α metabolicamente vulneráveis</h3>${tableBlock}</div><div class="metabolism-section-card mb-6"><h3 class="section-title mb-4"><i class="fas fa-flask-vial theme-accent-text"></i> Metabólitos de Fase I</h3>${productsBlock}</div><div class="metabolism-section-card mb-6"><h3 class="section-title mb-4"><i class="fas fa-bolt theme-accent-text"></i> Intermediário alquilante</h3>${intermediatesBlock}</div>${warningBlock}<p class="metabolism-disclaimer mt-5">${escapeHtml(result?.disclaimer || 'Resultado in silico de triagem; não substitui confirmação analítica, avaliação toxicológica ou decisão regulatória.')}</p>`;
@@ -2081,34 +2099,53 @@
             return `${percent.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
         }
 
+        function deepPkPresentation(result, status) {
+            const fallback = {
+                not_selected: { label: 'Não selecionado', tone: 'neutral', message: 'O complemento externo não foi selecionado.', action: 'Selecione Deep-PK junto com Metabolism para iniciar a consulta.' },
+                running: { label: 'Processando', tone: 'info', message: 'A consulta foi enviada e aguarda o processamento dos endpoints CYP.', action: 'Aguarde a atualização do job ou consulte novamente.' },
+                ok: { label: 'Resultados disponíveis', tone: 'success', message: 'As previsões externas de substrato e inibição estão disponíveis.', action: 'Nenhuma ação adicional é necessária.' },
+                deep_pk_unavailable: { label: 'Indisponível', tone: 'error', message: 'Não foi possível acessar o serviço Deep-PK.', action: 'Verifique a conectividade e tente novamente mais tarde; o Metabolism local permanece válido.' },
+                deep_pk_error: { label: 'Resposta não processada', tone: 'error', message: 'O serviço retornou uma resposta que não pôde ser normalizada.', action: 'Repita a consulta; o resultado local permanece disponível.' },
+                deep_pk_timeout: { label: 'Tempo excedido', tone: 'warning', message: 'O Deep-PK excedeu o tempo de espera da consulta.', action: 'Nenhuma classificação externa foi apresentada; repita a consulta mais tarde.' },
+                invalid_smiles: { label: 'SMILES inválido', tone: 'error', message: 'O SMILES não pôde ser sanitizado localmente.', action: 'Corrija a estrutura antes de consultar o Deep-PK.' },
+                invalid_job_id: { label: 'Consulta inválida', tone: 'error', message: 'O identificador da consulta Deep-PK é inválido.', action: 'Inicie uma nova consulta a partir da análise local.' }
+            };
+            return { ...(fallback[status] || { label: 'Revisão necessária', tone: 'warning', message: 'O estado retornado pelo Deep-PK requer revisão.', action: 'Verifique a consulta e preserve o resultado local do Metabolism.' }), ...(result?.presentation || {}) };
+        }
+
         function renderDeepPkResults(result, target = {}) {
-            currentDeepPkResult = result || null;
+            const isNotSelected = !result || result.status === 'not_selected';
+            currentDeepPkResult = isNotSelected ? null : result;
+            if (!isNotSelected && currentNitroResults && typeof currentNitroResults === 'object') {
+                currentNitroResults = {
+                    ...currentNitroResults,
+                    modules: Array.from(new Set([...(currentNitroResults.modules || []), 'deep_pk'])),
+                    results: { ...(currentNitroResults.results || {}), deep_pk: result || null }
+                };
+            }
+            updateReportAvailability();
             const container = document.getElementById('metabolism-deep-pk');
             if (!container) return;
             const status = safeText(result?.status, 'deep_pk_error');
-            const statusLabels = {
-                not_selected: 'Não selecionado',
-                running: 'Processando',
-                ok: 'Concluído',
-                deep_pk_unavailable: 'Indisponível',
-                deep_pk_error: 'Erro',
-                invalid_smiles: 'SMILES inválido',
-                deep_pk_timeout: 'Tempo excedido'
-            };
+            const presentation = deepPkPresentation(result, status);
             const title = status === 'ok' ? 'Substrato e inibição CYP' : 'Consulta complementar Deep-PK';
             const isoforms = Array.isArray(result?.isoforms) ? result.isoforms : [];
             const targetSmiles = target?.canonical_smiles || result?.smiles || '—';
             const rows = isoforms.map((item) => {
                 const substrate = item.substrate || {};
                 const inhibitor = item.inhibitor || {};
-                return `<tr><td class="numeric">${escapeHtml(item.isoform || '—')}</td><td><span class="deep-pk-label ${deepPkPredictionClass(substrate.prediction)}">${escapeHtml(deepPkPredictionLabel(substrate.prediction))}</span><small class="deep-pk-interpretation">${escapeHtml(deepPkInterpretation(substrate.interpretation, substrate.prediction))}</small></td><td class="numeric">${escapeHtml(deepPkProbability(substrate.probability))}</td><td><span class="deep-pk-label ${deepPkPredictionClass(inhibitor.prediction)}">${escapeHtml(deepPkPredictionLabel(inhibitor.prediction))}</span><small class="deep-pk-interpretation">${escapeHtml(deepPkInterpretation(inhibitor.interpretation, inhibitor.prediction))}</small></td><td class="numeric">${escapeHtml(deepPkProbability(inhibitor.probability))}</td></tr>`;
+                const substratePercent = substrate.probability_percent ?? deepPkProbability(substrate.probability);
+                const inhibitorPercent = inhibitor.probability_percent ?? deepPkProbability(inhibitor.probability);
+                return `<tr><td class="numeric">${escapeHtml(item.isoform || '—')}</td><td><span class="deep-pk-label ${deepPkPredictionClass(substrate.prediction)}">${escapeHtml(deepPkPredictionLabel(substrate.prediction_label || substrate.prediction))}</span><small class="deep-pk-interpretation">${escapeHtml(deepPkInterpretation(substrate.interpretation_label || substrate.interpretation, substrate.prediction_label || substrate.prediction))}</small></td><td class="numeric">${escapeHtml(typeof substratePercent === 'number' ? `${substratePercent.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%` : substratePercent)}</td><td><span class="deep-pk-label ${deepPkPredictionClass(inhibitor.prediction)}">${escapeHtml(deepPkPredictionLabel(inhibitor.prediction_label || inhibitor.prediction))}</span><small class="deep-pk-interpretation">${escapeHtml(deepPkInterpretation(inhibitor.interpretation_label || inhibitor.interpretation, inhibitor.prediction_label || inhibitor.prediction))}</small></td><td class="numeric">${escapeHtml(typeof inhibitorPercent === 'number' ? `${inhibitorPercent.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%` : inhibitorPercent)}</td></tr>`;
             }).join('');
             const table = rows
                 ? `<div class="deep-pk-table-wrap"><table class="deep-pk-table"><thead><tr><th>Isoforma</th><th>Substrato?</th><th>Probabilidade</th><th>Inibidor?</th><th>Probabilidade</th></tr></thead><tbody>${rows}</tbody></table></div>`
                 : `<div class="deep-pk-muted">${escapeHtml(result?.message || 'Nenhum endpoint Deep-PK disponível neste momento.')}</div>`;
             const warnings = Array.isArray(result?.warnings) ? result.warnings : [];
             const warningBlock = warnings.length ? `<div class="deep-pk-warning mt-4"><strong>Limitação da fonte externa:</strong><br>${warnings.map(escapeHtml).join('<br>')}</div>` : '';
-            container.innerHTML = `<div class="flex flex-wrap items-start justify-between gap-4"><div><p class="deep-pk-kicker">Complemento externo · ${escapeHtml(safeText(result?.provider, 'Deep-PK'))}</p><h3 class="section-title mt-1"><i class="fas fa-table-list" style="color:#0f766e"></i> ${escapeHtml(title)}</h3></div><span class="cpca-status">${escapeHtml(statusLabels[status] || 'Revisão')}</span></div><p class="deep-pk-description mt-3">${escapeHtml(result?.message || 'Os endpoints abaixo são consultados para o mesmo SMILES canônico, após a análise estrutural local.')}</p><p class="deep-pk-muted mt-2">SMILES consultado: <code>${escapeHtml(targetSmiles)}</code></p><div class="mt-4">${table}</div>${warningBlock}`;
+            const stateLabel = status === 'ok' ? '' : `<span class="deep-pk-state-label">${escapeHtml(presentation.label)}</span>`;
+            const stateBlock = `<div class="deep-pk-state deep-pk-state--${escapeHtml(presentation.tone)}" role="status">${stateLabel}<div class="deep-pk-state-copy"><strong>${escapeHtml(presentation.message)}</strong><small>${escapeHtml(presentation.action)}</small></div></div>`;
+            container.innerHTML = `<div class="flex flex-wrap items-start justify-between gap-4"><div><p class="deep-pk-kicker">Complemento externo · ${escapeHtml(safeText(result?.provider, 'Deep-PK'))}</p><h3 class="section-title mt-1"><i class="fas fa-table-list" style="color:#0f766e"></i> ${escapeHtml(title)}</h3></div></div>${stateBlock}<p class="deep-pk-muted mt-2">SMILES consultado: <code>${escapeHtml(targetSmiles)}</code></p><div class="mt-4">${table}</div>${warningBlock}`;
         }
 
         function renderNitroResults(payload) {
@@ -2185,6 +2222,7 @@
             const selectedModules = getSelectedNitroModules();
             const deepPkSelected = selectedModules.includes('deep_pk');
             const localModules = selectedModules.filter(module => module !== 'deep_pk');
+            currentDeepPkResult = null;
             if (!smiles) return showToast('Informe o SMILES da nitrosamina.', 'error');
             if (!selectedModules.length) return showToast('Selecione ao menos um módulo Nitro.RA.', 'error');
             if (deepPkSelected && !localModules.includes('metabolism')) return showToast('Selecione também Metabolism para consultar o Deep-PK após a análise local.', 'error');
@@ -2584,6 +2622,10 @@
         }
 
         function downloadReport() {
+            if (isDeepPkPending()) {
+                showToast('Aguarde a conclusão do Deep-PK antes de gerar o relatório.', 'info');
+                return;
+            }
             const payload = buildPreviewPayload();
             if (!payload) return;
             const previewWindow = window.open('', '_blank');

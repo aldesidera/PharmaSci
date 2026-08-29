@@ -96,8 +96,76 @@ def _request_json(method: str, *, form: Optional[Dict[str, str]] = None, query: 
     return _decode_json_payload(raw)
 
 
+_DEEP_PK_PRESENTATIONS: Dict[str, Dict[str, str]] = {
+    "not_selected": {
+        "label": "Não selecionado",
+        "tone": "neutral",
+        "message": "O complemento externo não foi selecionado.",
+        "action": "Selecione Deep-PK junto com Metabolism para iniciar a consulta.",
+    },
+    "running": {
+        "label": "Processando",
+        "tone": "info",
+        "message": "A consulta foi enviada e aguarda o processamento dos endpoints CYP.",
+        "action": "Aguarde a atualização do job ou consulte novamente.",
+    },
+    "ok": {
+        "label": "Resultados disponíveis",
+        "tone": "success",
+        "message": "As previsões externas de substrato e inibição estão disponíveis.",
+        "action": "Nenhuma ação adicional é necessária.",
+    },
+    "deep_pk_unavailable": {
+        "label": "Indisponível",
+        "tone": "error",
+        "message": "Não foi possível acessar o serviço Deep-PK.",
+        "action": "Verifique a conectividade e tente novamente mais tarde; o Metabolism local permanece válido.",
+    },
+    "deep_pk_error": {
+        "label": "Resposta não processada",
+        "tone": "error",
+        "message": "O serviço retornou uma resposta que não pôde ser normalizada.",
+        "action": "Repita a consulta; o resultado local permanece disponível.",
+    },
+    "deep_pk_timeout": {
+        "label": "Tempo excedido",
+        "tone": "warning",
+        "message": "O Deep-PK excedeu o tempo de espera da consulta.",
+        "action": "Nenhuma classificação externa foi apresentada; repita a consulta mais tarde.",
+    },
+    "invalid_smiles": {
+        "label": "SMILES inválido",
+        "tone": "error",
+        "message": "O SMILES não pôde ser sanitizado localmente.",
+        "action": "Corrija a estrutura antes de consultar o Deep-PK.",
+    },
+    "invalid_job_id": {
+        "label": "Consulta inválida",
+        "tone": "error",
+        "message": "O identificador da consulta Deep-PK é inválido.",
+        "action": "Inicie uma nova consulta a partir da análise local.",
+    },
+}
+
+
+def normalize_deep_pk_message(result: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    """Add a stable, user-facing presentation contract to a Deep-PK payload."""
+
+    payload = dict(result or {})
+    status = str(payload.get("status") or "deep_pk_error")
+    presentation = dict(_DEEP_PK_PRESENTATIONS.get(status, {
+        "label": "Revisão necessária",
+        "tone": "warning",
+        "message": "O estado retornado pelo Deep-PK requer revisão.",
+        "action": "Verifique a consulta e preserve o resultado local do Metabolism.",
+    }))
+    presentation["status"] = status
+    payload["presentation"] = presentation
+    return payload
+
+
 def _base_result(smiles: str, status: str, message: str) -> Dict[str, Any]:
-    return {
+    result = {
         "module": "deep_pk_metabolism",
         "provider": "Deep-PK",
         "prediction_type": "metabolism",
@@ -109,6 +177,7 @@ def _base_result(smiles: str, status: str, message: str) -> Dict[str, Any]:
             "Os resultados Deep-PK são previsões externas de endpoints CYP e não substituem confirmação experimental, analítica ou regulatória."
         ],
     }
+    return normalize_deep_pk_message(result)
 
 
 def submit_deep_pk_metabolism(smiles: str) -> Dict[str, Any]:
@@ -156,15 +225,54 @@ def _find_endpoint_value(entry: Dict[str, Any], isoform: str, relation: str, fie
     return None
 
 
+_PREDICTION_LABELS = {
+    "Substrate": "Substrato",
+    "Non-Substrate": "Não substrato",
+    "Inhibitor": "Inibidor",
+    "Non-Inhibitor": "Não inibidor",
+}
+
+_INTERPRETATION_LABELS = {
+    "High Non-Substrative Activity": "Alta atividade não substrativa",
+    "High Non-Inhibition": "Alta ausência de inibição",
+    "High Substrate Activity": "Alta atividade substrativa",
+    "High Inhibition": "Alta atividade inibitória",
+}
+
+
+def _translate_prediction(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    return _PREDICTION_LABELS.get(str(value), str(value))
+
+
+def _translate_interpretation(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    return _INTERPRETATION_LABELS.get(str(value), str(value))
+
+
+def _probability_percent(value: Any) -> Optional[float]:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    if 0 <= value <= 1:
+        return round(float(value) * 100, 1)
+    return round(float(value), 1)
+
+
 def _extract_isoforms(entry: Dict[str, Any]) -> List[Dict[str, Any]]:
     isoforms: List[Dict[str, Any]] = []
     for isoform in DEEP_PK_ISOFORMS:
         row: Dict[str, Any] = {"isoform": isoform}
         for relation in ("substrate", "inhibitor"):
+            probability = _find_endpoint_value(entry, isoform, relation, "probability")
             row[relation] = {
                 "prediction": _find_endpoint_value(entry, isoform, relation, "predictions"),
-                "probability": _find_endpoint_value(entry, isoform, relation, "probability"),
+                "prediction_label": _translate_prediction(_find_endpoint_value(entry, isoform, relation, "predictions")),
+                "probability": probability,
+                "probability_percent": _probability_percent(probability),
                 "interpretation": _find_endpoint_value(entry, isoform, relation, "interpretation"),
+                "interpretation_label": _translate_interpretation(_find_endpoint_value(entry, isoform, relation, "interpretation")),
             }
         isoforms.append(row)
     return isoforms

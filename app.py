@@ -560,7 +560,7 @@ def api_nitro_ra_analyze():
         modules = data.get("modules")
         if not isinstance(modules, list) or not modules:
             return _error_response(400, "Informe ao menos um módulo Nitro.RA.", "modules")
-        allowed_modules = {"cpca", "quantum", "metabolism", "nitrosamine_space"}
+        allowed_modules = {"cpca", "quantum", "metabolism", "nitrosamine_space", "deep_pk"}
         selected_modules = []
         for module in modules:
             if not isinstance(module, str) or module not in allowed_modules:
@@ -574,6 +574,8 @@ def api_nitro_ra_analyze():
         mdd_mg = data.get("mdd_mg")
         if mdd_mg is not None and float(mdd_mg) <= 0:
             return _error_response(400, "mdd_mg deve ser maior que zero.", "mdd_mg")
+        if "deep_pk" in selected_modules and "metabolism" not in selected_modules:
+            return _error_response(400, "O módulo Deep-PK requer que Metabolism também seja selecionado.", "modules")
 
         results = {}
         if "cpca" in selected_modules:
@@ -584,6 +586,8 @@ def api_nitro_ra_analyze():
             results["metabolism"] = evaluate_metabolism(smiles)
         if "nitrosamine_space" in selected_modules:
             results["nitrosamine_space"] = search_nitrosamine_space(smiles)
+        if "deep_pk" in selected_modules:
+            results["deep_pk"] = submit_deep_pk_metabolism(smiles)
 
         response = {
             "module": "nitro_ra",

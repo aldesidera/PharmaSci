@@ -24,6 +24,8 @@ def test_predicts_alpha_sites_metabolites_and_diazonium_surrogates():
     for site in result["alpha_sites"]:
         assert site["atom_index_display"] > 0
         assert site["confidence"] == "rule_supported"
+        assert site["rule_match"] is True
+        assert site["rule_match_label"] == "Sítio identificado"
         assert site["metabolite"]["kind"] == "alpha_hydroxynitrosamine"
         assert site["metabolite"]["smiles"]
         assert site["reactive_intermediate"]["kind"] == "alkyl_diazonium_surrogate"
