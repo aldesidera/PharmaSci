@@ -51,13 +51,16 @@ def test_search_filters_n_nitroso_and_builds_space(monkeypatch):
 
     assert result["status"] == "ok"
     assert result["search"]["retrieved_cids"] == 4
-    assert result["search"]["n_nitroso_candidates"] == 2
+    assert result["search"]["n_nitroso_candidates"] == 3
+    assert result["search"]["prefiltered_candidates"] == result["search"]["scored_candidates"]
     assert result["search"]["target_excluded"] is True
-    assert result["search"]["selected_candidates"] == 2
-    assert len(result["candidates"]) == 2
+    assert result["search"]["selected_candidates"] <= result["search"]["prefiltered_candidates"]
+    assert len(result["candidates"]) == result["search"]["selected_candidates"]
     assert [candidate["global_distance"] for candidate in result["candidates"]] == sorted(candidate["global_distance"] for candidate in result["candidates"])
     assert all(candidate["is_n_nitroso"] for candidate in result["candidates"])
     assert all(candidate["similarity"] >= 0 for candidate in result["candidates"])
+    assert all(candidate["prefilter_similarity"] > 0.50 for candidate in result["candidates"])
+    assert result["search"]["minimum_structural_similarity"] == 0.50
     assert all(candidate["global_distance"] is not None for candidate in result["candidates"])
     assert result["points"][0]["is_target"] is True
     assert result["target"]["svg"].startswith("<?xml")

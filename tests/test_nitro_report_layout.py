@@ -25,7 +25,8 @@ def test_nitro_report_layout_renders_cpca_ema_and_metabolism_contracts():
     html = response.get_data(as_text=True)
     assert "Relatório de Análise Nitro.RA" in html
     assert "nitro-target-card" in html
-    assert html.index(">Molécula analisada<") < html.index(">Módulos selecionados<")
+    assert html.index(">Alvo molecular<") < html.index(">Módulos selecionados<")
+    assert html.count(">Molécula analisada<") == 0
     assert "Resultado estrutural cPCA" in html
     assert "Limite de ingestão aceitável — Apêndice I da EMA" in html
     assert "nitro-evidence-table" in html
@@ -59,7 +60,7 @@ def test_nitro_report_layout_renders_cpca_ema_and_metabolism_contracts():
     assert '<span class="status-badge' not in cpca_html
     assert "body.nitro-report .summary-grid.nitro-summary-grid { grid-template-columns: minmax(0, 1fr) minmax(7.25rem, 8.5rem);" in html
     assert "nitro-modules-box { align-items: center; justify-self: end; width: 100%; max-width: 8.5rem; text-align: center; }" in html
-    assert "nitro-analyzed-box { align-items: flex-start; text-align: left; }" in html
+    assert "nitro-summary-target-card { align-self: stretch; }" in html
     assert "min-height: 48px; height: 100%" in html
     assert "Potency Score" not in html
     assert "AI FDA cPCA" not in html

@@ -14,7 +14,7 @@ from urllib import parse as urllib_parse
 from urllib import request as urllib_request
 
 import numpy as np
-from rdkit import Chem
+from rdkit import Chem, DataStructs
 
 from analysis import classify_similarity, get_fingerprint, get_properties, mol_to_svg
 from chemo_suite.core.chemical_space import (
@@ -41,6 +41,7 @@ SPACE_FINGERPRINT = "MACCS"
 SPACE_METRIC = "Tanimoto"
 PUBCHEM_BATCH_LIMIT = 40
 DISPLAY_LIMIT = 10
+MIN_STRUCTURAL_SIMILARITY = 0.50
 
 N_NITROSO_PATTERN = Chem.MolFromSmarts("[N;X3][N;X2]=O")
 _HTTP_CACHE: Dict[str, Tuple[float, Any]] = {}
@@ -369,7 +370,7 @@ def search_nitrosamine_space(
         result = _base_result(normalized, "pubchem_unavailable", search_error["message"])
         result.update({
             "target": target,
-            "search": {"threshold": threshold, "max_records": max_records, "retrieved_cids": 0, "n_nitroso_candidates": 0, "selected_candidates": 0, "target_excluded": False},
+            "search": {"threshold": threshold, "minimum_structural_similarity": MIN_STRUCTURAL_SIMILARITY, "max_records": max_records, "retrieved_cids": 0, "n_nitroso_candidates": 0, "prefiltered_candidates": 0, "scored_candidates": 0, "selected_candidates": 0, "target_excluded": False},
             "candidates": [],
             "points": [],
             "ema_space": _ema_space(target_mol, target_properties, display_limit=DISPLAY_LIMIT),
@@ -387,7 +388,7 @@ def search_nitrosamine_space(
         result = _base_result(normalized, "no_nitrosamines", "Nenhuma nitrosamina foi encontrada no lote amostrado do PubChem.")
         result.update({
             "target": target,
-            "search": {"threshold": threshold, "max_records": max_records, "retrieved_cids": 0, "n_nitroso_candidates": 0, "selected_candidates": 0, "target_excluded": False},
+            "search": {"threshold": threshold, "minimum_structural_similarity": MIN_STRUCTURAL_SIMILARITY, "max_records": max_records, "retrieved_cids": 0, "n_nitroso_candidates": 0, "prefiltered_candidates": 0, "scored_candidates": 0, "selected_candidates": 0, "target_excluded": False},
             "candidates": [],
             "points": _build_points(target, []),
             "ema_space": _ema_space(target_mol, target_properties, display_limit=DISPLAY_LIMIT),
@@ -404,7 +405,7 @@ def search_nitrosamine_space(
         result = _base_result(normalized, "pubchem_unavailable", properties_error["message"])
         result.update({
             "target": target,
-            "search": {"threshold": threshold, "max_records": max_records, "retrieved_cids": len(cids), "n_nitroso_candidates": 0, "selected_candidates": 0, "target_excluded": False},
+            "search": {"threshold": threshold, "minimum_structural_similarity": MIN_STRUCTURAL_SIMILARITY, "max_records": max_records, "retrieved_cids": len(cids), "n_nitroso_candidates": 0, "prefiltered_candidates": 0, "scored_candidates": 0, "selected_candidates": 0, "target_excluded": False},
             "candidates": [],
             "points": [],
             "ema_space": _ema_space(target_mol, target_properties, display_limit=DISPLAY_LIMIT),
@@ -413,6 +414,7 @@ def search_nitrosamine_space(
 
     candidates: List[Dict[str, Any]] = []
     candidate_molecules: List[Chem.Mol] = []
+    n_nitroso_candidates = 0
     target_excluded = False
     raw_properties = ((properties_payload or {}).get("PropertyTable") or {}).get("Properties") or []
     for item in raw_properties:
@@ -427,9 +429,17 @@ def search_nitrosamine_space(
             candidate_mol = None
         if candidate_mol is None or not _has_n_nitroso(candidate_mol):
             continue
+        n_nitroso_candidates += 1
         canonical = _canonical(candidate_mol)
         if canonical == target_canonical:
             target_excluded = True
+            continue
+        target_fp = get_fingerprint(target_mol, SPACE_FINGERPRINT)
+        candidate_fp = get_fingerprint(candidate_mol, SPACE_FINGERPRINT)
+        if target_fp is None or candidate_fp is None:
+            continue
+        structural_similarity = float(DataStructs.TanimotoSimilarity(target_fp, candidate_fp))
+        if structural_similarity <= MIN_STRUCTURAL_SIMILARITY:
             continue
         properties = get_properties(candidate_mol) or {}
         if _descriptor_vector(properties) is None:
@@ -442,6 +452,7 @@ def search_nitrosamine_space(
             "smiles": candidate_smiles,
             "canonical_smiles": canonical,
             "is_n_nitroso": True,
+            "prefilter_similarity": round(structural_similarity, 6),
             "fingerprint": SPACE_FINGERPRINT,
             "svg": mol_to_svg(candidate_mol, size=220),
             "properties": _property_rows(properties),
@@ -457,6 +468,12 @@ def search_nitrosamine_space(
         })
         candidate_molecules.append(candidate_mol)
 
+    # O pré-filtro estrutural ocorre antes da análise estatística. O PubChem
+    # fornece o lote inicial; somente nitrosaminas com MACCS/Tanimoto > 0,50
+    # seguem para a distância físico-química, distância global e MDS.
+    prefiltered_count = len(candidates)
+    candidates = candidates[:PUBCHEM_BATCH_LIMIT]
+    candidate_molecules = candidate_molecules[:PUBCHEM_BATCH_LIMIT]
     selected, points, diagnostics = _rank_and_project(
         target_mol,
         target_properties,
@@ -474,16 +491,18 @@ def search_nitrosamine_space(
         "target": target,
         "search": {
             "threshold": threshold,
+            "minimum_structural_similarity": MIN_STRUCTURAL_SIMILARITY,
             "max_records": max_records,
             "retrieved_cids": len(cids),
-            "n_nitroso_candidates": len(candidates),
+            "n_nitroso_candidates": n_nitroso_candidates,
+            "prefiltered_candidates": min(prefiltered_count, PUBCHEM_BATCH_LIMIT),
             "target_excluded": target_excluded,
             "scored_candidates": diagnostics["scored_candidates"],
             "selected_candidates": len(selected),
             "search_url": search_url,
             "fingerprint": SPACE_FINGERPRINT,
             "metric": SPACE_METRIC,
-            "selection_method": "Filtro SMARTS [N;X3][N;X2]=O + MACCS/Tanimoto + distância multimodal quadrática em MW, LogP, TPSA, HBD, HBA e RotB; lote PubChem limitado a 40 CIDs, seleção das 10 menores distâncias e MDS clássico",
+            "selection_method": "Filtro SMARTS [N;X3][N;X2]=O + MACCS/Tanimoto > 0,50; até 40 candidatos pré-selecionados antes da distância multimodal em MW, LogP, TPSA, HBD, HBA e RotB; seleção das 10 menores distâncias e MDS clássico",
             "fq_normalizer": diagnostics["fq_normalizer"],
             "mds_stress": diagnostics["mds_stress"],
             "display_limit": DISPLAY_LIMIT,

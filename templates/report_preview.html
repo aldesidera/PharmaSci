@@ -143,7 +143,8 @@
         .nitro-target-caption { margin: 7px 0 0; color: var(--muted); font-size: 9px; }
         .nitro-summary-grid { grid-template-columns: minmax(11rem, .8fr) minmax(0, 1.6fr); align-items: stretch; }
         .nitro-summary-grid .summary-box { min-height: 104px; }
-        .nitro-summary-grid .nitro-analyzed-box { display: flex; flex-direction: column; justify-content: center; }
+        .nitro-summary-grid .nitro-summary-target-card { margin-top: 0; min-height: 104px; }
+        .nitro-summary-grid .nitro-summary-target-card .nitro-target-structure { min-height: 104px; }
         .nitro-summary-grid .nitro-modules-box { display: flex; flex-direction: column; justify-content: center; }
         .nitro-metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
         .nitro-cpca-metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -355,8 +356,7 @@
         body.nitro-report .summary-grid.nitro-summary-grid .summary-value { margin-top: 5px; font-size: 24px; }
         body.nitro-report .summary-grid.nitro-summary-grid .reference-card { width: 100%; padding: 8px 10px; }
         body.nitro-report .summary-grid.nitro-summary-grid .nitro-modules-box { align-items: center; justify-self: end; width: 100%; max-width: 8.5rem; text-align: center; }
-        body.nitro-report .summary-grid.nitro-summary-grid .nitro-analyzed-box { align-items: flex-start; text-align: left; }
-        body.nitro-report .summary-grid.nitro-summary-grid .nitro-analyzed-box .reference-card { text-align: left; }
+        body.nitro-report .summary-grid.nitro-summary-grid .nitro-summary-target-card { align-self: stretch; }
         body.nitro-report .summary-grid.nitro-summary-grid { margin-bottom: 2px; }
         body.nitro-report #report-cpca { margin-top: 10px; padding: 8px; }
         body.nitro-report #report-cpca .nitro-status-line { margin-bottom: 5px; }
@@ -556,6 +556,7 @@
             <div class="chemical-space-report-card">
                 <div class="space-meta">
                     <div><span>Fonte</span><strong>{{ source_label }}</strong></div>
+                    <div><span>Pré-selecionadas (Tanimoto &gt; 0,50)</span><strong>{{ search.get('prefiltered_candidates', search.get('scored_candidates', candidates|length)) }}</strong></div>
                     <div><span>Estruturas Avaliadas</span><strong>{{ search.get('scored_candidates', candidates|length) }}</strong></div>
                     <div><span>Estruturas Consideradas</span><strong>{{ search.get('selected_candidates', candidates|length) }}</strong></div>
                     <div><span>Stress MDS</span><strong>{{ '%.4f'|format(search.get('mds_stress')) if search.get('mds_stress') is not none else '-' }}</strong><span class="space-metric-help">Diferença entre as distâncias originais e a projeção 2D; quanto menor, melhor.</span></div>
@@ -619,26 +620,19 @@
             <section class="section">
                 <h2>Resumo executivo <small>resultados efetivamente executados</small></h2>
                 <div class="summary-grid nitro-summary-grid">
-                    <div class="summary-box nitro-analyzed-box">
-                        <strong>Molécula analisada</strong>
-                        <div class="reference-card">
-                            <div class="reference-name">{{ report.get('name', 'Alvo Nitro.RA') }}</div>
-                            <div class="reference-smiles mono">{{ nitro_canonical_smiles }}</div>
+                    <div class="nitro-target-card nitro-summary-target-card">
+                        <div class="nitro-target-structure">{% if nitro_target_svg %}{{ nitro_target_svg|safe }}{% else %}<span class="muted">Estrutura 2D indisponível</span>{% endif %}</div>
+                        <div class="nitro-target-meta">
+                            <span class="meta-label">Alvo molecular</span>
+                            <div class="nitro-target-name">{{ report.get('name') or 'Nome não informado' }}</div>
+                            <span class="meta-label">SMILES canônico</span>
+                            <span class="nitro-target-smiles">{{ nitro_canonical_smiles }}</span>
                         </div>
                     </div>
                     <div class="summary-box summary-box--accent nitro-modules-box">
                         <strong>Módulos selecionados</strong>
                         <span class="summary-value">{{ nitro_modules|length }}</span>
                         <span class="summary-note">{% for module in nitro_modules %}{{ module_label(module) }}{% if not loop.last %} · {% endif %}{% else %}Nenhum módulo informado{% endfor %}</span>
-                    </div>
-                </div>
-                <div class="nitro-target-card">
-                    <div class="nitro-target-structure">{% if nitro_target_svg %}{{ nitro_target_svg|safe }}{% else %}<span class="muted">Estrutura 2D indisponível</span>{% endif %}</div>
-                    <div class="nitro-target-meta">
-                        <span class="meta-label">Alvo molecular</span>
-                        <div class="nitro-target-name">{{ report.get('name', 'Alvo Nitro.RA') }}</div>
-                        <span class="meta-label">SMILES canônico</span>
-                        <span class="nitro-target-smiles">{{ nitro_canonical_smiles }}</span>
                     </div>
                 </div>
             </section>
@@ -690,7 +684,7 @@
                 <h2>Espaço Químico <small>fontes PubChem e EMA apresentadas separadamente</small></h2>
                 {% set pubchem_space = space_result %}
                 {% if pubchem_space %}
-                {{ space_section(pubchem_space, 'Espaço químico PubChem', 'PubChem - Lote de 40 CIDs', false, report.get('name', 'Molécula analisada')) }}
+                {{ space_section(pubchem_space, 'Espaço químico PubChem', 'PubChem · Tanimoto > 0,50 · até 40 candidatos', false, report.get('name', 'Molécula analisada')) }}
                 {% else %}<div class="nitro-callout nitro-callout--warning">O espaço PubChem não foi incluído no payload desta análise.</div>{% endif %}
                 {% if pubchem_space.get('ema_space') %}
                     <div class="page-break"></div>

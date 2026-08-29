@@ -181,6 +181,7 @@ def test_nitro_space_report_page_two_uses_compact_vertical_layout():
         "points": [target, {"name": candidate["name"], "x": 0.2, "y": -0.1, "is_target": False}],
         "candidates": [candidate],
         "search": {
+            "prefiltered_candidates": 40,
             "scored_candidates": 40,
             "selected_candidates": 1,
             "mds_stress": 0.123456,
@@ -208,7 +209,7 @@ def test_nitro_space_report_page_two_uses_compact_vertical_layout():
     })
     assert response.status_code == 200
     html = response.get_data(as_text=True)
-    assert "PubChem - Lote de 40 CIDs" in html
+    assert "PubChem · Tanimoto &gt; 0,50 · até 40 candidatos" in html
     assert "N-nitroso-piperidina" in html
     assert "Molécula alvo" not in html
     assert "Estruturas Avaliadas" in html

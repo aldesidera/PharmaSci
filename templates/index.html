@@ -1052,6 +1052,10 @@
                         </div>
                         <div class="space-y-6">
                             <div>
+                                <label for="nitro-name" class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Nome da molécula (opcional)</label>
+                                <input id="nitro-name" type="text" maxlength="160" placeholder="Se vazio, tentar identificar pelo SMILES" class="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-sky-300 focus:border-sky-300 outline-none transition-all">
+                            </div>
+                            <div>
                                 <label for="nitro-smiles" class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">SMILES da nitrosamina</label>
                                 <textarea id="nitro-smiles" rows="3" placeholder="Ex.: O=NN1CCCCC1" class="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl font-mono text-sm focus:ring-2 focus:ring-sky-300 focus:border-sky-300 outline-none transition-all resize-none"></textarea>
                             </div>
@@ -1165,11 +1169,11 @@
                                             <p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Lote relativo</p>
                                             <h3 class="section-title mb-0"><i class="fas fa-cloud theme-accent-text"></i> PubChem — vizinhança relativa</h3>
                                         </div>
-                                        <span class="nitro-space-muted">Até 40 CIDs recuperados · 10 menores distâncias exibidas</span>
+                                        <span class="nitro-space-muted">Até 40 nitrosaminas com Tanimoto > 0,50 · 10 menores distâncias exibidas</span>
                                     </div>
                                     <div class="nitro-space-summary">
                                         <div class="nitro-space-summary-card"><span>CIDs analisados</span><strong id="nitro-space-retrieved">—</strong></div>
-                                        <div class="nitro-space-summary-card"><span>N-nitroso encontrados</span><strong id="nitro-space-filtered">—</strong></div>
+                                        <div class="nitro-space-summary-card"><span>N-nitroso elegíveis</span><strong id="nitro-space-filtered">—</strong></div>
                                         <div class="nitro-space-summary-card"><span>Exibidos</span><strong id="nitro-space-selected">—</strong></div>
                                     </div>
                                     <div class="nitro-space-chart-wrap mt-6">
@@ -1974,7 +1978,7 @@
             document.getElementById('nitro-space-message').textContent = safeText(result?.message, 'Nenhuma mensagem disponível.');
             const search = result?.search || {};
             document.getElementById('nitro-space-retrieved').textContent = formatSpaceValue(search.retrieved_cids, 0);
-            document.getElementById('nitro-space-filtered').textContent = formatSpaceValue(search.n_nitroso_candidates, 0);
+            document.getElementById('nitro-space-filtered').textContent = formatSpaceValue(search.prefiltered_candidates ?? search.n_nitroso_candidates, 0);
             document.getElementById('nitro-space-selected').textContent = formatSpaceValue(search.selected_candidates, 0);
             const pubchemSpace = result || {};
             renderNitroSpaceMeta(pubchemSpace, 'nitro-space');
@@ -2239,7 +2243,11 @@
             btn.innerHTML = '<i class="fas fa-circle-notch animate-spin"></i> ANALISANDO...';
             btn.disabled = true;
             try {
-                const body = { smiles, modules: localModules };
+                const body = {
+                    smiles,
+                    name: document.getElementById('nitro-name').value.trim(),
+                    modules: localModules,
+                };
                 if (mddValue) body.mdd_mg = Number(mddValue);
                 const response = await fetchWithTimeout('/nitro-ra/analyze', {
                     method: 'POST',
@@ -2250,6 +2258,9 @@
                 if (requestId !== activeCpcaRequestId) return;
                 if (!response.ok && payload?.status !== 'invalid_smiles') throw new Error(getErrorMessage(payload, `Falha nas análises Nitro.RA (${response.status})`));
                 currentNitroResults = payload;
+                if (payload?.name && !document.getElementById('nitro-name').value.trim()) {
+                    document.getElementById('nitro-name').value = payload.name;
+                }
                 renderNitroResults(payload);
                 updateReportAvailability();
                 const localMetabolism = payload?.results?.metabolism || {};

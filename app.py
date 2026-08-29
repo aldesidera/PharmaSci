@@ -567,8 +567,10 @@ def api_nitro_ra_analyze():
                 return _error_response(400, "Módulo Nitro.RA inválido.", "modules")
             if module not in selected_modules:
                 selected_modules.append(module)
-
+        data = apply_name_fallbacks(data)
+        molecule_name = data.get("name") if isinstance(data.get("name"), str) and data.get("name").strip() else None
         mdd_error = _validate_optional_finite_number(data, "mdd_mg")
+
         if mdd_error:
             return _error_response(400, mdd_error, "mdd_mg")
         mdd_mg = data.get("mdd_mg")
@@ -593,6 +595,7 @@ def api_nitro_ra_analyze():
             "module": "nitro_ra",
             "status": "ok",
             "smiles": smiles,
+            "name": molecule_name,
             "modules": selected_modules,
             "results": results,
         }
