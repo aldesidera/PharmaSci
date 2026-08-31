@@ -777,42 +777,66 @@
             .nitro-module-checks { grid-template-columns: 1fr; }
             .nitro-tab { flex-basis: 7.5rem; }
         }
+        .nitro-space-subpanel {
+            position: relative;
+            margin-top: 1.25rem;
+            padding: 1.25rem;
+            border: 1px solid var(--theme-panel-border);
+            border-radius: 1.5rem;
+            background: linear-gradient(145deg, rgba(255,255,255,0.96), color-mix(in srgb, var(--theme-accent-soft) 28%, white 72%));
+            box-shadow: 0 14px 36px rgba(15, 23, 42, 0.06);
+            overflow: hidden;
+        }
+        .nitro-space-subpanel::before { content: ''; position: absolute; inset: 0 0 auto; height: 4px; background: linear-gradient(90deg, var(--theme-accent-strong), var(--theme-accent-secondary)); }
+        .nitro-space-subpanel--ema { background: linear-gradient(145deg, rgba(255,255,255,0.98), rgba(255,247,237,0.86)); border-color: rgba(217,119,6,0.24); }
+        .nitro-space-subpanel--ema::before { background: linear-gradient(90deg, #d97706, #f59e0b); }
         .nitro-space-summary {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 1rem;
         }
         .nitro-space-summary-card {
+            min-height: 4.9rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
             border: 1px solid var(--theme-panel-border);
-            border-radius: 1.25rem;
-            padding: 1rem;
-            background: color-mix(in srgb, var(--theme-accent-soft) 42%, white 58%);
+            border-radius: 1rem;
+            padding: 0.8rem 1rem;
+            background: rgba(255,255,255,0.82);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
         }
-        .nitro-space-summary-card strong { display: block; margin-top: 0.35rem; color: var(--theme-accent-strong); font-size: 1.35rem; font-weight: 900; }
-        .nitro-space-summary-card span { color: var(--theme-muted-text); font-size: 0.65rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; }
+        .nitro-space-summary-card strong { display: block; margin-top: 0.35rem; color: var(--theme-accent-strong); font-size: 1.45rem; font-weight: 900; line-height: 1; }
+        .nitro-space-summary-card span { color: var(--theme-muted-text); font-size: 0.62rem; font-weight: 900; letter-spacing: 0.11em; line-height: 1.35; text-transform: uppercase; }
+        .nitro-space-subpanel--ema .nitro-space-summary-card strong { color: #b45309; }
         .nitro-space-chart-wrap {
             border: 1px solid var(--theme-panel-border);
-            border-radius: 1.5rem;
-            padding: 1rem;
-            background: rgba(255,255,255,0.68);
+            border-radius: 1.15rem;
+            padding: 1rem 1rem 0.8rem;
+            background: rgba(255,255,255,0.82);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
         }
-        .nitro-space-chart { width: 100%; height: 24rem; display: block; }
+        .nitro-space-chart { width: 100%; height: 25rem; display: block; }
         .nitro-space-chart text { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
-        .nitro-space-legend { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; margin-top: 0.7rem; color: var(--theme-muted-text); font-size: 0.7rem; }
+        .nitro-space-legend { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; margin-top: 0.7rem; padding: 0.65rem 0.2rem 0.1rem; color: var(--theme-muted-text); font-size: 0.7rem; }
         .nitro-space-legend span { display: inline-flex; align-items: center; gap: 0.45rem; }
         .nitro-space-legend i { width: 0.7rem; height: 0.7rem; display: inline-block; border-radius: 999px; background: var(--theme-accent-strong); }
         .nitro-space-legend i.target { background: var(--theme-accent-secondary); }
-        .nitro-space-table-wrap { overflow-x: auto; border: 1px solid var(--theme-panel-border); border-radius: 1.25rem; background: rgba(255,255,255,0.72); }
+        .nitro-space-table-wrap { overflow-x: auto; border: 1px solid var(--theme-panel-border); border-radius: 1rem; background: rgba(255,255,255,0.88); }
         .nitro-space-table { width: 100%; min-width: 48rem; border-collapse: collapse; font-size: 0.72rem; }
-        .nitro-space-table th { padding: 0.8rem; color: var(--theme-muted-text); background: var(--theme-accent-soft); font-size: 0.62rem; font-weight: 900; letter-spacing: 0.12em; text-align: left; text-transform: uppercase; }
-        .nitro-space-table td { border-top: 1px solid var(--line-soft); padding: 0.7rem 0.8rem; color: var(--text-700); vertical-align: middle; }
+        .nitro-space-table th { padding: 0.75rem 0.8rem; color: var(--theme-muted-text); background: var(--theme-accent-soft); font-size: 0.6rem; font-weight: 900; letter-spacing: 0.1em; text-align: center; text-transform: uppercase; white-space: nowrap; }
+        .nitro-space-table td { border-top: 1px solid var(--line-soft); padding: 0.65rem 0.75rem; color: var(--text-700); vertical-align: middle; }
+        .nitro-space-table tbody tr { transition: background 0.16s ease; }
+        .nitro-space-table tbody tr:hover { background: color-mix(in srgb, var(--theme-accent-soft) 35%, white 65%); }
+        .nitro-space-table td:nth-child(1), .nitro-space-table td:nth-child(3), .nitro-space-table td:nth-child(4) { text-align: center; }
         .nitro-space-table td.numeric { color: var(--theme-accent-strong); font-weight: 900; }
         .nitro-space-thumb { width: 7rem; height: 4rem; }
         .nitro-space-thumb svg { width: 100%; height: 100%; display: block; }
         .nitro-space-muted { color: var(--theme-muted-text); font-size: 0.75rem; line-height: 1.55; }
         @media (max-width: 640px) {
             .nitro-space-summary { grid-template-columns: 1fr; }
-            .nitro-space-chart { height: 18rem; }
+            .nitro-space-chart { height: 19rem; }
+            .nitro-space-subpanel { padding: 0.9rem; border-radius: 1.15rem; }
         }
         .cpca-metric-grid {
             display: grid;
@@ -1169,7 +1193,7 @@
                                             <p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Lote relativo</p>
                                             <h3 class="section-title mb-0"><i class="fas fa-cloud theme-accent-text"></i> PubChem — vizinhança relativa</h3>
                                         </div>
-                                        <span class="nitro-space-muted">Até 40 nitrosaminas com Tanimoto > 0,50 · 10 menores distâncias exibidas</span>
+                                        <span class="nitro-space-muted">Pré-filtro Tanimoto &gt; 0,50 · até 40 candidatas · 10 menores distâncias exibidas</span>
                                     </div>
                                     <div class="nitro-space-summary">
                                         <div class="nitro-space-summary-card"><span>CIDs analisados</span><strong id="nitro-space-retrieved">—</strong></div>
@@ -1198,9 +1222,9 @@
                                     <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
                                         <div>
                                             <p class="text-[10px] font-black uppercase tracking-[0.2em] text-amber-700">Biblioteca de referência</p>
-                                            <h3 class="section-title mb-0"><i class="fas fa-landmark text-amber-700"></i> EMA Appendix 1 — referência</h3>
+                                            <h3 class="section-title mb-0"><i class="fas fa-landmark text-amber-700"></i> EMA — Apêndice I · referência</h3>
                                         </div>
-                                        <span class="nitro-space-muted">N-nitrosamines · z-score fixo · 10 menores distâncias exibidas</span>
+                                        <span class="nitro-space-muted">N-nitrosaminas · z-score fixo · 10 menores distâncias exibidas</span>
                                     </div>
                                     <p id="nitro-ema-space-message" class="text-sm leading-6 text-slate-600 mb-4">Biblioteca EMA local.</p>
                                     <div class="nitro-space-summary">
@@ -1937,7 +1961,7 @@
                 const y = plotY(Number(point.y) || 0);
                 const fill = point.is_target ? 'var(--theme-accent-secondary)' : candidateColor;
                 const radius = point.is_target ? 8 : 5;
-                const label = point.is_target ? 'Alvo' : `${index}`;
+                const label = point.is_target ? (point.name || 'Alvo') : `${index}`;
                 return `<g><circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${radius}" fill="${fill}" stroke="white" stroke-width="2"><title>${escapeHtml(point.name || label)}</title></circle><text x="${(x + 9).toFixed(2)}" y="${(y - 8).toFixed(2)}" font-size="10" fill="var(--text-700)">${escapeHtml(label)}</text></g>`;
             }).join('');
             chart.innerHTML = `<svg class="nitro-space-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(ariaLabel)}"><line x1="${padding.left}" y1="${zeroY.toFixed(2)}" x2="${width - padding.right}" y2="${zeroY.toFixed(2)}" stroke="var(--line-soft)"/><line x1="${zeroX.toFixed(2)}" y1="${padding.top}" x2="${zeroX.toFixed(2)}" y2="${height - padding.bottom}" stroke="var(--line-soft)"/><text x="${width / 2}" y="${height - 12}" text-anchor="middle" font-size="11" fill="var(--theme-muted-text)">Coordenada MDS 1</text><text x="16" y="${height / 2}" text-anchor="middle" font-size="11" fill="var(--theme-muted-text)" transform="rotate(-90 16 ${height / 2})">Coordenada MDS 2</text>${circles}</svg>`;
@@ -1946,7 +1970,11 @@
         function renderNitroSpaceTable(elementId, space, sourceLabel) {
             const table = document.getElementById(elementId);
             if (!table) return;
-            const candidates = Array.isArray(space?.candidates) ? space.candidates : [];
+            const candidates = (Array.isArray(space?.candidates) ? space.candidates : []).slice().sort((a, b) => {
+                const aSimilarity = Number(a.global_similarity ?? (a.global_distance != null ? 1 - Number(a.global_distance) : -Infinity));
+                const bSimilarity = Number(b.global_similarity ?? (b.global_distance != null ? 1 - Number(b.global_distance) : -Infinity));
+                return bSimilarity - aSimilarity;
+            });
             if (!candidates.length) {
                 table.innerHTML = `<div class="nitro-space-muted p-6">${escapeHtml(space?.message || `Nenhuma estrutura elegível foi encontrada na fonte ${sourceLabel}.`)}</div>`;
                 return;
@@ -1957,10 +1985,11 @@
                 const image = candidate.svg || '<span class="nitro-space-muted">N/D</span>';
                 const identifier = candidate.cid ? `CID ${candidate.cid}` : (candidate.cas_rn ? `CAS ${candidate.cas_rn}` : `Registro ${index + 1}`);
                 const ai = isEma ? `<td class="numeric">${formatSpaceValue(candidate.ai_ng_day, 0)}${candidate.ai_ng_day == null && candidate.ai_ng_day_raw ? ` (${escapeHtml(candidate.ai_ng_day_raw)})` : ''}</td>` : '';
-                return `<tr><td><div class="nitro-space-thumb">${image}</div></td><td><strong>${escapeHtml(candidate.name || identifier)}</strong><br><span class="nitro-space-muted">${escapeHtml(identifier)}</span></td><td class="numeric">${formatSpaceValue(candidate.similarity)}</td><td class="numeric">${formatSpaceValue(candidate.global_distance)}</td>${ai}<td>${formatSpaceValue(properties['Massa Molecular (g/mol)'], 2)}</td><td>${formatSpaceValue(properties['Coeficiente de Partição (LogP)'], 3)}</td><td>${formatSpaceValue(properties['Área de Superfície Polar (Å²)'], 2)}</td><td>${formatSpaceValue(properties['Ligações rotacionáveis (RotB)'], 0)}</td></tr>`;
+                const globalSimilarity = candidate.global_similarity ?? (candidate.global_distance != null ? 1 - Number(candidate.global_distance) : null);
+                return `<tr><td><div class="nitro-space-thumb">${image}</div></td><td><strong>${escapeHtml(candidate.name || identifier)}</strong><br><span class="nitro-space-muted">${escapeHtml(identifier)}</span></td><td class="numeric">${formatSpaceValue(candidate.similarity)}</td><td class="numeric">${formatSpaceValue(globalSimilarity)}</td><td class="numeric">${formatSpaceValue(candidate.global_distance)}</td>${ai}<td>${formatSpaceValue(properties['Massa Molecular (g/mol)'], 2)}</td><td>${formatSpaceValue(properties['Coeficiente de Partição (LogP)'], 3)}</td><td>${formatSpaceValue(properties['Área de Superfície Polar (Å²)'], 2)}</td><td>${formatSpaceValue(properties['Ligações rotacionáveis (RotB)'], 0)}</td></tr>`;
             }).join('');
             const aiHeader = isEma ? '<th>AI EMA (ng/dia)</th>' : '';
-            table.innerHTML = `<table class="nitro-space-table"><thead><tr><th>Estrutura</th><th>Composto</th><th>Tanimoto</th><th>Distância global</th>${aiHeader}<th>MW</th><th>LogP</th><th>TPSA</th><th>RotB</th></tr></thead><tbody>${rows}</tbody></table>`;
+            table.innerHTML = `<table class="nitro-space-table"><thead><tr><th>Estrutura</th><th>Composto</th><th>Tanimoto estrutural</th><th>Similaridade global</th><th>Distância global</th>${aiHeader}<th>MW</th><th>LogP</th><th>TPSA</th><th>RotB</th></tr></thead><tbody>${rows}</tbody></table>`;
         }
 
         function renderNitroSpaceMeta(space, prefix) {

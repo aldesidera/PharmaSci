@@ -30,7 +30,7 @@ def test_nitro_module_order_and_labels_are_stable():
     assert 'id="nitro-space-chart"' in html
     assert 'id="nitro-ema-space-chart"' in html
     assert "PubChem — vizinhança relativa" in html
-    assert "EMA Appendix 1 — referência" in html
+    assert "EMA — Apêndice I · referência" in html
     assert "10 menores distâncias exibidas" in html
 
 
