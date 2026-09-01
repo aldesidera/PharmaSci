@@ -460,7 +460,7 @@ def _get_similarity_map_drawer(size: int):
     canvas_height = max(480, int(size * 0.625))
     drawer = rdMolDraw2D.MolDraw2DSVG(size, canvas_height)
     opts = drawer.drawOptions()
-    opts.bondLineWidth = 3
+    opts.bondLineWidth = 1.6
     opts.minFontSize = 14
     opts.padding = 0.22
     opts.additionalAtomLabelPadding = 0.06
@@ -570,6 +570,11 @@ def _similarity_map_cached(ref_key: str, test_key: str, size: int) -> Optional[s
             svg = svg.replace('<svg ', '<svg preserveAspectRatio="xMidYMid meet" ', 1)
         svg = re.sub(r"width=['\"][^'\"]+['\"]", 'width="100%"', svg, count=1)
         svg = re.sub(r"height=['\"][^'\"]+['\"]", 'height="100%"', svg, count=1)
+        # WeasyPrint pode tratar width/height percentuais do SVG como dimensões
+        # intrínsecas quando ele está dentro de um flex container. O estilo
+        # inline força o mapa a ocupar o quadro sem ampliar o viewBox de forma
+        # arbitrária, preservando o contorno e todas as informações desenhadas.
+        svg = svg.replace('<svg ', '<svg style="display:block;width:100%;height:100%;" ', 1)
         return _crop_similarity_map_svg(svg, size, max(480, int(size * 0.625)))
     except Exception as e:
         logger.error(f"Erro ao gerar SimilarityMap cacheado: {str(e)}")
@@ -621,7 +626,7 @@ def _similarity_map_png_cached(ref_key: str, test_key: str, size: int) -> Option
         canvas_height = max(480, int(canvas_size * 0.625))
         drawer = rdMolDraw2D.MolDraw2DCairo(canvas_size, canvas_height)
         opts = drawer.drawOptions()
-        opts.bondLineWidth = 3
+        opts.bondLineWidth = 1.6
         opts.minFontSize = 16
         opts.annotationFontScale = 0.9
         opts.padding = 0.22

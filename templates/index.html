@@ -1961,7 +1961,7 @@
                 const y = plotY(Number(point.y) || 0);
                 const fill = point.is_target ? 'var(--theme-accent-secondary)' : candidateColor;
                 const radius = point.is_target ? 8 : 5;
-                const label = point.is_target ? (point.name || 'Alvo') : `${index}`;
+                const label = point.is_target ? (space?.target?.name || point.name || 'Alvo') : `${index}`;
                 return `<g><circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${radius}" fill="${fill}" stroke="white" stroke-width="2"><title>${escapeHtml(point.name || label)}</title></circle><text x="${(x + 9).toFixed(2)}" y="${(y - 8).toFixed(2)}" font-size="10" fill="var(--text-700)">${escapeHtml(label)}</text></g>`;
             }).join('');
             chart.innerHTML = `<svg class="nitro-space-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(ariaLabel)}"><line x1="${padding.left}" y1="${zeroY.toFixed(2)}" x2="${width - padding.right}" y2="${zeroY.toFixed(2)}" stroke="var(--line-soft)"/><line x1="${zeroX.toFixed(2)}" y1="${padding.top}" x2="${zeroX.toFixed(2)}" y2="${height - padding.bottom}" stroke="var(--line-soft)"/><text x="${width / 2}" y="${height - 12}" text-anchor="middle" font-size="11" fill="var(--theme-muted-text)">Coordenada MDS 1</text><text x="16" y="${height / 2}" text-anchor="middle" font-size="11" fill="var(--theme-muted-text)" transform="rotate(-90 16 ${height / 2})">Coordenada MDS 2</text>${circles}</svg>`;
@@ -1988,7 +1988,7 @@
                 const globalSimilarity = candidate.global_similarity ?? (candidate.global_distance != null ? 1 - Number(candidate.global_distance) : null);
                 return `<tr><td><div class="nitro-space-thumb">${image}</div></td><td><strong>${escapeHtml(candidate.name || identifier)}</strong><br><span class="nitro-space-muted">${escapeHtml(identifier)}</span></td><td class="numeric">${formatSpaceValue(candidate.similarity)}</td><td class="numeric">${formatSpaceValue(globalSimilarity)}</td><td class="numeric">${formatSpaceValue(candidate.global_distance)}</td>${ai}<td>${formatSpaceValue(properties['Massa Molecular (g/mol)'], 2)}</td><td>${formatSpaceValue(properties['Coeficiente de Partição (LogP)'], 3)}</td><td>${formatSpaceValue(properties['Área de Superfície Polar (Å²)'], 2)}</td><td>${formatSpaceValue(properties['Ligações rotacionáveis (RotB)'], 0)}</td></tr>`;
             }).join('');
-            const aiHeader = isEma ? '<th>AI EMA (ng/dia)</th>' : '';
+            const aiHeader = isEma ? '<th>Acceptable<br>Intake (ng/dia)</th>' : '';
             table.innerHTML = `<table class="nitro-space-table"><thead><tr><th>Estrutura</th><th>Composto</th><th>Tanimoto estrutural</th><th>Similaridade global</th><th>Distância global</th>${aiHeader}<th>MW</th><th>LogP</th><th>TPSA</th><th>RotB</th></tr></thead><tbody>${rows}</tbody></table>`;
         }
 

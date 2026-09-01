@@ -75,8 +75,8 @@ def test_batch_report_preview_includes_chemical_space_section():
     assert "Similaridade estrutural" in html
     assert "Propriedades físico-químicas" in html
     assert "Descritores:</strong> Massa Molecular (MW), LogP, TPSA, HBD, HBA e RotB." in html
-    assert "Distância de similaridade" in html
-    assert "Distância físico-química" in html
+    assert "Distância de<br>similaridade" in html
+    assert "Distância<br>físico-química" in html
     assert "Dist.FQ normalizada" not in html
     assert "chemical-space-report-svg--batch" in html
 
@@ -230,9 +230,9 @@ def test_nitro_space_report_page_two_uses_compact_vertical_layout():
     assert "MDS 2" in html
     assert 'text-anchor="' in html
     assert 'font-size="12" fill="#1e293b"' in html
-    assert "Distância de similaridade" in html
-    assert "Distância físico-química" in html
-    assert "Distância global" in html
+    assert "Distância de<br>similaridade" in html
+    assert "Distância<br>físico-química" in html
+    assert "Distância<br>global" in html
     assert "AI / metadado" not in html
     assert "MACCS/Tanimoto" not in html
     assert "font-size=\"13\" font-weight=\"700\" fill=\"#1e293b\"" not in html
