@@ -11,13 +11,45 @@ def test_build_chemical_space_returns_reference_and_coordinates():
     results, error = bulk_compare("CCO", ["CCN", "CCCl"], ["Amina", "Clorado"], "Morgan2", "Tanimoto")
     assert error is None
     assert "Ligações rotacionáveis (RotB)" in results[0]["properties"]
-    space = build_chemical_space("CCO", ["CCN", "CCCl"], ["Amina", "Clorado"], results, "Morgan2", "Tanimoto")
+    space = build_chemical_space("CCO", ["CCN", "CCCl"], ["Amina", "Clorado"], results, "Morgan2", "Tanimoto", ref_name="Etanol")
     assert len(space["points"]) == 3
     assert any(point["role"] == "reference" for point in space["points"])
     assert all("x" in point and "y" in point for point in space["points"])
     assert all("structural_distance" in point and "physicochemical_distance" in point and "global_distance" in point for point in space["points"])
     assert "RotB" in space["descriptors"]
     assert space["weights"] == {"structural": 0.6, "physicochemical": 0.4}
+    assert next(point for point in space["points"] if point["role"] == "reference")["name"] == "Etanol"
+
+
+def test_bulk_compare_resolves_reference_name_from_smiles(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "get_pubchem_name_for_smiles", lambda smiles: "Nome PubChem" if smiles == "CCO" else None)
+    response = app_module.app.test_client().post("/bulk-compare", json={
+        "ref_smiles": "CCO",
+        "smiles_list": ["CCN"],
+        "names_list": ["Comparador"],
+        "fp_type": "MACCS",
+        "metric": "Tanimoto",
+    })
+    assert response.status_code == 200, response.get_json()
+    assert response.get_json()["ref_name"] == "Nome PubChem"
+    assert response.get_json()["results"][0]["name"] == "Comparador"
+
+
+def test_bulk_compare_uses_alvo_when_reference_name_is_unavailable(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "get_pubchem_name_for_smiles", lambda smiles: None)
+    response = app_module.app.test_client().post("/bulk-compare", json={
+        "ref_smiles": "CCO",
+        "smiles_list": ["CCN"],
+        "names_list": ["Comparador"],
+        "fp_type": "MACCS",
+        "metric": "Tanimoto",
+    })
+    assert response.status_code == 200, response.get_json()
+    assert response.get_json()["ref_name"] == "Alvo"
 
 
 def test_bulk_endpoint_conditionally_returns_chemical_space():

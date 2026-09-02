@@ -1,6 +1,39 @@
+import app as app_module
 from app import app
 from chemo_suite.apps.nitro_ra.cpca import calculate_cpca
 from chemo_suite.apps.nitro_ra.metabolism import evaluate_metabolism
+
+
+def test_report_preview_injects_brazilian_timestamp_and_print_footer(monkeypatch):
+    monkeypatch.setattr(app_module, "get_report_generated_at", lambda: "02/09/2026 10:30")
+    response = app.test_client().post("/report-preview", json={
+        "mode": "pair",
+        "name_ref": "Referência teste",
+        "name_test": "Teste",
+    })
+
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert "Gerado em 02/09/2026 10:30" in html
+    assert "report-print-footer" in html
+    assert "position: fixed" in html
+    assert "body.nitro-report" in html
+
+
+def test_export_pdf_injects_brazilian_timestamp(monkeypatch):
+    captured = {}
+    monkeypatch.setattr(app_module, "get_report_generated_at", lambda: "02/09/2026 10:31")
+    original_footer = app_module.ExportReportPDF.footer
+
+    def capture_footer(pdf):
+        captured["generated_at"] = pdf.generated_at
+        original_footer(pdf)
+
+    monkeypatch.setattr(app_module.ExportReportPDF, "footer", capture_footer)
+    response = app.test_client().post("/export-pdf", json={"png_ref": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="})
+
+    assert response.status_code == 200
+    assert captured["generated_at"] == "02/09/2026 10:31"
 
 
 def test_nitro_report_layout_renders_cpca_ema_and_metabolism_contracts():

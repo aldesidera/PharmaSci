@@ -491,6 +491,7 @@
 
         .page-break { break-before: page; page-break-before: always; }
         .footer-line { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; padding-top: 7px; border-top: 1px solid var(--line); color: #8290a5; font-size: 9px; }
+        .report-print-footer { display: none; }
 
         @media screen and (max-width: 850px) {
             .page, body.batch-report .page { width: auto; min-height: auto; margin: 0; padding: 22px 16px; box-shadow: none; }
@@ -511,6 +512,21 @@
             {% else %}
             @page { size: A4 portrait; margin: 11mm; }
             {% endif %}
+            .footer-line { display: none; }
+            .report-print-footer {
+                display: flex;
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: -6mm;
+                justify-content: space-between;
+                gap: 10px;
+                padding-top: 2mm;
+                border-top: 0.25mm solid #cbd5e1;
+                color: #64748b;
+                font-size: 8pt;
+                line-height: 1.2;
+            }
         }
     </style>
 </head>
@@ -801,13 +817,13 @@
             <section class="section">
                 <h2>Resumo <small>lote fornecido pelo usuário</small></h2>
                 <div class="summary-grid summary-grid--two">
-                    <div class="summary-box"><strong>Referência</strong><div class="reference-card{% if reference_png %} reference-card--with-structure{% endif %}"><div><div class="reference-name">{{ report.get('ref_name', '-') }}</div><div class="reference-smiles mono">{{ report.get('ref_smiles', '-') }}</div></div>{% if reference_png %}<div class="reference-structure"><img src="data:image/png;base64,{{ reference_png }}" alt="Estrutura 2D da referência {{ report.get('ref_name', 'molécula alvo') }}"></div>{% endif %}</div></div>
+                    <div class="summary-box"><strong>Molécula alvo</strong><div class="reference-card{% if reference_png %} reference-card--with-structure{% endif %}"><div><div class="reference-name">{{ report.get('ref_name') or 'Alvo' }}</div><div class="reference-smiles mono">{{ report.get('ref_smiles', '-') }}</div></div>{% if reference_png %}<div class="reference-structure"><img src="data:image/png;base64,{{ reference_png }}" alt="Estrutura 2D da molécula alvo {{ report.get('ref_name') or 'Alvo' }}"></div>{% endif %}</div></div>
                     <div class="summary-box summary-box--accent"><strong>Resultados</strong><span class="summary-value">{{ report.get('results', [])|length }}</span><span class="summary-note">moléculas avaliadas no Batch</span></div>
                 </div>
             </section>
 
             <section class="section batch-similarity-section">
-                <h2>Similaridade e Propriedades Físico-Químicas <small>comparação com a referência e descritores do lote</small></h2>
+                <h2>Similaridade e Propriedades Físico-Químicas <small>comparação com a molécula alvo e descritores do lote</small></h2>
                 <div class="table-wrap table-wrap--fit"><table class="batch-similarity-table"><colgroup><col style="width:18%;"><col style="width:8%;"><col style="width:9%;"><col style="width:11%;"><col style="width:7%;"><col style="width:8%;"><col style="width:8%;"><col style="width:8%;"><col style="width:7%;"><col style="width:7%;"><col style="width:5%;"></colgroup><thead><tr><th rowspan="2">Molécula</th><th colspan="2">Similaridade estrutural</th><th colspan="8">Propriedades físico-químicas</th></tr><tr><th>Similaridade</th><th>Classificação</th><th>Massa Molecular<br>(g/mol)</th><th>LogP</th><th>TPSA<br>(Å²)</th><th>pKa ácido</th><th>pKa básico</th><th>HBD</th><th>HBA</th><th>RotB</th></tr></thead><tbody>{% for item in report.get('results', []) %}{% set properties = item.get('properties') or {} %}<tr><td class="batch-molecule-cell"><div class="batch-molecule-report"><div class="batch-structure-thumb">{% if item.get('png') %}<img src="data:image/png;base64,{{ item.get('png') }}" alt="Estrutura 2D de {{ item.get('name', 'molécula') }}">{% else %}<span class="batch-structure-placeholder">Estrutura indisponível</span>{% endif %}</div><span class="batch-molecule-name">{{ item.get('name', '-') }}</span></div></td><td><strong>{{ '%.4f'|format(item.get('similarity', 0.0)) if item.get('similarity') is not none else '-' }}</strong></td><td>{% set classification = item.get('classification', '') %}{% if item.get('error') %}<span class="status-badge status-badge--error">Erro</span>{% elif classification in ['Muito Baixa', 'Baixa'] %}<span class="status-badge status-badge--low">{{ classification }}</span>{% elif classification == 'Moderada' %}<span class="status-badge status-badge--moderate">{{ classification }}</span>{% elif classification in ['Alta', 'Muito Alta'] %}<span class="status-badge status-badge--high">{{ classification }}</span>{% else %}<span class="status-badge">{{ classification or '—' }}</span>{% endif %}</td><td class="property-cell">{{ properties.get('Massa Molecular (g/mol)', '-') }}</td><td class="property-cell">{{ properties.get('Coeficiente de Partição (LogP)', '-') }}</td><td class="property-cell">{{ properties.get('Área de Superfície Polar (Å²)', '-') }}</td><td class="property-cell">{{ properties.get('pKa ácido', '-') }}</td><td class="property-cell">{{ properties.get('pKa básico', '-') }}</td><td class="property-cell">{{ properties.get('Doadores de H (HBD)', '-') }}</td><td class="property-cell">{{ properties.get('Receptores de H (HBA)', '-') }}</td><td class="property-cell">{{ properties.get('Ligações rotacionáveis (RotB)', '-') }}</td></tr>{% endfor %}</tbody></table></div>
             </section>
 
@@ -872,6 +888,7 @@
         {% endif %}
 
         <div class="footer-line"><span>PharmaSci · relatório gerado a partir do payload da análise</span><span>{% if is_nitro %}Nitro.RA{% else %}Mol.Sim{% endif %} · {{ report.get('generated_at', '-') }}</span></div>
+        <div class="report-print-footer" aria-label="Data e hora de geração do relatório"><span>PharmaSci · {% if is_nitro %}Nitro.RA{% else %}Mol.Sim{% endif %}</span><span>Gerado em {{ report.get('generated_at', '-') }}</span></div>
     </main>
 
     <script>

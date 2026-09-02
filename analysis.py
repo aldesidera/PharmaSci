@@ -41,6 +41,7 @@ FINGERPRINT_BITS = 2048
 MORGAN_RADIUS = 2
 SIMILARITY_MAP_FINGERPRINT = "Morgan2"
 SIMILARITY_MAP_METRIC = "Tanimoto"
+SIMILARITY_MAP_RENDER_VERSION = "morgan2-tanimoto-approved-v2"
 MACC_KEYS = 166
 
 LOGD_PH_COEFFICIENT = 0.12
@@ -538,7 +539,7 @@ def _crop_similarity_map_svg(svg: str, canvas_width: int, canvas_height: int) ->
 
 
 @lru_cache(maxsize=128)
-def _similarity_map_cached(ref_key: str, test_key: str, size: int) -> Optional[str]:
+def _similarity_map_cached(ref_key: str, test_key: str, size: int, render_version: str = SIMILARITY_MAP_RENDER_VERSION) -> Optional[str]:
     try:
         mol_ref = Chem.MolFromSmiles(ref_key)
         mol_test = Chem.MolFromSmiles(test_key)
@@ -589,7 +590,7 @@ def generate_similarity_map(mol_ref: Optional[Mol], mol_test: Optional[Mol], siz
         test_key = _mol_cache_key(mol_test)
         if not ref_key or not test_key:
             return None
-        return _similarity_map_cached(ref_key, test_key, size)
+        return _similarity_map_cached(ref_key, test_key, size, SIMILARITY_MAP_RENDER_VERSION)
     except Exception as e:
         logger.error(f"Erro ao gerar SimilarityMap: {str(e)}")
         return None
@@ -610,7 +611,7 @@ def mol_to_png(mol: Optional[Mol], size: int = PNG_SIZE_MOLECULE) -> Optional[by
 
 
 @lru_cache(maxsize=128)
-def _similarity_map_png_cached(ref_key: str, test_key: str, size: int) -> Optional[bytes]:
+def _similarity_map_png_cached(ref_key: str, test_key: str, size: int, render_version: str = SIMILARITY_MAP_RENDER_VERSION) -> Optional[bytes]:
     try:
         mol_ref = Chem.MolFromSmiles(ref_key)
         mol_test = Chem.MolFromSmiles(test_key)
@@ -659,7 +660,7 @@ def generate_similarity_map_png(mol_ref: Optional[Mol], mol_test: Optional[Mol],
         test_key = _mol_cache_key(mol_test)
         if not ref_key or not test_key:
             return None
-        return _similarity_map_png_cached(ref_key, test_key, size)
+        return _similarity_map_png_cached(ref_key, test_key, size, SIMILARITY_MAP_RENDER_VERSION)
     except Exception as e:
         logger.error(f"Erro ao gerar SimilarityMap PNG: {str(e)}")
         return None
@@ -822,6 +823,7 @@ def compare(
         "metric": metric,
         "similarity_map_fingerprint": SIMILARITY_MAP_FINGERPRINT,
         "similarity_map_metric": SIMILARITY_MAP_METRIC,
+        "similarity_map_render_version": SIMILARITY_MAP_RENDER_VERSION,
         "logd_ref": logd_ref,
         "logd_test": logd_test,
         "warnings": warnings,
@@ -842,9 +844,11 @@ def build_chemical_space(
     fp_type: str = "Morgan2",
     metric: str = "Tanimoto",
     display_limit: int = 10,
+    ref_name: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Build a deterministic multimodal map and keep the nearest test molecules."""
-    entries = [{"name": "Referência", "smiles": ref_smiles, "role": "reference"}]
+    target_name = ref_name.strip() if isinstance(ref_name, str) and ref_name.strip() else "Alvo"
+    entries = [{"name": target_name, "smiles": ref_smiles, "role": "reference"}]
     for index, item in enumerate(results):
         if item and not item.get("error") and item.get("smiles"):
             entries.append({

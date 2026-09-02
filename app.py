@@ -16,6 +16,8 @@ import io
 import struct
 import tempfile
 import time
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from typing import Tuple, Dict, Any, Optional, List
 from urllib import request as urllib_request, parse as urllib_parse
 
@@ -39,6 +41,34 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+REPORT_TIMEZONE = ZoneInfo("America/Sao_Paulo")
+
+
+def get_report_generated_at() -> str:
+    """Retorna o momento de geração no fuso horário de Brasília."""
+    return datetime.now(REPORT_TIMEZONE).strftime("%d/%m/%Y %H:%M")
+
+
+def ensure_report_generated_at(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Garante timestamp brasileiro sem sobrescrever um valor já informado."""
+    normalized = dict(data)
+    generated_at = normalized.get("generated_at")
+    if not isinstance(generated_at, str) or not generated_at.strip():
+        normalized["generated_at"] = get_report_generated_at()
+    return normalized
+
+
+class ExportReportPDF(FPDF):
+    """PDF direto com rodapé uniforme em todas as páginas."""
+
+    generated_at = "-"
+
+    def footer(self):
+        self.set_y(-10)
+        self.set_font("Helvetica", "I", 7)
+        self.set_text_color(100, 116, 139)
+        self.cell(0, 5, f"PharmaSci · Gerado em {self.generated_at} · Página {self.page_no()}", align="C")
+
 
 app = Flask(__name__)
 
@@ -493,13 +523,20 @@ def api_bulk_compare():
             return _error_response(400, error_msg, field)
 
         data = apply_name_fallbacks(data)
+        # O nome do alvo é opcional: quando ausente, buscar no PubChem por SMILES.
+        # Se a busca não retornar resultado, usar um rótulo neutro em vez de "Referência".
+        raw_ref_name = data.get("ref_name")
+        if isinstance(raw_ref_name, str) and raw_ref_name.strip():
+            data["ref_name"] = raw_ref_name.strip()
+        else:
+            data["ref_name"] = get_pubchem_name_for_smiles(data.get("ref_smiles")) or "Alvo"
 
         results, error = run_batch_compare(data, bulk_compare, get_pubchem_name_for_smiles)
 
         if error:
             return _error_response(400, error, "smiles")
 
-        payload = {"results": results}
+        payload = {"results": results, "ref_name": data.get("ref_name", "Alvo")}
         reference_mol, reference_error = get_mol(data["ref_smiles"])
         if reference_mol is not None and not reference_error:
             reference_png = mol_to_png(reference_mol, size=220)
@@ -512,6 +549,7 @@ def api_bulk_compare():
                 results or [],
                 "MACCS",
                 "Tanimoto",
+                ref_name=data.get("ref_name", "Alvo"),
             )
         return jsonify(payload), 200
     except Exception:
@@ -646,6 +684,7 @@ def report_preview():
         data, parse_error = _parse_json_object_payload()
         if parse_error:
             return parse_error
+        data = ensure_report_generated_at(data)
         return render_template("report_preview.html", report=data), 200
     except Exception:
         logger.error("Erro ao gerar preview do relatório: %s", traceback.format_exc())
@@ -659,6 +698,7 @@ def export_pdf():
         if parse_error:
             return parse_error
 
+        data = ensure_report_generated_at(data)
         similarity_error = _validate_optional_finite_number(data, "similarity")
         if similarity_error:
             return _error_response(400, similarity_error, "similarity")
@@ -682,7 +722,8 @@ def export_pdf():
                 return image_error
             validated_images[image_field] = image_bytes
 
-        pdf = FPDF()
+        pdf = ExportReportPDF()
+        pdf.generated_at = data["generated_at"]
         pdf.set_auto_page_break(auto=False)
         pdf.set_margins(10, 10, 10)
 
@@ -819,11 +860,6 @@ def export_pdf():
             pdf.ln()
 
         pdf.ln(6)
-        pdf.set_font("Helvetica", "I", 7)
-        pdf.cell(0, 5, f"Gerado em {data.get('generated_at', 'data não informada')}", align='C')
-        pdf.ln()
-        pdf.cell(0, 5, "Página 2/2", align='R')
-        pdf.ln()
 
         pdf_output = pdf.output()
         pdf_bytes = pdf_output.encode('latin-1') if isinstance(pdf_output, str) else pdf_output
