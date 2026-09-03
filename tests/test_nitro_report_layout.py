@@ -15,9 +15,22 @@ def test_report_preview_injects_brazilian_timestamp_and_print_footer(monkeypatch
     assert response.status_code == 200
     html = response.get_data(as_text=True)
     assert "Gerado em 02/09/2026 10:30" in html
-    assert "report-print-footer" in html
-    assert "position: fixed" in html
+    assert "@bottom-left" in html
+    assert "@bottom-right" in html
+    assert "position: fixed" not in html
     assert "body.nitro-report" in html
+
+
+def test_report_preview_normalizes_iso_timestamp_to_brazilian_format():
+    response = app.test_client().post("/report-preview", json={
+        "mode": "pair",
+        "generated_at": "2026-09-02T14:00:32.188075+00:00",
+    })
+
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert "Gerado em 02/09/2026 11:00" in html
+    assert "2026-09-02T14:00:32.188075+00:00" not in html
 
 
 def test_export_pdf_injects_brazilian_timestamp(monkeypatch):

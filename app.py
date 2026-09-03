@@ -26,7 +26,9 @@ from flask_cors import CORS
 from fpdf import FPDF
 from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
 
-from analysis import compare, bulk_compare, build_chemical_space, get_mol, mol_to_png, validate_fingerprint_type, validate_metric
+from analysis import (compare, bulk_compare, build_chemical_space, get_mol, mol_to_png, generate_similarity_map,
+                      generate_similarity_map_png, SIMILARITY_MAP_FINGERPRINT, SIMILARITY_MAP_METRIC,
+                      validate_fingerprint_type, validate_metric)
 from chemo_suite.apps.mol_sim.pairwise import run_pairwise_compare
 from chemo_suite.apps.mol_sim.batch import run_batch_compare
 from chemo_suite.apps.nitro_ra.cpca import calculate_cpca
@@ -49,12 +51,28 @@ def get_report_generated_at() -> str:
     return datetime.now(REPORT_TIMEZONE).strftime("%d/%m/%Y %H:%M")
 
 
+def _normalize_report_timestamp(value: Any) -> str:
+    """Normaliza timestamps recebidos para dd/mm/aaaa HH:MM no horário de Brasília."""
+    if not isinstance(value, str) or not value.strip():
+        return get_report_generated_at()
+    candidate = value.strip()
+    try:
+        parsed = datetime.fromisoformat(candidate.replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=REPORT_TIMEZONE)
+        return parsed.astimezone(REPORT_TIMEZONE).strftime("%d/%m/%Y %H:%M")
+    except ValueError:
+        try:
+            datetime.strptime(candidate, "%d/%m/%Y %H:%M")
+            return candidate
+        except ValueError:
+            return get_report_generated_at()
+
+
 def ensure_report_generated_at(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Garante timestamp brasileiro sem sobrescrever um valor já informado."""
+    """Garante timestamp brasileiro normalizado em qualquer caminho de relatório."""
     normalized = dict(data)
-    generated_at = normalized.get("generated_at")
-    if not isinstance(generated_at, str) or not generated_at.strip():
-        normalized["generated_at"] = get_report_generated_at()
+    normalized["generated_at"] = _normalize_report_timestamp(normalized.get("generated_at"))
     return normalized
 
 
@@ -685,6 +703,22 @@ def report_preview():
         if parse_error:
             return parse_error
         data = ensure_report_generated_at(data)
+        is_pair_report = data.get("mode") not in {"batch", "nitro"} and data.get("module") != "nitro_ra"
+        if is_pair_report:
+            # O mapa do relatório é independente do fingerprint/métrica usados no score.
+            # Regenerar aqui evita que payloads antigos ou de outra execução carreguem
+            # um heatmap RDKit/MACCS ou uma imagem com dimensões obsoletas.
+            data["similarity_map_fingerprint"] = SIMILARITY_MAP_FINGERPRINT
+            data["similarity_map_metric"] = SIMILARITY_MAP_METRIC
+            smiles_ref = data.get("smiles_ref")
+            smiles_test = data.get("smiles_test")
+            if isinstance(smiles_ref, str) and isinstance(smiles_test, str) and smiles_ref.strip() and smiles_test.strip():
+                mol_ref, ref_error = get_mol(smiles_ref.strip())
+                mol_test, test_error = get_mol(smiles_test.strip())
+                if not ref_error and not test_error and mol_ref is not None and mol_test is not None:
+                    data["similarity_map"] = generate_similarity_map(mol_ref, mol_test)
+                    map_png = generate_similarity_map_png(mol_ref, mol_test)
+                    data["similarity_map_png"] = base64.b64encode(map_png).decode("ascii") if map_png else None
         return render_template("report_preview.html", report=data), 200
     except Exception:
         logger.error("Erro ao gerar preview do relatório: %s", traceback.format_exc())

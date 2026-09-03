@@ -512,21 +512,19 @@
             {% else %}
             @page { size: A4 portrait; margin: 11mm; }
             {% endif %}
-            .footer-line { display: none; }
-            .report-print-footer {
-                display: flex;
-                position: fixed;
-                left: 0;
-                right: 0;
-                bottom: -6mm;
-                justify-content: space-between;
-                gap: 10px;
-                padding-top: 2mm;
-                border-top: 0.25mm solid #cbd5e1;
-                color: #64748b;
-                font-size: 8pt;
-                line-height: 1.2;
+            @page {
+                @bottom-left {
+                    content: "PharmaSci · {% if is_nitro %}Nitro.RA{% else %}Mol.Sim{% endif %}";
+                    color: #64748b;
+                    font-size: 8pt;
+                }
+                @bottom-right {
+                    content: "Gerado em {{ report.get('generated_at', '-') }}";
+                    color: #64748b;
+                    font-size: 8pt;
+                }
             }
+            .footer-line, .report-print-footer { display: none; }
         }
     </style>
 </head>
@@ -549,11 +547,11 @@
                 <h1 class="report-title">{% if is_nitro %}Relatório de Análise Nitro.RA{% else %}Relatório de Similaridade Molecular{% endif %}</h1>
                 <p class="report-subtitle">
                     {% if is_nitro %}
-                        Módulos: {% for module in nitro_modules %}{{ module_label(module) }}{% if not loop.last %} · {% endif %}{% else %}não informados{% endfor %} · Gerado em {{ report.get('generated_at', '-') }}
+                        Módulos: {% for module in nitro_modules %}{{ module_label(module) }}{% if not loop.last %} · {% endif %}{% else %}não informados{% endfor %}
                     {% elif is_batch %}
-                        Comparação em lote · Método estrutural: {{ report.get('fp_type', '-') }} · Métrica: {{ report.get('metric', '-') }} · Gerado em {{ report.get('generated_at', '-') }}
+                        Comparação em lote · Método estrutural: {{ report.get('fp_type', '-') }} · Métrica: {{ report.get('metric', '-') }}
                     {% else %}
-                        Método: {{ report.get('fp_type', '-') }} · Métrica: {{ report.get('metric', '-') }} · Gerado em {{ report.get('generated_at', '-') }}
+                        Método: {{ report.get('fp_type', '-') }} · Métrica: {{ report.get('metric', '-') }}
                     {% endif %}
                 </p>
             </div>

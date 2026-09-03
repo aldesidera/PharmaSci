@@ -14,6 +14,28 @@ def test_properties_include_estimated_water_solubility_at_ph7():
     assert properties[key] > 0
 
 
+def test_pair_report_rebuilds_legacy_rdkit_heatmap_with_morgan2_tanimoto():
+    response = app.test_client().post("/report-preview", json={
+        "mode": "pair",
+        "name_ref": "Alvo",
+        "name_test": "Comparador",
+        "smiles_ref": "CCO",
+        "smiles_test": "CCN",
+        "fp_type": "RDKit",
+        "metric": "Tanimoto",
+        "similarity_map_fingerprint": "RDKit",
+        "similarity_map_metric": "Tanimoto",
+        "similarity_map": '<svg xmlns="http://www.w3.org/2000/svg"><text>legacy map</text></svg>',
+    })
+
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert "Morgan2 / Tanimoto" in html
+    assert "Tanimoto sobre fingerprint Morgan2" in html
+    assert "legacy map" not in html
+    assert 'style="display:block;width:100%;height:100%;"' in html
+
+
 def test_pair_report_uses_pairwise_layout_without_batch_space():
     logd = [{"pH": pH, "LogD": round(-0.1 - abs(7 - pH) * 0.12, 3)} for pH in range(15)]
     payload = {
