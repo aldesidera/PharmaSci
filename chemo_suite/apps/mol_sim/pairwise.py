@@ -8,7 +8,8 @@ def run_pairwise_compare(
     fp_type = data.get("fp_type", "Morgan2")
     show_similarity_map = data.get("show_similarity_map")
     show_logd = data.get("show_logd")
-    show_map = show_similarity_map if show_similarity_map is not None else (show_logd if show_logd is not None else True)
+    # O heatmap é parte obrigatória da comparação par a par; flags legadas não podem suprimi-lo.
+    show_map = True
 
     return compare_fn(
         data["smiles_ref"],

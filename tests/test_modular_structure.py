@@ -6,7 +6,7 @@ from chemo_suite.apps.nitro_ra.quantum import evaluate_quantum
 from chemo_suite.core.parser import sanitize_smiles, sanitize_smiles_list
 
 
-def test_pairwise_module_preserves_show_logd_fallback():
+def test_pairwise_module_always_generates_similarity_map():
     captured = {}
 
     def fake_compare(smiles_ref, smiles_test, name_ref, name_test, fp_type, metric, show_map=True):
@@ -25,7 +25,7 @@ def test_pairwise_module_preserves_show_logd_fallback():
     result, error = run_pairwise_compare(data, fake_compare)
     assert error is None
     assert result == {"ok": True}
-    assert captured["show_map"] is False
+    assert captured["show_map"] is True
 
 
 def test_batch_module_resolves_blank_names():
