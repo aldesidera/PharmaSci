@@ -161,6 +161,7 @@
         }
         .app-layout {
             display: grid;
+            min-width: 0;
             grid-template-columns: var(--brand-panel-width) minmax(0, 1fr);
             grid-template-rows: auto minmax(0, 1fr);
             gap: 1.75rem;
@@ -522,13 +523,21 @@
         .batch-structure-score { font-size: 1.95rem; font-weight: 900; color: #1e293b; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
         .batch-card-caption { margin-top: -0.55rem; margin-bottom: 0; color: var(--text-500); font-size: 11px; letter-spacing: 0.04em; }
         .chemical-space-card { background: linear-gradient(180deg, rgba(239, 246, 255, 0.96), rgba(248, 250, 252, 0.98)); border: 1px solid rgba(14, 165, 233, 0.28); border-radius: 22px; padding: 1.25rem; box-shadow: var(--shadow-card); }
-        .chemical-space-canvas-wrap { position: relative; height: 430px; background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%); border: 1px solid #bae6fd; border-radius: 18px; padding: 1rem; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
+        .chemical-space-canvas-wrap { position: relative; height: 430px; background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%); border: 1px solid #bae6fd; border-radius: 18px; padding: 0.7rem 0.85rem 0.55rem; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
         .chemical-space-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-top: 0.75rem; color: #475569; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
         .chemical-space-legend-item { display: inline-flex; align-items: center; gap: 0.4rem; }
         .chemical-space-legend-dot { width: 0.65rem; height: 0.65rem; border-radius: 999px; display: inline-block; box-shadow: 0 0 0 3px rgba(255,255,255,0.75); }
+        .module-panel-heading { display: grid; gap: 0.2rem; min-width: 0; }
+        .module-panel-heading .module-kicker { color: var(--theme-accent-strong); font-size: 0.64rem; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; }
+        .module-panel-heading h2 { color: #1e293b; font-size: 1.45rem; line-height: 1.15; font-weight: 900; }
+        .module-status-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 7.5rem; min-height: 3rem; padding: 0.65rem 0.95rem; border: 1px solid var(--theme-panel-border); border-radius: 1.1rem; background: linear-gradient(180deg, rgba(255,255,255,0.96), var(--theme-accent-soft)); color: var(--theme-accent-strong); font-size: 0.66rem; font-weight: 900; letter-spacing: 0.16em; line-height: 1.25; text-align: center; text-transform: uppercase; box-shadow: 0 8px 20px var(--theme-panel-glow), inset 0 1px 0 rgba(255,255,255,0.9); }
+        .module-control-stack { display: grid; gap: 1.5rem; }
+        .module-control-label { display: block; margin-bottom: 0.5rem; color: #94a3b8; font-size: 0.625rem; font-weight: 900; letter-spacing: 0.2em; line-height: 1.3; text-transform: uppercase; }
+        .module-control-input { min-height: 3.5rem; }
+        #molsim-controls input:not([type="checkbox"]), #molsim-controls select, #molsim-controls textarea, #nitro-modules-card input:not([type="checkbox"]), #nitro-modules-card textarea { min-height: 3.5rem; font-size: 0.875rem; }
+        #molsim-controls > .border-b, #nitro-modules-card > .border-b { min-height: 4.7rem; align-items: start; }
+        #nitro-modules-card .nitro-module-checks { gap: 0.75rem; }
         .molsim-panel-heading { display: grid; gap: 0.2rem; min-width: 0; }
-        .molsim-panel-heading .module-kicker { color: #2563eb; font-size: 0.64rem; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; }
-        .molsim-panel-heading h2 { color: #1e293b; font-size: 1.45rem; line-height: 1.15; font-weight: 900; }
         .molsim-mode-switch { display: grid; grid-template-columns: 1fr; gap: 0.45rem; min-width: 7.5rem; padding: 0.45rem; border-radius: 1.1rem; background: rgba(241,245,249,0.9); }
         .molsim-mode-switch .mode-tab { width: 100%; min-width: 0; }
         .chemical-space-option { display: flex; align-items: center; gap: 0.95rem; padding: 1rem 1.1rem; border: 1px solid #bfdbfe; border-radius: 16px; background: rgba(239,246,255,0.7); color: #334155; }
@@ -547,7 +556,7 @@
         .batch-table tbody tr:hover { background: rgba(239, 246, 255, 0.55); }
         .batch-molecule-table-cell { min-width: 210px; }
         .batch-table-molecule { display: flex; align-items: center; gap: 10px; }
-        .batch-table-thumb { width: 64px; height: 50px; border-radius: 14px; border: 1px solid #dbeafe; background: linear-gradient(180deg, #f8fafc 0%, #eef6ff 100%); display: flex; align-items: center; justify-content: center; padding: 4px; flex-shrink: 0; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
+        .batch-table-thumb { width: 84px; height: 64px; border-radius: 14px; border: 1px solid #dbeafe; background: linear-gradient(180deg, #f8fafc 0%, #eef6ff 100%); display: flex; align-items: center; justify-content: center; padding: 3px; flex-shrink: 0; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
         .batch-table-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
         .batch-table-thumb svg { max-width: 100%; max-height: 100%; display: block; }
         .batch-table-meta { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
@@ -678,12 +687,15 @@
             display: flex;
             gap: 0.5rem;
             overflow-x: auto;
+            overflow-y: visible;
+            padding-top: 0.25rem;
             border-bottom: 1px solid var(--line-soft);
             padding-bottom: 0.75rem;
             margin-bottom: 1.5rem;
         }
         .nitro-tab {
             flex: 1 0 8rem;
+            box-sizing: border-box;
             border: 1px solid var(--line-soft);
             border-radius: 0.9rem;
             padding: 0.75rem 1rem;
@@ -699,7 +711,11 @@
             color: var(--theme-accent-strong);
             border-color: var(--theme-panel-border);
             background: var(--theme-accent-soft);
+            outline: 1px solid var(--theme-panel-border);
+            outline-offset: -1px;
         }
+        .visual-column, .action-column, .nitro-module-results, .nitro-tab-panel, .nitro-space-subpanel, .nitro-space-chart-wrap, .nitro-space-table-wrap { min-width: 0; max-width: 100%; width: 100%; box-sizing: border-box; }
+        .nitro-module-results { width: 100%; overflow: visible; }
         .nitro-tab-panel.hidden { display: none; }
         .nitro-pending-state {
             display: grid;
@@ -826,7 +842,7 @@
         .nitro-space-legend i.target { background: var(--theme-accent-secondary); }
         .nitro-space-table-wrap { overflow-x: auto; border: 1px solid var(--theme-panel-border); border-radius: 1rem; background: rgba(255,255,255,0.88); }
         .nitro-space-table { width: 100%; min-width: 48rem; border-collapse: collapse; font-size: 0.72rem; }
-        .nitro-space-table th { padding: 0.75rem 0.8rem; color: var(--theme-muted-text); background: var(--theme-accent-soft); font-size: 0.6rem; font-weight: 900; letter-spacing: 0.1em; text-align: center; text-transform: uppercase; white-space: nowrap; }
+        .nitro-space-table th { padding: 0.75rem 0.8rem; color: var(--theme-muted-text); background: var(--theme-accent-soft); font-size: 0.6rem; font-weight: 900; letter-spacing: 0.1em; line-height: 1.15; text-align: center; text-transform: uppercase; white-space: normal; }
         .nitro-space-table td { border-top: 1px solid var(--line-soft); padding: 0.65rem 0.75rem; color: var(--text-700); vertical-align: middle; }
         .nitro-space-table tbody tr { transition: background 0.16s ease; }
         .nitro-space-table tbody tr:hover { background: color-mix(in srgb, var(--theme-accent-soft) 35%, white 65%); }
@@ -979,7 +995,7 @@
                 <div class="action-column">
                     <div id="molsim-controls" class="card-glass p-8 shadow-sm h-auto">
                         <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-8">
-                            <div class="molsim-panel-heading">
+                            <div class="module-panel-heading molsim-panel-heading">
                                 <span class="module-kicker">Mol.Sim</span>
                                 <h2>Análise de similaridade estrutural</h2>
                             </div>
@@ -1070,11 +1086,11 @@
                     </div>
                     <div id="nitro-modules-card" class="card-glass p-8 shadow-sm h-auto hidden" style="display: none;">
                         <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-8">
-                            <div>
-                                <p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Nitro.RA</p>
-                                <h2 class="text-2xl font-black text-slate-800">Avaliação integrada de nitrosaminas</h2>
+                            <div class="module-panel-heading">
+                                <span class="module-kicker">Nitro.RA</span>
+                                <h2>Avaliação integrada de nitrosaminas</h2>
                             </div>
-                            <span class="cpca-status">5 módulos</span>
+                            <span class="module-status-pill" aria-label="Cinco módulos científicos disponíveis">5 módulos</span>
                         </div>
                         <div class="space-y-6">
                             <div>
@@ -1287,9 +1303,8 @@
                             <div class="mb-4 flex items-center justify-between gap-3">
                                 <h3 class="section-title mb-0"><i class="fas fa-molecule text-sky-500"></i> Resultados de Similaridade</h3>
                                 <div class="flex items-center gap-2">
-                                    <span id="batch-count" class="px-3 py-2 rounded-xl bg-sky-50 text-sky-700 text-[10px] font-black uppercase tracking-widest"></span>
+                                    <span id="batch-count" class="sr-only" aria-live="polite"></span>
                                     <button id="batch-export-csv" type="button" onclick="downloadBatchCsv()" class="px-3 py-2 rounded-xl bg-sky-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-sky-950 transition-colors">CSV</button>
-                                    <span class="px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest">2D</span>
                                 </div>
                             </div>
                             <div id="batch-structure-grid" class="batch-structure-grid"></div>
@@ -1311,7 +1326,6 @@
                                 <span class="chemical-space-legend-item"><span class="chemical-space-legend-dot" style="background:#0284c7"></span>Moléculas comparadoras</span>
                                 <span class="chemical-space-legend-item"><span class="chemical-space-legend-dot" style="background:#0f172a"></span>Distância global no tooltip</span>
                             </div>
-                            <p id="chemical-space-note" class="mt-3 text-xs leading-5 text-slate-500"></p>
                         </div>
                     </div>
 
@@ -1322,10 +1336,7 @@
                                     <h3 class="section-title mb-1"><i class="fas fa-flask text-sky-500"></i> Propriedades Físico-Químicas</h3>
                                     <p class="batch-card-caption">Painel comparativo compacto para triagem científica em lote.</p>
                                 </div>
-                                <div class="batch-header-pills">
-                                    <span id="batch-properties-count" class="batch-header-pill"><strong>0</strong> moléculas</span>
-                                    <span class="batch-header-pill">Dashboard</span>
-                                </div>
+                                <div class="batch-header-pills" aria-hidden="true"></div>
                             </div>
                             <div class="batch-table-wrap">
                                 <table class="batch-table">
@@ -1593,33 +1604,22 @@
             });
         }
 
-        function bindBatchReferenceAutofill() {
-            const refSmiles = document.getElementById('batch-ref-smiles');
+        async function resolveBatchReferenceNameIfEmpty() {
+            const refSmiles = document.getElementById('batch-ref-smiles')?.value.trim();
             const refName = document.getElementById('batch-ref-name');
-            if (!refSmiles || !refName) return;
-
-            let lookupTimer = null;
-            const trigger = () => {
-                if (refName.value.trim()) return;
-                clearTimeout(lookupTimer);
-                lookupTimer = setTimeout(async () => {
-                    const smiles = refSmiles.value.trim();
-                    if (!smiles) return;
-                    const response = await fetchWithTimeout('/lookup-name', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ smiles })
-                    }, 10000);
-                    if (!response.ok) return;
-                    const payload = await response.json();
-                    if (payload && payload.name && !refName.value.trim()) {
-                        refName.value = payload.name;
-                    }
-                }, 500);
-            };
-
-            refSmiles.addEventListener('input', trigger);
-            refSmiles.addEventListener('blur', trigger);
+            if (!refSmiles || !refName || refName.value.trim()) return refName?.value.trim() || '';
+            try {
+                const response = await fetchWithTimeout('/lookup-name', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ smiles: refSmiles })
+                }, 10000);
+                if (!response.ok) return '';
+                const payload = await response.json();
+                return payload?.name || '';
+            } catch (_) {
+                return '';
+            }
         }
 
         document.querySelectorAll('.mode-tab').forEach((tab) => {
@@ -1631,7 +1631,6 @@
 
         bindNameAutofill('smiles-ref', 'name-ref');
         bindNameAutofill('smiles-test', 'name-test');
-        bindBatchReferenceAutofill();
 
         function applyModuleTheme(appName) {
             document.body.classList.toggle('theme-molsim', appName === 'molsim');
@@ -1935,7 +1934,8 @@
             const chart = document.getElementById(elementId);
             if (!chart) return;
             const points = Array.isArray(space?.points) ? space.points : [];
-            if (!points.length) {
+            const candidates = Array.isArray(space?.candidates) ? space.candidates : [];
+            if (!points.length || (candidates.length === 0 && points.length < 2)) {
                 chart.innerHTML = `<div class="nitro-space-muted p-6">${escapeHtml(emptyMessage)}</div>`;
                 return;
             }
@@ -1957,10 +1957,14 @@
             const circles = points.map((point, index) => {
                 const x = plotX(Number(point.x) || 0);
                 const y = plotY(Number(point.y) || 0);
-                const fill = point.is_target ? 'var(--theme-accent-secondary)' : candidateColor;
-                const radius = point.is_target ? 8 : 5;
-                const label = point.is_target ? (space?.target?.name || point.name || 'Alvo') : `${index}`;
-                return `<g><circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${radius}" fill="${fill}" stroke="white" stroke-width="2"><title>${escapeHtml(point.name || label)}</title></circle><text x="${(x + 9).toFixed(2)}" y="${(y - 8).toFixed(2)}" font-size="10" fill="var(--text-700)">${escapeHtml(label)}</text></g>`;
+                const isTarget = Boolean(point.is_target || point.role === 'reference' || point.role === 'target');
+                const fill = isTarget ? 'var(--theme-accent-secondary)' : candidateColor;
+                const radius = isTarget ? 8 : 5;
+                const label = isTarget ? (space?.target?.name || point.name || 'Alvo') : (point.name || `${index}`);
+                const labelWidth = Math.max(50, Math.min(180, 7.2 * label.length));
+                const labelX = x + 9 + labelWidth <= width - padding.right ? x + 9 : Math.max(padding.left + 4, x - labelWidth - 9);
+                const labelY = y - 8 < padding.top + 12 ? y + 16 : Math.min(height - padding.bottom - 4, y - 8);
+                return `<g><circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${radius}" fill="${fill}" stroke="white" stroke-width="2"><title>${escapeHtml(point.name || label)}</title></circle><text x="${labelX.toFixed(2)}" y="${labelY.toFixed(2)}" font-size="10" fill="var(--text-700)">${escapeHtml(label)}</text></g>`;
             }).join('');
             chart.innerHTML = `<svg class="nitro-space-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(ariaLabel)}"><line x1="${padding.left}" y1="${zeroY.toFixed(2)}" x2="${width - padding.right}" y2="${zeroY.toFixed(2)}" stroke="var(--line-soft)"/><line x1="${zeroX.toFixed(2)}" y1="${padding.top}" x2="${zeroX.toFixed(2)}" y2="${height - padding.bottom}" stroke="var(--line-soft)"/><text x="${width / 2}" y="${height - 12}" text-anchor="middle" font-size="11" fill="var(--theme-muted-text)">Coordenada MDS 1</text><text x="16" y="${height / 2}" text-anchor="middle" font-size="11" fill="var(--theme-muted-text)" transform="rotate(-90 16 ${height / 2})">Coordenada MDS 2</text>${circles}</svg>`;
         }
@@ -1987,7 +1991,7 @@
                 return `<tr><td><div class="nitro-space-thumb">${image}</div></td><td><strong>${escapeHtml(candidate.name || identifier)}</strong><br><span class="nitro-space-muted">${escapeHtml(identifier)}</span></td><td class="numeric">${formatSpaceValue(candidate.similarity)}</td><td class="numeric">${formatSpaceValue(globalSimilarity)}</td><td class="numeric">${formatSpaceValue(candidate.global_distance)}</td>${ai}<td>${formatSpaceValue(properties['Massa Molecular (g/mol)'], 2)}</td><td>${formatSpaceValue(properties['Coeficiente de Partição (LogP)'], 3)}</td><td>${formatSpaceValue(properties['Área de Superfície Polar (Å²)'], 2)}</td><td>${formatSpaceValue(properties['Ligações rotacionáveis (RotB)'], 0)}</td></tr>`;
             }).join('');
             const aiHeader = isEma ? '<th>Acceptable<br>Intake (ng/dia)</th>' : '';
-            table.innerHTML = `<table class="nitro-space-table"><thead><tr><th>Estrutura</th><th>Composto</th><th>Tanimoto estrutural</th><th>Similaridade global</th><th>Distância global</th>${aiHeader}<th>MW</th><th>LogP</th><th>TPSA</th><th>RotB</th></tr></thead><tbody>${rows}</tbody></table>`;
+            table.innerHTML = `<table class="nitro-space-table"><thead><tr><th>Estrutura</th><th>Composto</th><th>Similaridade<br>Estrutural</th><th>Similaridade<br>Global</th><th>Distância<br>Global</th>${aiHeader}<th>MW</th><th>LogP</th><th>TPSA</th><th>RotB</th></tr></thead><tbody>${rows}</tbody></table>`;
         }
 
         function renderNitroSpaceMeta(space, prefix) {
@@ -2012,7 +2016,7 @@
             renderNitroSpaceChart('nitro-space-chart', pubchemSpace, 'var(--theme-accent-strong)', 'Mapa MDS do espaço químico PubChem', 'O mapa PubChem será exibido quando houver candidatos N-nitroso elegíveis.');
             renderNitroSpaceTable('nitro-space-table', pubchemSpace, 'PubChem');
             const warnings = Array.isArray(result?.warnings) ? result.warnings : [];
-            document.getElementById('nitro-space-warnings').innerHTML = warnings.length ? `<strong>Avisos PubChem:</strong><br>${warnings.map(escapeHtml).join('<br>')}` : '';
+            document.getElementById('nitro-space-warnings').innerHTML = '';
 
             const emaSpace = result?.ema_space || { status: 'ema_reference_unavailable', message: 'Resultado EMA indisponível.', candidates: [], points: [], warnings: [] };
             const emaSearch = emaSpace.search || {};
@@ -2024,7 +2028,7 @@
             renderNitroSpaceChart('nitro-ema-space-chart', emaSpace, '#d97706', 'Mapa MDS da biblioteca EMA', 'O mapa EMA será exibido quando a biblioteca de referência estiver disponível.');
             renderNitroSpaceTable('nitro-ema-space-table', emaSpace, 'EMA');
             const emaWarnings = Array.isArray(emaSpace.warnings) ? emaSpace.warnings : [];
-            document.getElementById('nitro-ema-space-warnings').innerHTML = emaWarnings.length ? `<strong>Avisos EMA:</strong><br>${emaWarnings.map(escapeHtml).join('<br>')}` : '';
+            document.getElementById('nitro-ema-space-warnings').innerHTML = '';
         }
 
         function renderNitroSpaceNotSelected() {
@@ -2423,15 +2427,26 @@
                 }]},
                 plugins: [{
                     id: 'chemicalSpaceLabels',
-                    afterDatasetsDraw(chart) {
+                            afterDatasetsDraw(chart) {
                         const ctx = chart.ctx;
+                        const area = chart.chartArea;
                         ctx.save();
                         ctx.font = '700 10px Inter, sans-serif';
                         ctx.fillStyle = '#334155';
                         chart.getDatasetMeta(0).data.forEach((element, index) => {
                             const point = points[index];
                             if (!point || !point.name) return;
-                            ctx.fillText(point.name, element.x + 8, element.y - 8);
+                            const maxWidth = Math.max(46, Math.min(170, area.right - area.left - 12));
+                            let label = String(point.name);
+                            while (label.length > 8 && ctx.measureText(label).width > maxWidth) label = `${label.slice(0, -2).trim()}…`;
+                            const textWidth = ctx.measureText(label).width;
+                            let x = element.x + 8;
+                            let y = element.y - 8;
+                            if (x + textWidth > area.right - 4) x = element.x - textWidth - 8;
+                            if (x < area.left + 4) x = area.left + 4;
+                            if (y - 11 < area.top + 4) y = element.y + 16;
+                            if (y + 4 > area.bottom - 4) y = area.bottom - 4;
+                            ctx.fillText(label, x, y);
                         });
                         ctx.restore();
                     }
@@ -2459,7 +2474,6 @@
             const totalPoints = Number(space.total_valid_points) || points.length;
             const displayedNeighbors = Math.max(0, points.length - 1);
             const availableNeighbors = Math.max(0, totalPoints - 1);
-            document.getElementById('chemical-space-note').textContent = `${displayedNeighbors} vizinhos exibidos entre ${availableNeighbors} válidos; MDS (*Multidimensional Scaling*) posiciona os pontos em 2D para aproximar as distâncias globais. Fórmula: ${safeText(space.distance_formula, '60% de distância estrutural + 40% de Dist.FQ normalizada')}. Dist.FQ usa Z-scores de MW, LogP, TPSA, HBD, HBA e RotB. A projeção serve para triagem e não substitui análise estrutural detalhada.`;
             panel.classList.remove('hidden');
         }
 
@@ -2492,12 +2506,15 @@
             btn.disabled = true;
 
             try {
+                const manualReferenceName = document.getElementById('batch-ref-name')?.value.trim() || '';
+                const resolvedReferenceName = manualReferenceName || await resolveBatchReferenceNameIfEmpty();
                 const resolvedCompounds = await resolveBatchCompoundNames(compounds);
                 const response = await fetchWithTimeout('/bulk-compare', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         ref_smiles: refSmiles,
+                        ref_name: resolvedReferenceName,
                         smiles_list: resolvedCompounds.map(item => item.smiles),
                         names_list: resolvedCompounds.map(item => item.name),
                         fp_type: document.getElementById('batch-fp-type').value,

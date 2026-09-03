@@ -262,9 +262,9 @@ def test_nitro_space_report_page_two_uses_compact_vertical_layout():
     assert "MDS 2" in html
     assert 'text-anchor="' in html
     assert 'font-size="12" fill="#1e293b"' in html
-    assert "Distância de<br>similaridade" in html
-    assert "Distância<br>físico-química" in html
-    assert "Distância<br>global" in html
+    assert "Similaridade<br>Estrutural" in html
+    assert "Similaridade<br>Global" in html
+    assert "Distância<br>Global" in html
     assert "AI / metadado" not in html
     assert "MACCS/Tanimoto" not in html
     assert "font-size=\"13\" font-weight=\"700\" fill=\"#1e293b\"" not in html

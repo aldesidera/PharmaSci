@@ -609,7 +609,7 @@
                     {% if candidates %}
                     <table class="chemical-space-report-table nitro-space-table compact-table">
                         <colgroup>{% if show_ema_ai %}<col style="width:42%;"><col style="width:15%;"><col style="width:15%;"><col style="width:15%;"><col style="width:13%;">{% else %}<col style="width:55%;"><col style="width:15%;"><col style="width:15%;"><col style="width:15%;">{% endif %}</colgroup>
-                        <thead><tr><th>Molécula</th><th>Distância de<br>similaridade</th><th>Distância<br>físico-química</th><th>Distância<br>global</th>{% if show_ema_ai %}<th>Acceptable<br>Intake</th>{% endif %}</tr></thead>
+                        <thead><tr><th>Molécula</th><th>Similaridade<br>Estrutural</th><th>Similaridade<br>Global</th><th>Distância<br>Global</th>{% if show_ema_ai %}<th>Acceptable<br>Intake</th>{% endif %}</tr></thead>
                         <tbody>
                         {% for candidate in candidates %}
                             <tr>
@@ -703,7 +703,7 @@
                 {% else %}<div class="nitro-callout nitro-callout--warning">O espaço PubChem não foi incluído no payload desta análise.</div>{% endif %}
                 {% if pubchem_space.get('ema_space') %}
                     <div class="page-break"></div>
-                    <div class="nitro-space-source"><strong>Biblioteca EMA:</strong> Appendix 1 versionado e pontuado localmente, sem misturar candidatos ou métricas da busca PubChem.</div>
+                    <div class="nitro-space-source"><strong>Biblioteca EMA:</strong> Appendix 1 versionado e pontuado localmente.</div>
                     {{ space_section(pubchem_space.get('ema_space'), 'Espaço químico EMA', 'EMA Appendix 1 · biblioteca versionada', false, report.get('name') or 'Alvo', false, true) }}
                 {% endif %}
             </section>
