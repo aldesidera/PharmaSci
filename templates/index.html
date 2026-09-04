@@ -896,6 +896,27 @@
             letter-spacing: 0.12em;
             text-transform: uppercase;
         }
+        .cpca-workflow {
+            margin-top: 1.5rem;
+            padding: 1.15rem;
+            border: 1px solid var(--theme-panel-border);
+            border-radius: 1.35rem;
+            background: linear-gradient(135deg, rgba(239,246,255,.72), rgba(255,255,255,.82));
+        }
+        .cpca-workflow-title { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: .9rem; }
+        .cpca-workflow-title h3 { margin: 0; color: var(--text-700); font-size: .88rem; font-weight: 900; }
+        .cpca-workflow-subtitle { margin: 0; color: var(--theme-muted-text); font-size: .7rem; line-height: 1.45; }
+        .cpca-workflow-steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .55rem; }
+        .cpca-workflow-step { position: relative; min-height: 5.35rem; padding: .7rem .65rem; border: 1px solid #dbeafe; border-radius: .9rem; background: rgba(255,255,255,.86); }
+        .cpca-workflow-step::after { content: '›'; position: absolute; top: 1.35rem; right: -.48rem; color: #93c5fd; font-size: 1.25rem; font-weight: 900; z-index: 2; }
+        .cpca-workflow-step:last-child::after { display: none; }
+        .cpca-workflow-step.is-complete { border-color: #bae6fd; background: #f0f9ff; }
+        .cpca-workflow-step.is-triggered { border-color: #fcd34d; background: #fffbeb; }
+        .cpca-workflow-step.is-review { border-color: #fca5a5; background: #fff1f2; }
+        .cpca-workflow-index { display: inline-grid; width: 1.35rem; height: 1.35rem; place-items: center; border-radius: 999px; background: var(--theme-accent-strong); color: white; font-size: .65rem; font-weight: 900; }
+        .cpca-workflow-step strong { display: block; margin-top: .45rem; color: var(--text-700); font-size: .72rem; line-height: 1.2; }
+        .cpca-workflow-step span { display: block; margin-top: .3rem; color: var(--theme-muted-text); font-size: .64rem; line-height: 1.35; }
+        @media (max-width: 900px) { .cpca-workflow-steps { grid-template-columns: 1fr; } .cpca-workflow-step::after { content: '↓'; top: auto; right: 50%; bottom: -.7rem; } }
         .cpca-structure-grid {
             display: grid;
             grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
@@ -1152,10 +1173,14 @@
                                 <p id="cpca-message" class="text-sm leading-6 text-slate-600 mb-6"></p>
                                 <div class="cpca-metric-grid">
                                     <div class="cpca-metric"><span class="cpca-metric-label">Categoria cPCA</span><strong id="cpca-category" class="cpca-metric-value">—</strong></div>
-                                    <div class="cpca-metric"><span class="cpca-metric-label">Potency score</span><strong id="cpca-score" class="cpca-metric-value">—</strong></div>
+                                    <div class="cpca-metric"><span class="cpca-metric-label">Pontuação de potência</span><strong id="cpca-score" class="cpca-metric-value">—</strong></div>
                                     <div class="cpca-metric"><span class="cpca-metric-label">Limite cPCA (AI FDA)</span><strong id="cpca-ai" class="cpca-metric-value">—</strong></div>
                                 </div>
                                 <div id="cpca-ppm-row" class="hidden mt-4 rounded-2xl border border-slate-100 bg-white/70 px-5 py-4 text-sm text-slate-600"><strong class="theme-accent-text">Conversão para ppm:</strong> <span id="cpca-ppm"></span></div>
+                                <section class="cpca-workflow" aria-labelledby="cpca-workflow-title">
+                                    <div class="cpca-workflow-title"><div><h3 id="cpca-workflow-title"><i class="fas fa-route theme-accent-text"></i> Fluxo de decisão cPCA</h3><p class="cpca-workflow-subtitle">Sequência traduzida do fluxograma regulatório; o score só é calculado quando os gates permitem.</p></div><span id="cpca-score-state" class="cpca-status">—</span></div>
+                                    <div id="cpca-workflow-steps" class="cpca-workflow-steps"></div>
+                                </section>
                                 <div class="cpca-structure-grid mt-6">
                                     <div class="cpca-structure-card">
                                         <h3 class="section-title mb-4"><i class="fas fa-atom theme-accent-text"></i> Estrutura química</h3>
@@ -1835,6 +1860,23 @@
             tab.addEventListener('click', () => activateNitroTab(tab.dataset.nitroTab));
         });
 
+        function renderCpcaWorkflow(result) {
+            const container = document.getElementById('cpca-workflow-steps');
+            const scoreState = document.getElementById('cpca-score-state');
+            if (!container) return;
+            const trace = Array.isArray(result.decision_trace) && result.decision_trace.length ? result.decision_trace : [
+                {label: 'Estrutura', message: 'Resultado estrutural recebido.', status: result.status === 'ok' ? 'complete' : 'review'},
+                {label: 'Decisão', message: safeText(result.message, 'Sem decisão disponível.'), status: result.status === 'ok' ? 'complete' : 'review'}
+            ];
+            const labels = {scope: 'Escopo do cPCA', alpha_hydrogen_presence: 'Hidrogênios alfa', alpha_hydrogen_activation: 'Ativação alfa', tertiary_alpha_carbon: 'Carbono alfa terciário', final: 'Decisão final'};
+            container.innerHTML = trace.map((step, index) => {
+                const status = step.status === 'triggered' ? 'is-triggered' : (step.status === 'review' ? 'is-review' : 'is-complete');
+                const label = labels[step.id] || step.label || `Etapa ${index + 1}`;
+                return `<div class="cpca-workflow-step ${status}"><span class="cpca-workflow-index">${index + 1}</span><strong>${escapeHtml(label)}</strong><span>${escapeHtml(step.message || '—')}</span></div>`;
+            }).join('');
+            if (scoreState) scoreState.textContent = result.score_calculated ? 'Score calculado' : (result.potency_category === 5 ? 'Gate Categoria 5' : 'Revisão necessária');
+        }
+
         function renderCpcaReasons(result) {
             const reasons = [['Decisão do motor', safeText(result.message, 'Nenhuma mensagem disponível.')]];
             if (result.category_basis) reasons.push(['Base da categoria', result.category_basis]);
@@ -1895,6 +1937,7 @@
                 if (center.excluded_reasons?.length) evidence.push([`Centro ${index + 1} — exclusão`, center.excluded_reasons.join(' ')]);
             });
             document.getElementById('cpca-evidence-list').innerHTML = evidence.map(([label, value]) => `<div class="cpca-evidence-row"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(value)}</span></div>`).join('');
+            renderCpcaWorkflow(result);
             renderCpcaReasons(result);
             renderEmaResult(result.ema || {});
             const warnings = Array.isArray(result.warnings) ? result.warnings : [];

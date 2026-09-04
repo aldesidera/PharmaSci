@@ -397,6 +397,33 @@ def _add_feature(features: List[Dict[str, Any]], feature: Optional[Dict[str, Any
     features.append(feature)
 
 
+def _attach_decision_trace(center: Dict[str, Any]) -> Dict[str, Any]:
+    """Add a Portuguese, auditable trace of the FDA Figure 1 decision flow."""
+    counts = list(center.get("alpha_hydrogen_counts") or [])
+    excluded = list(center.get("excluded_reasons") or [])
+    gates = []
+    if excluded:
+        gates.append({"id": "scope", "label": "Escopo do cPCA", "status": "review", "message": "A estrutura não atende ao escopo suportado: " + " ".join(excluded)})
+    else:
+        gates.append({"id": "alpha_hydrogen_presence", "label": "Hidrogênios alfa", "status": "passed" if any(counts) else "triggered", "message": "Hidrogênios alfa identificados: " + (" / ".join(map(str, counts)) if counts else "não informado") + "."})
+        if counts:
+            gates.append({"id": "alpha_hydrogen_activation", "label": "Ativação por hidrogênios alfa", "status": "passed" if any(count > 1 for count in counts) else "triggered", "message": "Pelo menos um lado possui mais de um hidrogênio alfa." if any(count > 1 for count in counts) else "Nenhum lado possui mais de um hidrogênio alfa."})
+        if center.get("has_tertiary_alpha") is not None:
+            gates.append({"id": "tertiary_alpha_carbon", "label": "Carbono alfa terciário", "status": "triggered" if center.get("has_tertiary_alpha") else "passed", "message": "Carbono alfa terciário identificado." if center.get("has_tertiary_alpha") else "Nenhum carbono alfa terciário identificado."})
+    category = center.get("potency_category")
+    score_calculated = center.get("potency_score") is not None
+    if category == 5 and not score_calculated and not excluded:
+        final_message = "Fluxo encerrado: Categoria 5 por gate prioritário; score geral não calculado."
+    elif score_calculated:
+        final_message = f"Pontuação de potência calculada ({center.get('potency_score')}) e convertida em Categoria {category}."
+    else:
+        final_message = center.get("message", "Revisão manual necessária.")
+    center["gates"] = gates
+    center["score_calculated"] = score_calculated
+    center["decision_trace"] = gates + [{"id": "final", "label": "Decisão", "status": "complete" if category is not None else "review", "message": final_message}]
+    return center
+
+
 def _analyze_center(mol: Chem.Mol, amine_n_idx: int, nitroso_n_idx: int) -> Dict[str, Any]:
     amine_n = mol.GetAtomWithIdx(amine_n_idx)
     nitroso_n = mol.GetAtomWithIdx(nitroso_n_idx)
@@ -420,7 +447,7 @@ def _analyze_center(mol: Chem.Mol, amine_n_idx: int, nitroso_n_idx: int) -> Dict
     if len(alpha_atoms) != 2:
         center["status"] = "manual_review"
         center["message"] = "O fluxo cPCA suportado requer dois carbonos alfa diretamente ligados."
-        return center
+        return _attach_decision_trace(center)
     if any(_has_direct_double_bond_to_heteroatom(atom) for atom in alpha_atoms):
         center["excluded_reasons"].append(
             "An alpha carbon is directly double-bonded to a heteroatom; the FDA cPCA scope excludes this case."
@@ -513,7 +540,7 @@ def _analyze_center(mol: Chem.Mol, amine_n_idx: int, nitroso_n_idx: int) -> Dict
     if center["excluded_reasons"]:
         center["status"] = "not_applicable"
         center["message"] = "A estrutura está fora do escopo FDA cPCA suportado."
-        return center
+        return _attach_decision_trace(center)
 
     if not any(alpha_hydrogens):
         center.update(
@@ -527,7 +554,7 @@ def _analyze_center(mol: Chem.Mol, amine_n_idx: int, nitroso_n_idx: int) -> Dict
                 "activating_feature_score": 0,
             }
         )
-        return center
+        return _attach_decision_trace(center)
 
     if not any(count > 1 for count in alpha_hydrogens):
         center.update(
@@ -541,7 +568,7 @@ def _analyze_center(mol: Chem.Mol, amine_n_idx: int, nitroso_n_idx: int) -> Dict
                 "activating_feature_score": 0,
             }
         )
-        return center
+        return _attach_decision_trace(center)
 
     if center["has_tertiary_alpha"]:
         center.update(
@@ -555,14 +582,14 @@ def _analyze_center(mol: Chem.Mol, amine_n_idx: int, nitroso_n_idx: int) -> Dict
                 "activating_feature_score": 0,
             }
         )
-        return center
+        return _attach_decision_trace(center)
 
     pair = tuple(alpha_hydrogens)
     alpha_score = ALPHA_HYDROGEN_SCORES.get(pair)
     if alpha_score is None:
         center["status"] = "manual_review"
         center["message"] = f"O par de hidrogênios alfa {pair} não está definido na Table A do Appendix A da FDA."
-        return center
+        return _attach_decision_trace(center)
 
     if pair == (0, 2):
         methylene = next(atom for atom in alpha_atoms if atom.GetTotalNumHs() == 2)
@@ -590,13 +617,14 @@ def _analyze_center(mol: Chem.Mol, amine_n_idx: int, nitroso_n_idx: int) -> Dict
             "potency_score": potency_score,
             "potency_category": category,
             "ai_ng_day": ai_ng_day,
-            "category_basis": "Potency Score mapeado pela Figura 1 da FDA.",
+            "category_basis": "Pontuação de potência mapeada pela Figura 1 da FDA.",
         }
     )
-    return center
+    return _attach_decision_trace(center)
 
 
 def evaluate_cpca(smiles: str, mdd_mg: Optional[float] = None) -> Dict[str, Any]:
+
     """Evaluate a nitrosamine SMILES with a conservative FDA cPCA screen.
 
     Args:
@@ -671,6 +699,9 @@ def evaluate_cpca(smiles: str, mdd_mg: Optional[float] = None) -> Dict[str, Any]
             "potency_score": selected.get("potency_score"),
             "ai_ng_day": selected["ai_ng_day"],
             "category_basis": selected.get("category_basis"),
+            "gates": selected.get("gates", []),
+            "decision_trace": selected.get("decision_trace", []),
+            "score_calculated": selected.get("score_calculated", selected.get("potency_score") is not None),
         }
     )
     if mdd_mg is not None:

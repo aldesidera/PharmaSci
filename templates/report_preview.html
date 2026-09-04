@@ -372,6 +372,15 @@
         body.nitro-report #report-cpca .nitro-detail-list li { grid-template-columns: minmax(6.5rem, .8fr) minmax(0, 1.2fr); gap: 5px; padding-bottom: 3px; font-size: 8px; line-height: 1.25; text-align: center; align-items: center; }
         body.nitro-report #report-cpca .nitro-detail-list strong { display: block; }
         body.nitro-report #report-cpca .nitro-source-line { margin-top: 4px; }
+        body.nitro-report #report-cpca .nitro-cpca-workflow { margin-top: 8px; padding: 8px; border: 1px solid #bfdbfe; border-radius: 8px; background: #f8fbff; break-inside: avoid; }
+        body.nitro-report #report-cpca .nitro-cpca-workflow h3 { margin: 0 0 5px; font-size: 10px; color: #1e3a8a; }
+        body.nitro-report #report-cpca .nitro-cpca-flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+        body.nitro-report #report-cpca .nitro-cpca-flow-step { min-height: 43px; padding: 5px; border: 1px solid #dbeafe; border-radius: 6px; background: #fff; }
+        body.nitro-report #report-cpca .nitro-cpca-flow-step.triggered { border-color: #fbbf24; background: #fffbeb; }
+        body.nitro-report #report-cpca .nitro-cpca-flow-step.review { border-color: #fca5a5; background: #fff1f2; }
+        body.nitro-report #report-cpca .nitro-cpca-flow-step strong { display: block; font-size: 7px; line-height: 1.2; color: #334155; }
+        body.nitro-report #report-cpca .nitro-cpca-flow-step span { display: block; margin-top: 3px; font-size: 6.5px; line-height: 1.25; color: #64748b; }
+        body.nitro-report #report-cpca .nitro-cpca-flow-note { margin: 5px 0 0; font-size: 7px; line-height: 1.3; color: #475569; }
         body.nitro-report #report-cpca .nitro-evidence-table th,
         body.nitro-report #report-cpca .nitro-evidence-table td { padding-top: 3px; padding-bottom: 3px; }
 
@@ -655,7 +664,7 @@
             {% if 'cpca' in nitro_modules %}
             {% set cpca_ema = cpca_result.get('ema') or {} %}
             <section class="module-section" id="report-cpca">
-                <h2>cPCA <small>Carcinogenic Potency Categorisation Approach (CPCA) · referência EMA</small></h2>
+                <h2>cPCA <small>Carcinogenic Potency Categorisation Approach (CPCA) · workflow regulatório em português</small></h2>
                 <div class="nitro-module-grid nitro-cpca-grid">
                     <div class="nitro-panel nitro-cpca-panel">
                         <h3>Resultado estrutural cPCA</h3>
@@ -682,6 +691,18 @@
                         <p class="nitro-source-line">{{ cpca_ema.get('reference_number', 'EMA Appendix 1') }} · revisão {{ cpca_ema.get('last_updated', '—') }}.</p>
                     </div>
                 </div>
+                {% set cpca_trace = cpca_result.get('decision_trace') or [] %}
+                {% if cpca_trace %}
+                <div class="nitro-cpca-workflow">
+                    <h3>Fluxo de decisão cPCA</h3>
+                    <div class="nitro-cpca-flow">
+                    {% for step in cpca_trace %}
+                        <div class="nitro-cpca-flow-step {{ step.get('status', 'complete') }}"><strong>{{ step.get('label', 'Etapa') }}</strong><span>{{ step.get('message', '—') }}</span></div>
+                    {% endfor %}
+                    </div>
+                    <p class="nitro-cpca-flow-note">O score geral é calculado somente quando os gates prioritários permitem. O AI EMA é consultado separadamente no Apêndice I por correspondência estrutural exata.</p>
+                </div>
+                {% endif %}
                 {% if cpca_result.get('centers') %}
                 <div class="nitro-panel" style="margin-top:8px;">
                     <h3>Motivos e evidências estruturais</h3>

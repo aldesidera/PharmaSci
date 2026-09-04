@@ -130,6 +130,23 @@ def test_cpca_includes_structure_svg_and_ema_appendix_match():
     assert result["ema"]["reference_number"] == "EMA/42261/2025 Rev.13"
 
 
+def test_cpca_exposes_portuguese_decision_trace_and_score_state():
+    result = evaluate_cpca("O=NN1CCCCC1")
+
+    assert result["score_calculated"] is True
+    assert result["decision_trace"]
+    assert any(step["label"] == "Hidrogênios alfa" for step in result["decision_trace"])
+    assert result["decision_trace"][-1]["label"] == "Decisão"
+
+
+def test_cpca_category_five_trace_explains_score_was_not_calculated():
+    result = evaluate_cpca("O=NN1C(C)CCCC1")
+
+    if result.get("potency_category") == 5 and result.get("potency_score") is None:
+        assert result["score_calculated"] is False
+        assert "score geral não calculado" in result["decision_trace"][-1]["message"]
+
+
 def test_cpca_reports_when_structure_is_not_in_ema_appendix():
     result = evaluate_cpca("O=NN1CCCCC1C")
 
