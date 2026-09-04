@@ -111,13 +111,45 @@ A componente estrutural recebe peso 0,60 e a físico-química, 0,40. A seleção
 
 == Projeção MDS e interpretação
 
-O MDS clássico recebe a matriz completa de distâncias globais entre as estruturas selecionadas: referência–teste, teste–teste e diagonal nula. A matriz é duplamente centralizada:
+*MDS* significa *Multidimensional Scaling*, ou *escalonamento multidimensional*. É um procedimento de redução geométrica que recebe uma matriz de distâncias entre moléculas e procura representar essas relações em um número menor de dimensões. No PharmaSci, a entrada é a matriz completa de distâncias globais entre as estruturas selecionadas: referência–teste, teste–teste e diagonal nula. O objetivo não é criar uma nova similaridade, mas encontrar coordenadas 2D nas quais as distâncias Euclidianas se aproximem, tanto quanto possível, das distâncias calculadas antes da projeção.
+
+A implementação utiliza MDS clássico. A matriz é duplamente centralizada:
 
 $ B = -1/2 J D^2 J $
 
-Os dois maiores autovalores não negativos e seus autovetores geram as coordenadas 2D. O MDS é uma projeção; seus eixos não são propriedades químicas e podem ser rotacionados, refletidos ou transladados sem modificar as distâncias.
+em que $D$ é a matriz de distâncias globais, $D^2$ representa seus elementos elevados ao quadrado e $J$ é a matriz de centralização. Os dois maiores autovalores não negativos e seus autovetores geram as coordenadas. Quando há apenas uma direção informativa, a segunda coordenada é preenchida com zero; quando não há direção positiva, os pontos são posicionados em uma configuração degenerada. Esse comportamento é preferível a inventar variação visual que não esteja presente na matriz.
 
-O *stress MDS* quantifica a discrepância entre as distâncias originais e as distâncias Euclidianas no plano. Valores menores indicam melhor preservação relativa das relações; o indicador não valida toxicidade, equivalência farmacológica ou relevância regulatória.
+=== O que significam os valores do gráfico
+
+Cada molécula recebe um ponto $(x_i, y_i)$. Esses números são *coordenadas geométricas da projeção*, não valores de MW, LogP, TPSA, similaridade ou atividade biológica. A distância entre dois pontos no gráfico é:
+
+$ d_(2D)(i,j) = sqrt((x_i - x_j)^2 + (y_i - y_j)^2) $
+
+O objetivo é que $d_(2D)$ seja próxima da distância global original $d_"global"$. Assim, pontos visualmente próximos tendem a ser moléculas próximas segundo a combinação de fingerprint e descritores; pontos afastados tendem a ser mais dissimilares nessa combinação. A explicação da proximidade deve, entretanto, ser conferida na tabela: uma distância global pode ser determinada principalmente pela estrutura, pelos descritores físico-químicos ou por ambas as componentes.
+
+#table(
+  columns: (1.25fr, 1.7fr, 1.45fr),
+  inset: 6pt,
+  align: (left, left, left),
+  fill: (x, y) => if y == 0 { rgb("dbeafe") } else { none },
+  [*Valor apresentado*], [*Interpretação correta*], [*O que não significa*],
+  [$x$ e $y$], [Posição relativa no mapa 2D], [Não são eixos químicos universais],
+  [Distância global], [Dissimilaridade multimodal usada para ordenar os vizinhos], [Não é probabilidade, toxicidade ou AI],
+  [Distância Euclidiana no gráfico], [Aproximação visual da distância global], [Não substitui o valor calculado na tabela],
+  [Stress MDS], [Erro relativo de preservação das distâncias na projeção], [Não é desempenho toxicológico ou validade regulatória],
+)
+
+Os eixos podem ser rotacionados, refletidos ou transladados sem alterar as relações entre moléculas. Por isso, não se deve comparar diretamente o valor de X ou Y entre dois relatórios diferentes. No *Mol.Sim Batch*, o MDS mantém a orientação resultante da decomposição da matriz; no *Nitro.RA*, o alvo é posteriormente transladado para $(0, 0)$ para facilitar a leitura. Essa translação muda a origem visual, mas não muda nenhuma distância entre os pontos.
+
+=== Como interpretar o stress
+
+O *stress MDS* é calculado no aplicativo como o erro relativo entre as distâncias originais e as distâncias Euclidianas observadas no plano:
+
+$ s_"stress" = sqrt((sum_(i<j)(d_"global"(i,j) - d_(2D)(i,j))^2) / (sum_(i<j)d_"global"(i,j)^2)) $
+
+O valor é adimensional. *Stress igual a zero* significa que a configuração 2D preservou exatamente as distâncias do conjunto exibido. Valores maiores indicam que mais informação foi perdida na redução para duas dimensões. Não existe um ponto de corte universal aplicável a cada conjunto; a interpretação deve considerar o número de moléculas, a dispersão das distâncias e o objetivo da análise. Para o PharmaSci, o stress é um diagnóstico de fidelidade geométrica da figura, não um critério para aprovar ou rejeitar uma molécula.
+
+A seleção dos vizinhos ocorre antes do MDS. Portanto, o stress exibido descreve a qualidade da projeção do conjunto efetivamente mostrado — a referência e até 10 candidatos — e não necessariamente de toda a biblioteca PubChem ou EMA. Essa distinção é importante quando o usuário interpreta o gráfico: a projeção é uma representação visual dos candidatos selecionados, enquanto o ranking deve ser consultado na tabela de distâncias.
 
 #figure(
   image("chemical-space-example.png", width: 100%),
