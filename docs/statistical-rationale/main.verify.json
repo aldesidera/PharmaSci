@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "pdf": "/home/ubuntu/PharmaSci/docs/statistical-rationale/main.pdf",
-  "profile": "image-bearing",
+  "pdf": "/home/ubuntu/PharmaSci_git/docs/statistical-rationale/main.pdf",
+  "profile": "text-document",
   "overall": "PASS",
   "checks": [
     {
@@ -21,15 +21,15 @@
     {
       "name": "page-count",
       "status": "PASS",
-      "message": "pages=6",
+      "message": "pages=10",
       "evidence": {
-        "pages": 6
+        "pages": 10
       }
     },
     {
       "name": "text-presence",
       "status": "PASS",
-      "message": "characters=10766",
+      "message": "characters=21896",
       "evidence": {}
     },
     {
@@ -44,12 +44,6 @@
       "name": "fonts",
       "status": "PASS",
       "message": "font_records=6",
-      "evidence": {}
-    },
-    {
-      "name": "images",
-      "status": "PASS",
-      "message": "images=2",
       "evidence": {}
     }
   ]
