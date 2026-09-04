@@ -546,6 +546,10 @@
         .batch-header-pills { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .batch-header-pill { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 999px; background: rgba(241, 245, 249, 0.92); color: #475569; font-size: 10px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; border: 1px solid rgba(226, 232, 240, 0.95); }
         .batch-header-pill strong { color: var(--text-900); }
+        .chemical-space-header-pills { display: inline-flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; flex: 0 0 auto; }
+        .chemical-space-stress { display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid #bfdbfe; border-radius: 12px; background: linear-gradient(180deg, rgba(239,246,255,0.98) 0%, rgba(224,242,254,0.94) 100%); color: #1e3a8a; font-size: 10px; font-weight: 800; letter-spacing: 0.04em; white-space: nowrap; box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 5px 14px rgba(37,99,235,0.08); }
+        .chemical-space-stress strong { color: #0f3b82; font-size: 12px; font-variant-numeric: tabular-nums; }
+        @media (max-width: 720px) { .chemical-space-header-pills { width: 100%; justify-content: flex-start; } .chemical-space-stress { font-size: 9px; } }
         .batch-table-wrap { overflow-x: auto; border-radius: 20px; border: 1px solid rgba(226, 232, 240, 0.95); background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.96) 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 12px 30px rgba(15, 23, 42, 0.04); }
         .batch-table { width: 100%; min-width: 930px; border-collapse: separate; border-spacing: 0; font-size: 11px; }
         .batch-table thead th { position: sticky; top: 0; z-index: 1; background: rgba(248, 250, 252, 0.98); color: #64748b; font-size: 9px; font-weight: 900; letter-spacing: 0.16em; text-transform: uppercase; white-space: nowrap; backdrop-filter: blur(8px); }
@@ -1343,7 +1347,10 @@
                                     <h3 class="section-title mb-1"><i class="fas fa-project-diagram text-sky-500"></i> Espaço químico 2D</h3>
                                     <p class="batch-card-caption">Disponível somente no modo Batch. Usa exclusivamente a referência e o lote fornecidos pelo usuário: 60% estrutural + 40% Dist.FQ normalizada, incluindo ligações rotacionáveis; não consulta PubChem nem EMA.</p>
                                 </div>
-                                <span id="chemical-space-method" class="batch-header-pill">MDS</span>
+                                <div class="chemical-space-header-pills">
+                                    <span id="chemical-space-method" class="batch-header-pill">MDS</span>
+                                    <span id="chemical-space-stress" class="chemical-space-stress hidden" aria-label="Stress da projeção MDS">Stress MDS <strong>—</strong></span>
+                                </div>
                             </div>
                             <div class="chemical-space-canvas-wrap"><canvas id="chemical-space-chart" aria-label="Gráfico 2D do espaço químico"></canvas></div>
                             <div class="chemical-space-legend" aria-label="Legenda do espaço químico">
@@ -1361,7 +1368,7 @@
                                     <h3 class="section-title mb-1"><i class="fas fa-flask text-sky-500"></i> Propriedades Físico-Químicas</h3>
                                     <p class="batch-card-caption">Painel comparativo compacto para triagem científica em lote.</p>
                                 </div>
-                                <div class="batch-header-pills" aria-hidden="true"></div>
+                                <div class="batch-header-pills"><span id="batch-properties-count" class="batch-header-pill" aria-live="polite"></span></div>
                             </div>
                             <div class="batch-table-wrap">
                                 <table class="batch-table">
@@ -1985,6 +1992,15 @@
             const width = 760;
             const height = 360;
             const padding = { left: 58, right: 24, top: 24, bottom: 46 };
+            const stressValue = Number(space?.search?.mds_stress);
+            const hasStress = Number.isFinite(stressValue);
+            const isEma = String(candidateColor).includes('d97706');
+            const stressFill = isEma ? '#fff7ed' : '#eff6ff';
+            const stressStroke = isEma ? '#fed7aa' : '#bfdbfe';
+            const stressText = isEma ? '#9a3412' : '#1e3a8a';
+            const stressBadge = hasStress
+                ? `<g aria-label="Stress MDS ${stressValue.toFixed(4)}"><rect x="${width - 178}" y="10" width="154" height="30" rx="10" fill="${stressFill}" stroke="${stressStroke}"/><text x="${width - 165}" y="29" font-size="11" font-weight="700" fill="${stressText}">Stress MDS</text><text x="${width - 38}" y="29" text-anchor="end" font-size="12" font-weight="800" fill="${stressText}">${stressValue.toFixed(4)}</text></g>`
+                : '';
             const xs = points.map(point => Number(point.x) || 0);
             const ys = points.map(point => Number(point.y) || 0);
             const minX = Math.min(...xs, 0);
@@ -2009,7 +2025,7 @@
                 const labelY = y - 8 < padding.top + 12 ? y + 16 : Math.min(height - padding.bottom - 4, y - 8);
                 return `<g><circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${radius}" fill="${fill}" stroke="white" stroke-width="2"><title>${escapeHtml(point.name || label)}</title></circle><text x="${labelX.toFixed(2)}" y="${labelY.toFixed(2)}" font-size="10" fill="var(--text-700)">${escapeHtml(label)}</text></g>`;
             }).join('');
-            chart.innerHTML = `<svg class="nitro-space-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(ariaLabel)}"><line x1="${padding.left}" y1="${zeroY.toFixed(2)}" x2="${width - padding.right}" y2="${zeroY.toFixed(2)}" stroke="var(--line-soft)"/><line x1="${zeroX.toFixed(2)}" y1="${padding.top}" x2="${zeroX.toFixed(2)}" y2="${height - padding.bottom}" stroke="var(--line-soft)"/><text x="${width / 2}" y="${height - 12}" text-anchor="middle" font-size="11" fill="var(--theme-muted-text)">Coordenada MDS 1</text><text x="16" y="${height / 2}" text-anchor="middle" font-size="11" fill="var(--theme-muted-text)" transform="rotate(-90 16 ${height / 2})">Coordenada MDS 2</text>${circles}</svg>`;
+            chart.innerHTML = `<svg class="nitro-space-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(ariaLabel)}"><line x1="${padding.left}" y1="${zeroY.toFixed(2)}" x2="${width - padding.right}" y2="${zeroY.toFixed(2)}" stroke="var(--line-soft)"/><line x1="${zeroX.toFixed(2)}" y1="${padding.top}" x2="${zeroX.toFixed(2)}" y2="${height - padding.bottom}" stroke="var(--line-soft)"/><text x="${width / 2}" y="${height - 12}" text-anchor="middle" font-size="11" fill="var(--theme-muted-text)">Coordenada MDS 1</text><text x="16" y="${height / 2}" text-anchor="middle" font-size="11" fill="var(--theme-muted-text)" transform="rotate(-90 16 ${height / 2})">Coordenada MDS 2</text>${stressBadge}${circles}</svg>`;
         }
 
         function renderNitroSpaceTable(elementId, space, sourceLabel) {
@@ -2514,6 +2530,17 @@
                 },
             });
             document.getElementById('chemical-space-method').textContent = safeText(space.method, 'MDS clássico');
+            const stressBadge = document.getElementById('chemical-space-stress');
+            const stressValue = Number(space.mds_stress);
+            if (stressBadge) {
+                const valueNode = stressBadge.querySelector('strong');
+                if (Number.isFinite(stressValue)) {
+                    if (valueNode) valueNode.textContent = stressValue.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+                    stressBadge.classList.remove('hidden');
+                } else {
+                    stressBadge.classList.add('hidden');
+                }
+            }
             const totalPoints = Number(space.total_valid_points) || points.length;
             const displayedNeighbors = Math.max(0, points.length - 1);
             const availableNeighbors = Math.max(0, totalPoints - 1);

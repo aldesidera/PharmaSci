@@ -29,6 +29,10 @@ def test_nitro_module_order_and_labels_are_stable():
     assert "<th>RotB</th>" in html
     assert 'id="nitro-space-chart"' in html
     assert 'id="nitro-ema-space-chart"' in html
+    assert 'id="chemical-space-stress"' in html
+    assert 'Stress MDS' in html
+    assert 'space?.search?.mds_stress' in html
+    assert 'stressBadge' in html
     assert "PubChem — vizinhança relativa" in html
     assert "EMA — Apêndice I · referência" in html
     assert "10 menores distâncias exibidas" in html
