@@ -31,6 +31,7 @@ from analysis import (compare, bulk_compare, build_chemical_space, get_mol, mol_
                       validate_fingerprint_type, validate_metric)
 from chemo_suite.apps.mol_sim.pairwise import run_pairwise_compare
 from chemo_suite.apps.mol_sim.batch import run_batch_compare
+from chemo_suite.apps.mol_fq import analyze_mol_fq
 from chemo_suite.apps.nitro_ra.cpca import calculate_cpca
 from chemo_suite.apps.nitro_ra.deep_pk import get_deep_pk_metabolism, submit_deep_pk_metabolism
 from chemo_suite.apps.nitro_ra.metabolism import evaluate_metabolism
@@ -118,7 +119,7 @@ def _is_api_route(path: str) -> bool:
     return path in API_JSON_ROUTES
 
 
-API_JSON_ROUTES = {"/compare", "/bulk-compare", "/report-preview", "/export-pdf", "/lookup-name", "/nitro-ra/cpca", "/nitro-ra/analyze", "/nitro-ra/deep-pk"}
+API_JSON_ROUTES = {"/compare", "/bulk-compare", "/report-preview", "/export-pdf", "/lookup-name", "/nitro-ra/cpca", "/nitro-ra/analyze", "/nitro-ra/deep-pk", "/mol-fq/analyze", "/mol-fq/report-preview"}
 
 
 @app.before_request
@@ -573,6 +574,52 @@ def api_bulk_compare():
     except Exception:
         logger.error("Erro não tratado em /bulk-compare: %s", traceback.format_exc())
         return _error_response(500, "Erro interno do servidor.", code="internal_error")
+
+
+@app.route('/mol-fq/analyze', methods=['POST'])
+def api_mol_fq_analyze():
+    try:
+        data, parse_error = _parse_json_object_payload()
+        if parse_error:
+            return parse_error
+        smiles, smiles_error = _validate_required_string(data, "smiles", MAX_SMILES_LENGTH)
+        if smiles_error:
+            return _error_response(400, smiles_error, "smiles")
+        selected = data.get("analyses")
+        if selected is not None and not isinstance(selected, list):
+            return _error_response(400, "analyses deve ser uma lista.", "analyses")
+        name = data.get("name") if isinstance(data.get("name"), str) else None
+        result = analyze_mol_fq(smiles, selected=selected, name=name)
+        if result.get("status") == "invalid_smiles":
+            return jsonify(result), 400
+        return jsonify(result), 200
+    except Exception:
+        logger.error("Erro não tratado em /mol-fq/analyze: %s", traceback.format_exc())
+        return _error_response(500, "Erro interno ao executar o Mol.FQ.", code="internal_error")
+
+
+@app.route('/mol-fq/report-preview', methods=['POST'])
+def mol_fq_report_preview():
+    try:
+        data, parse_error = _parse_json_object_payload()
+        if parse_error:
+            return parse_error
+        smiles, smiles_error = _validate_required_string(data, "smiles", MAX_SMILES_LENGTH)
+        if smiles_error:
+            return _error_response(400, smiles_error, "smiles")
+        selected = data.get("analyses")
+        if selected is not None and not isinstance(selected, list):
+            return _error_response(400, "analyses deve ser uma lista.", "analyses")
+        name = data.get("name") if isinstance(data.get("name"), str) else None
+        report = analyze_mol_fq(smiles, selected=selected, name=name)
+        if report.get("status") != "ok":
+            return jsonify(report), 400
+        report["generated_at"] = get_report_generated_at()
+        report["engine"] = "RDKit + Dimorphite-DL quando selecionado"
+        return render_template("mol_fq_report_preview.html", report=report, generated_at=report["generated_at"])
+    except Exception:
+        logger.error("Erro não tratado em /mol-fq/report-preview: %s", traceback.format_exc())
+        return _error_response(500, "Erro interno ao gerar o preview Mol.FQ.", code="internal_error")
 
 
 @app.route('/nitro-ra/cpca', methods=['POST'])

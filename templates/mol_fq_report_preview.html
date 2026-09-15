@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Relatório Mol.FQ</title>
+<style>
+@page { size: A4; margin: 18mm 16mm 18mm; }
+:root { --green:#166534; --green-dark:#14532d; --soft:#ecfdf5; --line:#d1fae5; --text:#17351f; --muted:#5b7062; }
+* { box-sizing:border-box; }
+body { margin:0; color:var(--text); font-family:Arial,Helvetica,sans-serif; font-size:10pt; background:#fff; }
+.header { display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:12px; border-bottom:2px solid var(--green); }
+.kicker { color:var(--green); font-size:8pt; font-weight:700; letter-spacing:.16em; text-transform:uppercase; }
+h1 { margin:5px 0 0; font-size:22pt; color:var(--green-dark); }
+h2 { margin:0 0 8px; color:var(--green-dark); font-size:13pt; }
+.meta { color:var(--muted); text-align:right; font-size:9pt; }
+.card { border:1px solid var(--line); border-radius:12px; padding:12px; margin-top:12px; break-inside:avoid; }
+.grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px 18px; }
+.item { display:flex; justify-content:space-between; gap:8px; border-bottom:1px solid #e5efe8; padding:6px 0; }
+.label { color:var(--muted); }
+.value { font-weight:700; text-align:right; overflow-wrap:anywhere; }
+.structure { display:flex; justify-content:center; align-items:center; min-height:190px; background:#fbfffc; border:1px solid #e2f2e7; border-radius:10px; }
+.structure svg { width:100%; max-width:450px; height:185px; }
+.note { margin-top:8px; color:var(--muted); font-size:8.5pt; line-height:1.4; }
+.warning { background:#fff8e7; border-color:#fde68a; color:#854d0e; }
+.footer { margin-top:18px; padding-top:8px; border-top:1px solid #dbe7de; color:var(--muted); font-size:8pt; display:flex; justify-content:space-between; }
+code { font-size:8.5pt; overflow-wrap:anywhere; }
+</style>
+</head>
+<body>
+<header class="header"><div><div class="kicker">PharmaSci · Mol.FQ</div><h1>Relatório físico-químico</h1></div><div class="meta">Gerado em {{ generated_at }}<br>Motor: {{ report.get('engine', 'RDKit + motores auxiliares') }}</div></header>
+<section class="card"><h2>{{ report.get('name') or 'Molécula analisada' }}</h2><div class="grid"><div class="item"><span class="label">SMILES original</span><span class="value"><code>{{ report.get('smiles','—') }}</code></span></div><div class="item"><span class="label">SMILES canônico</span><span class="value"><code>{{ report.get('canonical_smiles','—') }}</code></span></div></div></section>
+{% if report.get('structure_svg') %}<section class="card"><h2>Estrutura molecular</h2><div class="structure">{{ report.get('structure_svg')|safe }}</div></section>{% endif %}
+{% for key, section in report.get('sections', {}).items() %}
+<section class="card"><h2>{{ report.get('labels', {}).get(key, key) }}</h2>
+{% if key == 'summary' %}<div class="grid">{% for label, field in [('Massa molar', section.molar_mass),('Massa exata',section.exact_mass),('Fórmula',section.formula),('Carga formal',section.formal_charge)] %}<div class="item"><span class="label">{{ label }}</span><span class="value">{{ field.get('value','—') }} {{ field.get('unit','') }}</span></div>{% endfor %}</div>
+{% elif key == 'structural' %}<div class="grid">{% for label, value in section['values'].items() %}<div class="item"><span class="label">{{ label|replace('_',' ')|title }}</span><span class="value">{{ value }}</span></div>{% endfor %}</div>
+{% elif key == 'identifiers' %}<div class="grid">{% for label, value in section['values'].items() if value %}<div class="item"><span class="label">{{ label|replace('_',' ')|title }}</span><span class="value"><code>{{ value }}</code></span></div>{% endfor %}</div>
+{% else %}<div class="grid">{% for label, value in section.get('values', section).items() if value is not none and label not in ['enumerated_states'] %}<div class="item"><span class="label">{{ label|replace('_',' ')|title }}</span><span class="value">{{ value }}</span></div>{% endfor %}</div>{% if section.get('method') %}<p class="note">Método/status: {{ section.get('method') }} · {{ section.get('status','') }}</p>{% endif %}{% endif %}
+</section>
+{% endfor %}
+{% if report.get('warnings') %}<section class="card warning"><h2>Observações metodológicas</h2><ul>{% for warning in report.get('warnings') %}<li>{{ warning }}</li>{% endfor %}</ul></section>{% endif %}
+<footer class="footer"><span>PharmaSci · Mol.FQ</span><span>Relatório exploratório — confirmar método e versão antes de uso regulatório</span></footer>
+</body></html>

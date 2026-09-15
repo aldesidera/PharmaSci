@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Mol.Sim • Nitro.RA — Análise Molecular Avançada</title>
+    <title>Mol.SM • Nitro.RA • Mol.FQ — Análise Molecular Avançada</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://3dmol.org/build/3Dmol-min.js"></script>
@@ -62,6 +62,57 @@
             --theme-muted-text: #64748b;
             --theme-focus-ring: rgba(37, 99, 235, 0.24);
         }
+        body.theme-fq {
+            --theme-accent: #166534;
+            --theme-accent-strong: #14532d;
+            --theme-accent-secondary: #4d7c0f;
+            --theme-accent-soft: #ecfdf5;
+            --theme-panel-top: rgba(240, 253, 244, 0.96);
+            --theme-panel-bottom: rgba(220, 252, 231, 0.92);
+            --theme-panel-border: rgba(34, 197, 94, 0.34);
+            --theme-panel-glow: rgba(22, 101, 52, 0.16);
+            --theme-control-bg: rgba(248, 255, 250, 0.96);
+            --theme-control-border: rgba(34, 197, 94, 0.30);
+            --theme-control-text: #17351f;
+            --theme-muted-text: #56715f;
+            --theme-focus-ring: rgba(34, 197, 94, 0.22);
+            --theme-button-text: #ffffff;
+        }
+        .fq-analysis-checks {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .fq-analysis-checks label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px;
+            border: 1px solid var(--theme-control-border);
+            border-radius: 14px;
+            background: rgba(255,255,255,.68);
+            cursor: pointer;
+            transition: border-color .18s ease, background .18s ease, transform .18s ease;
+        }
+        .fq-analysis-checks label:hover { border-color: var(--theme-accent); background: var(--theme-accent-soft); transform: translateY(-1px); }
+        .fq-analysis-checks input { margin-top: 3px; accent-color: var(--theme-accent); }
+        .fq-analysis-checks strong { display: block; color: var(--theme-control-text); font-size: 12px; }
+        .fq-analysis-checks small { display: block; margin-top: 3px; color: var(--theme-muted-text); font-size: 10px; line-height: 1.35; }
+        body.theme-fq #btn-fq-analyze { background: var(--theme-accent); box-shadow: 0 12px 24px rgba(22,101,52,.24); }
+        body.theme-fq #btn-fq-analyze:hover { background: var(--theme-accent-strong); }
+        body.theme-fq .module-chip.active { background: var(--theme-accent); border-color: var(--theme-accent); color: #fff; }
+        body.theme-fq .brand-visual.is-fq .brand-logo-image--molsim { filter: hue-rotate(70deg) saturate(.72) brightness(.92) drop-shadow(0 0 34px rgba(34,197,94,.40)); }
+        body.theme-fq .theme-accent-text { color: var(--theme-accent); }
+        .fq-result-card { border: 1px solid rgba(34,197,94,.22); border-radius: 18px; background: rgba(255,255,255,.68); padding: 18px; }
+        .fq-result-card h3 { margin: 0 0 12px; color: #14532d; font-size: 15px; font-weight: 800; }
+        .fq-result-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 18px; }
+        .fq-result-grid div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid rgba(148,163,184,.18); padding: 7px 0; font-size: 12px; }
+        .fq-result-grid span { color: #64748b; }
+        .fq-result-grid strong { color: #17351f; text-align: right; overflow-wrap: anywhere; }
+        .fq-structure-preview { min-height: 180px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(34,197,94,.18); border-radius: 16px; background: rgba(255,255,255,.8); }
+        .fq-structure-preview svg { width: min(100%, 420px); height: 180px; }
+        @media (max-width: 700px) { .fq-analysis-checks, .fq-result-grid { grid-template-columns: 1fr; } }
+
         body.theme-nitro {
             --theme-accent: #f97316;
             --theme-accent-strong: #ea580c;
@@ -258,7 +309,8 @@
             margin: 0;
         }
         .brand-visual.is-molsim .brand-logo-image--molsim,
-        .brand-visual.is-nitro .brand-logo-image--nitro {
+        .brand-visual.is-nitro .brand-logo-image--nitro,
+        .brand-visual.is-fq .brand-logo-image--molsim {
             opacity: 1;
             transform: translate(-50%, -50%);
             filter: drop-shadow(0 0 34px rgba(40, 198, 255, 0.42));
@@ -1001,15 +1053,18 @@
                     <div class="brand-bar">
                         <div class="brand-visual is-molsim">
                             <div class="brand-collage">
-                                <img class="brand-logo-image brand-logo-image--molsim" src="/static/Mol.Sim.jpg" alt="Mol.Sim" />
+                                <img class="brand-logo-image brand-logo-image--molsim" src="/static/Mol.Sim.jpg" alt="Mol.SM" />
                                 <img class="brand-logo-image brand-logo-image--nitro" src="/static/Nitro.RA.jpg" alt="Nitro.RA" />
                             </div>
                             <div class="module-switcher" aria-label="Switch de módulos">
-                                <button type="button" class="module-chip active" data-app="molsim" data-tooltip="Ativar módulo Mol.Sim">
-                                    <i class="fas fa-arrows-left-right"></i> Mol.Sim
+                                <button type="button" class="module-chip active" data-app="molsim" data-tooltip="Ativar módulo Mol.SM">
+                                    <i class="fas fa-arrows-left-right"></i> Mol.SM
                                 </button>
                                 <button type="button" class="module-chip" data-app="nitro" data-tooltip="Ativar módulo Nitro.RA">
                                     <i class="fas fa-flask-vial"></i> Nitro.RA
+                                </button>
+                                <button type="button" class="module-chip" data-app="fq" data-tooltip="Ativar módulo Mol.FQ">
+                                    <i class="fas fa-leaf"></i> Mol.FQ
                                 </button>
                             </div>
                         </div>
@@ -1021,10 +1076,10 @@
                     <div id="molsim-controls" class="card-glass p-8 shadow-sm h-auto">
                         <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-8">
                             <div class="module-panel-heading molsim-panel-heading">
-                                <span class="module-kicker">Mol.Sim</span>
+                                <span class="module-kicker">Mol.SM</span>
                                 <h2>Análise de similaridade estrutural</h2>
                             </div>
-                            <div class="molsim-mode-switch" role="tablist" aria-label="Modo de análise Mol.Sim">
+                            <div class="molsim-mode-switch" role="tablist" aria-label="Modo de análise Mol.SM">
                                 <button type="button" data-mode="pair" data-tooltip="Modo de comparação individual entre duas moléculas" class="mode-tab active px-4 py-2 rounded-xl text-xs font-black uppercase tracking-[0.18em] text-sky-700 bg-white shadow-sm">Par</button>
                                 <button type="button" data-mode="batch" data-tooltip="Modo de comparação em lote entre várias moléculas" class="mode-tab px-4 py-2 rounded-xl text-xs font-black uppercase tracking-[0.18em] text-slate-500">Batch</button>
                             </div>
@@ -1145,6 +1200,41 @@
                             <i class="fas fa-flask-vial"></i> EXECUTAR ANÁLISES
                         </button>
                     </div>
+                    <div id="mol-fq-controls" class="card-glass p-8 shadow-sm h-auto hidden" style="display: none;">
+                        <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-8">
+                            <div class="module-panel-heading">
+                                <span class="module-kicker">Mol.FQ</span>
+                                <h2>Propriedades físico-químicas</h2>
+                            </div>
+                            <span class="module-status-pill">8 análises</span>
+                        </div>
+                        <div class="space-y-6">
+                            <div>
+                                <label for="fq-name" class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Nome da molécula (opcional)</label>
+                                <input id="fq-name" type="text" maxlength="160" placeholder="Nome para o relatório" class="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-sm outline-none transition-all">
+                            </div>
+                            <div>
+                                <label for="fq-smiles" class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">SMILES da molécula</label>
+                                <textarea id="fq-smiles" rows="3" placeholder="Ex.: CNCCC1=CC=CC=N1" class="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl font-mono text-sm outline-none transition-all resize-none"></textarea>
+                            </div>
+                            <div>
+                                <p class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Itens do relatório Chemicalize</p>
+                                <div class="fq-analysis-checks">
+                                    <label><input type="checkbox" data-fq-analysis="summary" checked><span><strong>Resumo molecular</strong><small>massa, fórmula e carga</small></span></label>
+                                    <label><input type="checkbox" data-fq-analysis="structural" checked><span><strong>Descritores estruturais</strong><small>HBD, HBA, TPSA, FSP3 e anéis</small></span></label>
+                                    <label><input type="checkbox" data-fq-analysis="identifiers" checked><span><strong>Identificadores</strong><small>SMILES, InChI e composição</small></span></label>
+                                    <label><input type="checkbox" data-fq-analysis="ionization"><span><strong>Ionização e pH</strong><small>pKa e microespécies</small></span></label>
+                                    <label><input type="checkbox" data-fq-analysis="lipophilicity"><span><strong>Lipofilicidade</strong><small>LogP e LogD versus pH</small></span></label>
+                                    <label><input type="checkbox" data-fq-analysis="solubility"><span><strong>Solubilidade</strong><small>intrínseca e dependente de pH</small></span></label>
+                                    <label><input type="checkbox" data-fq-analysis="geometry"><span><strong>Geometria</strong><small>volume e superfícies</small></span></label>
+                                    <label><input type="checkbox" data-fq-analysis="nmr"><span><strong>H-NMR</strong><small>predição espectroscópica</small></span></label>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="btn-fq-analyze" type="button" onclick="calculateMolFQ()" class="mt-8 w-full text-white font-black py-5 rounded-2xl text-lg flex items-center justify-center gap-3 transition-all shadow-lg">
+                            <i class="fas fa-leaf"></i> EXECUTAR MOL.FQ
+                        </button>
+                    </div>
                 </div>
 
                 <div class="visual-column">
@@ -1155,6 +1245,17 @@
                             </div>
                             <p class="text-xl font-black text-slate-700 tracking-[0.08em] uppercase">Aguardando análise</p>
                             <p class="text-sm text-slate-500 mt-2 text-center max-w-md">Insira o SMILES à esquerda e pressione executar análises para gerar o resultado cPCA ou consultar os módulos selecionados.</p>
+                        </div>
+                    </div>
+
+                    <div id="mol-fq-results" class="hidden fq-results">
+                        <div class="card-glass p-8">
+                            <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                                <div><p class="text-[10px] font-black uppercase tracking-[0.2em] theme-accent-text">Mol.FQ</p><h2 class="text-3xl font-black text-slate-800">Propriedades físico-químicas</h2></div>
+                                <span id="fq-status-badge" class="cpca-status">—</span>
+                            </div>
+                            <div id="fq-result-message" class="text-sm leading-6 text-slate-600 mb-6">Selecione os itens à esquerda e execute a análise.</div>
+                            <div id="fq-result-content" class="space-y-6"></div>
                         </div>
                     </div>
 
@@ -1654,6 +1755,89 @@
             }
         }
 
+        function fqDisplay(value) {
+            if (value === null || value === undefined || value === '') return '—';
+            if (typeof value === 'number') return Number.isInteger(value) ? String(value) : String(value).replace('.', ',');
+            return escapeHtml(String(value));
+        }
+
+        function renderMolFQSection(key, section, labels) {
+            if (!section) return '';
+            const title = labels?.[key] || key;
+            if (key === 'summary') {
+                const values = section;
+                return `<section class="fq-result-card"><h3>${escapeHtml(title)}</h3><div class="fq-result-grid">
+                    <div><span>Massa molar</span><strong>${fqDisplay(values.molar_mass?.value)} ${fqDisplay(values.molar_mass?.unit)}</strong></div>
+                    <div><span>Massa exata</span><strong>${fqDisplay(values.exact_mass?.value)} ${fqDisplay(values.exact_mass?.unit)}</strong></div>
+                    <div><span>Fórmula</span><strong>${fqDisplay(values.formula?.value)}</strong></div>
+                    <div><span>Carga formal</span><strong>${fqDisplay(values.formal_charge?.value)}</strong></div>
+                </div></section>`;
+            }
+            if (key === 'identifiers') {
+                const v = section.values || {};
+                const c = section.composition || {};
+                return `<section class="fq-result-card"><h3>${escapeHtml(title)}</h3><div class="fq-result-grid">
+                    <div><span>SMILES canônico</span><strong>${fqDisplay(v.canonical_smiles)}</strong></div>
+                    <div><span>Fórmula</span><strong>${fqDisplay(c.formula)}</strong></div>
+                    <div><span>InChIKey</span><strong>${fqDisplay(v.inchikey)}</strong></div>
+                    <div><span>Elementos</span><strong>${fqDisplay(JSON.stringify(c.element_counts || {}))}</strong></div>
+                </div></section>`;
+            }
+            if (key === 'structural') {
+                const v = section.values || {};
+                const pairs = [['Átomos totais (com H)', v.atom_count_total_explicit_h], ['Átomos pesados', v.heavy_atom_count], ['Ligações rotacionáveis', v.rotatable_bonds], ['Anéis', v.ring_count], ['Anéis aromáticos', v.aromatic_ring_count], ['Anéis heterocíclicos', v.hetero_ring_count], ['FSP3', v.fraction_csp3], ['HBD', v.hbd], ['HBA', v.hba], ['TPSA', `${fqDisplay(v.tpsa)} Å²`], ['Refratividade molar', `${fqDisplay(v.molar_refractivity)} cm³/mol`]];
+                return `<section class="fq-result-card"><h3>${escapeHtml(title)}</h3><div class="fq-result-grid">${pairs.map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${fqDisplay(value)}</strong></div>`).join('')}</div></section>`;
+            }
+            if (key === 'ionization') {
+                const v = section.values || {};
+                return `<section class="fq-result-card"><h3>${escapeHtml(title)}</h3><div class="fq-result-grid"><div><span>pKa ácido</span><strong>${fqDisplay(v.pka_acidic)}</strong></div><div><span>pKa básico</span><strong>${fqDisplay(v.pka_basic)}</strong></div></div><p class="text-xs text-slate-500 mt-3">Estado: estimativa heurística interna · ${escapeHtml(section.method || '')}</p></section>`;
+            }
+            if (key === 'lipophilicity') {
+                const rows = (section.logd_vs_ph || []).map(item => `<div><span>pH ${fqDisplay(item.pH)}</span><strong>LogD ${fqDisplay(item.LogD)}</strong></div>`).join('');
+                return `<section class="fq-result-card"><h3>${escapeHtml(title)}</h3><div class="fq-result-grid"><div><span>LogP</span><strong>${fqDisplay(section.logp?.value)}</strong></div>${rows}</div><p class="text-xs text-slate-500 mt-3">${escapeHtml(section.method || '')}</p></section>`;
+            }
+            if (key === 'solubility') {
+                return `<section class="fq-result-card"><h3>${escapeHtml(title)}</h3><div class="fq-result-grid"><div><span>Solubilidade intrínseca</span><strong>Não disponível</strong></div><div><span>Solubilidade em pH 7</span><strong>${fqDisplay(section.ph7?.value)} ${fqDisplay(section.ph7?.unit)}</strong></div></div><p class="text-xs text-slate-500 mt-3">${escapeHtml(section.method || '')}</p></section>`;
+            }
+            if (key === 'geometry' || key === 'nmr') {
+                return `<section class="fq-result-card"><h3>${escapeHtml(title)}</h3><div class="rounded-xl border border-dashed border-slate-300 bg-white/60 p-4 text-sm text-slate-600">${escapeHtml(section.message || 'Esta seção está parcialmente implementada nesta versão.')}</div></section>`;
+            }
+            return '';
+        }
+
+        function renderMolFQResult(payload) {
+            const panel = document.getElementById('mol-fq-results');
+            const content = document.getElementById('fq-result-content');
+            const badge = document.getElementById('fq-status-badge');
+            const message = document.getElementById('fq-result-message');
+            if (!panel || !content || !badge || !message) return;
+            panel.classList.remove('hidden');
+            panel.style.display = '';
+            badge.textContent = payload.status === 'ok' ? 'Concluído' : 'Erro';
+            message.textContent = payload.status === 'ok' ? `Análise preparada para ${payload.name || payload.canonical_smiles || payload.smiles}.` : (payload.error || 'Não foi possível processar a molécula.');
+            if (payload.status !== 'ok') { content.innerHTML = ''; return; }
+            const structure = payload.structure_svg ? `<section class="fq-result-card"><h3>Estrutura molecular</h3><div class="fq-structure-preview">${payload.structure_svg}</div><p class="text-xs text-slate-500 mt-3">SMILES: <code>${escapeHtml(payload.canonical_smiles || payload.smiles)}</code></p></section>` : '';
+            const sections = Object.entries(payload.sections || {}).map(([key, section]) => renderMolFQSection(key, section, payload.labels)).join('');
+            const warnings = (payload.warnings || []).length ? `<section class="rounded-2xl border border-amber-200 bg-amber-50/70 p-5 text-sm leading-6 text-amber-800"><strong>Observações metodológicas</strong><ul class="list-disc pl-5 mt-2">${payload.warnings.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></section>` : '';
+            content.innerHTML = structure + sections + warnings;
+        }
+
+        async function calculateMolFQ() {
+            const smiles = document.getElementById('fq-smiles')?.value?.trim();
+            const name = document.getElementById('fq-name')?.value?.trim() || null;
+            const analyses = Array.from(document.querySelectorAll('[data-fq-analysis]:checked')).map(item => item.dataset.fqAnalysis);
+            if (!smiles) { showToast('Informe um SMILES para o Mol.FQ.', 'error'); return; }
+            const button = document.getElementById('btn-fq-analyze');
+            if (button) { button.disabled = true; button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CALCULANDO'; }
+            try {
+                const response = await fetchWithTimeout('/mol-fq/analyze', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({smiles, name, analyses}) }, 30000);
+                const payload = await response.json();
+                renderMolFQResult(payload);
+                if (!response.ok) showToast(payload.error || 'Falha ao calcular o Mol.FQ.', 'error');
+            } catch (error) { showToast('Não foi possível executar o Mol.FQ.', 'error'); }
+            finally { if (button) { button.disabled = false; button.innerHTML = '<i class="fas fa-leaf"></i> EXECUTAR MOL.FQ'; } }
+        }
+
         document.querySelectorAll('.mode-tab').forEach((tab) => {
             tab.addEventListener('click', () => setComparisonMode(tab.dataset.mode));
         });
@@ -1667,29 +1851,39 @@
         function applyModuleTheme(appName) {
             document.body.classList.toggle('theme-molsim', appName === 'molsim');
             document.body.classList.toggle('theme-nitro', appName === 'nitro');
+            document.body.classList.toggle('theme-fq', appName === 'fq');
         }
 
         function activateModule(appName) {
-            const activeApp = appName === 'nitro' ? 'nitro' : 'molsim';
+            const activeApp = ['nitro', 'fq'].includes(appName) ? appName : 'molsim';
             currentApp = activeApp;
             document.querySelectorAll('.module-chip').forEach(item => item.classList.toggle('active', item.dataset.app === activeApp));
             const brandVisual = document.querySelector('.brand-visual');
             if (brandVisual) {
                 brandVisual.classList.toggle('is-molsim', activeApp === 'molsim');
                 brandVisual.classList.toggle('is-nitro', activeApp === 'nitro');
+                brandVisual.classList.toggle('is-fq', activeApp === 'fq');
             }
             applyModuleTheme(activeApp);
             const molsimControls = document.getElementById('molsim-controls');
             const nitroModulesCard = document.getElementById('nitro-modules-card');
+            const fqControls = document.getElementById('mol-fq-controls');
+            const fqResults = document.getElementById('mol-fq-results');
             molsimControls?.classList.toggle('hidden', activeApp !== 'molsim');
             nitroModulesCard?.classList.toggle('hidden', activeApp !== 'nitro');
+            fqControls?.classList.toggle('hidden', activeApp !== 'fq');
+            fqResults?.classList.toggle('hidden', activeApp !== 'fq');
             // A troca também usa display inline para funcionar mesmo se o Tailwind CDN não carregar.
             if (molsimControls) molsimControls.style.display = activeApp === 'molsim' ? '' : 'none';
             if (nitroModulesCard) nitroModulesCard.style.display = activeApp === 'nitro' ? '' : 'none';
+            if (fqControls) fqControls.style.display = activeApp === 'fq' ? '' : 'none';
+            if (fqResults) fqResults.style.display = activeApp === 'fq' ? '' : 'none';
             document.getElementById('result-content')?.classList.add('hidden');
             const nitroResultsPanel = document.getElementById('nitro-module-results');
             nitroResultsPanel?.classList.add('hidden');
+            fqResults?.classList.add('hidden');
             if (nitroResultsPanel) nitroResultsPanel.style.display = 'none';
+            if (fqResults) fqResults.style.display = 'none';
             document.getElementById('batch-result-panel')?.classList.add('hidden');
             document.getElementById('batch-properties-panel')?.classList.add('hidden');
             document.getElementById('batch-chemical-space-panel')?.classList.add('hidden');
@@ -1713,7 +1907,7 @@
             chip.addEventListener('click', () => {
                 const appName = chip.dataset.app || 'molsim';
                 activateModule(appName);
-                showToast(appName === 'nitro' ? 'Nitro.RA ativado' : 'Mol.Sim ativado', 'success');
+                showToast(appName === 'nitro' ? 'Nitro.RA ativado' : (appName === 'fq' ? 'Mol.FQ ativado' : 'Mol.SM ativado'), 'success');
             });
         });
 
