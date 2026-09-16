@@ -17,6 +17,7 @@ import re
 import numpy as np
 from PIL import Image, ImageChops, ImageDraw, ImageFont
 
+from chemo_suite.core.molecule_standardization import standardize_molecule
 from chemo_suite.core.chemical_space import (
     DESCRIPTOR_KEYS,
     calculate_multimodal_space,
@@ -106,12 +107,14 @@ def get_mol(smiles: str) -> Tuple[Optional[Mol], Optional[str]]:
         return None, "SMILES inválido – valor vazio."
 
     try:
-        mol = Chem.MolFromSmiles(normalized)
+        mol, identity, standardization_error = standardize_molecule(normalized)
         if mol is None:
-            return None, "SMILES inválido – não foi possível parsear."
+            return None, f"SMILES inválido – {standardization_error or 'não foi possível parsear.'}"
 
-        Chem.SanitizeMol(mol)
         AllChem.Compute2DCoords(mol)
+        for key, value in identity.items():
+            if value is not None:
+                mol.SetProp(f"_pharmasci_{key}", str(value))
         logger.info(f"Molécula carregada com sucesso: {normalized[:50]}")
         return mol, None
     except Exception as e:

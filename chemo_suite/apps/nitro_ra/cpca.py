@@ -14,6 +14,8 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from rdkit import Chem
+from chemo_suite.core.molecule_standardization import standardize_molecule
+from .cpca_flowchart import render_cpca_flowchart
 from rdkit.Chem.Draw import rdMolDraw2D
 
 
@@ -124,6 +126,7 @@ def _add_valid_structure_fields(result: Dict[str, Any], mol: Chem.Mol, mdd_mg: O
     result["canonical_smiles"] = _canonical_smiles(mol)
     result["structure_svg"] = _structure_svg(mol)
     result["ema"] = _ema_lookup(mol, mdd_mg=mdd_mg)
+    result["flowchart_svg"] = render_cpca_flowchart(result)
     return result
 
 
@@ -643,11 +646,11 @@ def evaluate_cpca(smiles: str, mdd_mg: Optional[float] = None) -> Dict[str, Any]
 
     normalized_smiles = smiles.strip()
     try:
-        mol = Chem.MolFromSmiles(normalized_smiles)
+        mol, identity, standardization_error = standardize_molecule(normalized_smiles)
     except Exception:
-        mol = None
+        mol, identity, standardization_error = None, {}, "Falha na padronização molecular."
     if mol is None:
-        return _base_result(normalized_smiles, "invalid_smiles", "O SMILES não pôde ser interpretado pelo RDKit.")
+        return _base_result(normalized_smiles, "invalid_smiles", standardization_error or "O SMILES não pôde ser interpretado pelo RDKit.")
 
     centers = _find_n_nitroso_centers(mol)
     if not centers:
@@ -656,7 +659,8 @@ def evaluate_cpca(smiles: str, mdd_mg: Optional[float] = None) -> Dict[str, Any]
             "not_nitrosamine",
             "Nenhum centro N-nitroso suportado foi detectado no SMILES.",
         )
-        result.update({"center_count": 0, "centers": []})
+        result.update({"center_count": 0, "centers": [], "standardization": identity})
+        result["standardization"] = identity
         return _add_valid_structure_fields(result, mol, mdd_mg)
 
     if len(centers) > 2:
@@ -665,7 +669,8 @@ def evaluate_cpca(smiles: str, mdd_mg: Optional[float] = None) -> Dict[str, Any]
             "manual_review",
             "Foram detectados mais de dois grupos N-nitroso; a Figura 1 da FDA orienta buscar orientação adicional.",
         )
-        result.update({"center_count": len(centers), "centers": []})
+        result.update({"center_count": len(centers), "centers": [], "standardization": identity})
+        result["standardization"] = identity
         return _add_valid_structure_fields(result, mol, mdd_mg)
 
     center_results = [_analyze_center(mol, *center) for center in centers]
@@ -677,6 +682,7 @@ def evaluate_cpca(smiles: str, mdd_mg: Optional[float] = None) -> Dict[str, Any]
             unsupported[0].get("message", "Pelo menos um centro nitroso requer revisão manual."),
         )
         result.update({"center_count": len(center_results), "centers": center_results})
+        result["standardization"] = identity
         return _add_valid_structure_fields(result, mol, mdd_mg)
 
     selected = max(
@@ -708,6 +714,7 @@ def evaluate_cpca(smiles: str, mdd_mg: Optional[float] = None) -> Dict[str, Any]
         result["mdd_mg"] = float(mdd_mg)
         result["ppm_limit"] = round(float(selected["ai_ng_day"]) / float(mdd_mg), 6)
         result["ppm_formula"] = "AI (ng/dia) / dose diária máxima (mg)"
+    result["standardization"] = identity
     return _add_valid_structure_fields(result, mol, mdd_mg)
 
 

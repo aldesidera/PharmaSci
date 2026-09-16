@@ -6,7 +6,11 @@ fossem equivalentes a motores proprietários de previsão físico-química.
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, Optional
+
+from chemo_suite.core.conformer import generate_3d_conformer
+from chemo_suite.core.molecule_standardization import molecule_identity
 
 from rdkit import Chem
 from rdkit.Chem import Crippen, Descriptors, Lipinski, rdMolDescriptors
@@ -17,32 +21,33 @@ except ImportError:  # pragma: no cover - recurso opcional de ambiente
     protonate_smiles = None
 
 from analysis import calc_logd_vs_ph, get_mol, get_properties, mol_to_svg
+from rmn_suite.nmrshiftdb import RmnProviderError, predict_from_smiles
+from chemo_suite.apps.mol_fq.solubility import build_solubility
 
 ANALYSIS_KEYS = (
     "summary",
     "structural",
-    "identifiers",
     "ionization",
     "lipophilicity",
     "solubility",
-    "geometry",
     "nmr",
+    "geometry_3d",
 )
+DEFAULT_ANALYSIS_KEYS = ANALYSIS_KEYS[:-1]
 
 LABELS = {
     "summary": "Resumo molecular",
     "structural": "Descritores estruturais",
-    "identifiers": "Identificadores e composição",
     "ionization": "Ionização e pH",
     "lipophilicity": "Lipofilicidade",
     "solubility": "Solubilidade",
-    "geometry": "Geometria molecular",
     "nmr": "H-NMR predito",
+    "geometry_3d": "Geometria 3D enriquecida",
 }
 
 
 def _selected_set(selected: Optional[Iterable[str]]) -> set[str]:
-    values = {str(item) for item in (selected or ANALYSIS_KEYS)}
+    values = {str(item) for item in (selected or DEFAULT_ANALYSIS_KEYS)}
     return values.intersection(ANALYSIS_KEYS) or {"summary", "structural"}
 
 
@@ -88,6 +93,22 @@ def _status(value: Any, method: str, unit: Optional[str] = None) -> Dict[str, An
     return {"value": value, "unit": unit, "method": method, "status": "calculated" if value is not None else "not_available"}
 
 
+def _spectrum_payload(prediction: Any) -> Dict[str, Any]:
+    peaks = list(getattr(prediction, "peaks", []) or [])
+    if not peaks:
+        return {"min_ppm": None, "max_ppm": None, "peaks": [], "mode": "stick"}
+    ppm_values = [float(peak.ppm) for peak in peaks]
+    min_ppm, max_ppm = min(ppm_values), max(ppm_values)
+    span = max(max_ppm - min_ppm, 1.0)
+    raw_intensities = [abs(float(peak.intensity)) if peak.intensity is not None else 1.0 for peak in peaks]
+    maximum = max(raw_intensities) or 1.0
+    rendered = []
+    for peak, raw in zip(peaks, raw_intensities):
+        x_pct = 50.0 if max_ppm == min_ppm else (max_ppm - float(peak.ppm)) / span * 100.0
+        rendered.append({"ppm": float(peak.ppm), "height": round(max(0.08, raw / maximum), 4), "x_pct": round(x_pct, 4)})
+    return {"min_ppm": min_ppm, "max_ppm": max_ppm, "peaks": rendered, "mode": "stick"}
+
+
 def analyze_mol_fq(smiles: str, selected: Optional[Iterable[str]] = None, name: Optional[str] = None) -> Dict[str, Any]:
     selected_keys = _selected_set(selected)
     mol, error = get_mol(smiles)
@@ -100,9 +121,11 @@ def analyze_mol_fq(smiles: str, selected: Optional[Iterable[str]] = None, name: 
             "error": error or "SMILES inválido.",
         }
 
-    canonical = Chem.MolToSmiles(mol, canonical=True)
-    composition = _composition(mol)
+    identity = molecule_identity(mol, smiles)
+    canonical = identity["canonical_smiles"]
+    properties = get_properties(mol) or {}
     structure = _structural(mol)
+    composition = _composition(mol)
     properties = get_properties(mol) or {}
     result: Dict[str, Any] = {
         "module": "mol_fq",
@@ -115,7 +138,21 @@ def analyze_mol_fq(smiles: str, selected: Optional[Iterable[str]] = None, name: 
         "structure_svg": mol_to_svg(mol, size=460),
         "sections": {},
         "warnings": [],
+        "provenance": {
+            "input_smiles": smiles,
+            "canonical_smiles": canonical,
+            "normalization": "RDKit canonical SMILES",
+            "engine_version": "mol_fq_v4_enriched_1",
+            "calculated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "requested_mode": "enriched_3d" if "geometry_3d" in selected_keys else "standard_2d",
+            "standardization": identity,
+        },
     }
+
+    geometry_payload = None
+    geometry_error = None
+    if "geometry_3d" in selected_keys:
+        geometry_payload, geometry_error = generate_3d_conformer(canonical)
 
     if "summary" in selected_keys:
         result["sections"]["summary"] = {
@@ -128,13 +165,6 @@ def analyze_mol_fq(smiles: str, selected: Optional[Iterable[str]] = None, name: 
 
     if "structural" in selected_keys:
         result["sections"]["structural"] = {"status": "calculated", "method": "RDKit", "values": structure}
-
-    if "identifiers" in selected_keys:
-        result["sections"]["identifiers"] = {
-            "status": "calculated",
-            "values": _identifiers(mol, smiles, name),
-            "composition": composition,
-        }
 
     if "ionization" in selected_keys:
         ionized_states = []
@@ -165,28 +195,58 @@ def analyze_mol_fq(smiles: str, selected: Optional[Iterable[str]] = None, name: 
         result["warnings"].append("LogD versus pH é uma aproximação interna e não reproduz automaticamente o Chemicalize.")
 
     if "solubility" in selected_keys:
-        result["sections"]["solubility"] = {
-            "status": "estimated",
-            "method": "estimativa interna de solubilidade em água em pH 7",
-            "intrinsic_solubility": {"value": None, "unit": "mg/L", "status": "not_available"},
-            "ph7": _status(properties.get("Solubilidade em água (pH 7, estimada) (mg/L)"), "PharmaSci heuristic solubility", "mg/L"),
-        }
-        result["warnings"].append("Solubilidade é estimada em pH 7; a curva completa e a solubilidade intrínseca ainda não estão implementadas.")
+        pka_acidic = properties.get("pKa ácido")
+        pka_basic = properties.get("pKa básico")
+        solubility = build_solubility(mol, canonical, pka_acidic=pka_acidic, pka_basic=pka_basic, geometry=geometry_payload)
+        legacy_ph7 = properties.get("Solubilidade em água (pH 7, estimada) (mg/L)")
+        solubility["legacy_ph7_mg_l"] = _status(legacy_ph7, "PharmaSci heuristic legacy", "mg/L")
+        result["sections"]["solubility"] = solubility
+        result["warnings"].append("A curva pH–solubilidade é uma estimativa baseada em ESOL/GSE e pKa indicativos; não representa dado experimental.")
+        if solubility["calibrated"].get("status") != "calibrated":
+            result["warnings"].append("Nenhum artefato calibrado aprovado está configurado; ESOL permanece como baseline exploratório.")
 
-    if "geometry" in selected_keys:
-        result["sections"]["geometry"] = {
-            "status": "partial",
-            "method": "RDKit MMFF conformer disponível; métricas Chemicalize ainda não implementadas",
-            "values": {"van_der_waals_volume": None, "van_der_waals_surface": None, "sasa": None},
-        }
-        result["warnings"].append("Métricas geométricas avançadas requerem implementação adicional e não são inferidas nesta versão.")
+    if "geometry_3d" in selected_keys:
+        if geometry_payload is None:
+            result["sections"]["geometry_3d"] = {
+                "status": "unavailable",
+                "method": "RDKit ETKDGv3 + UFF",
+                "message": geometry_error or "Não foi possível gerar a geometria 3D.",
+            }
+            result["warnings"].append(geometry_error or "Geometria 3D indisponível.")
+        else:
+            result["sections"]["geometry_3d"] = geometry_payload
+            result["warnings"].append(geometry_payload.get("warning", "A geometria 3D é estimativa."))
 
     if "nmr" in selected_keys:
+        nmr_results: Dict[str, Any] = {}
+        nmr_warnings: list[str] = []
+        for nucleus in ("1H", "13C"):
+            try:
+                prediction = predict_from_smiles(smiles, nucleus=nucleus)
+                nmr_results[nucleus] = prediction.to_dict()
+                nmr_results[nucleus]["spectrum"] = _spectrum_payload(prediction)
+                nmr_warnings.extend(prediction.warnings)
+            except RmnProviderError as exc:
+                nmr_results[nucleus] = {
+                    "status": "unavailable",
+                    "provenance": "unavailable",
+                    "peaks": [],
+                    "warnings": [str(exc)],
+                }
+            except Exception as exc:  # pragma: no cover - proteção de integração externa
+                nmr_results[nucleus] = {
+                    "status": "unavailable",
+                    "provenance": "unavailable",
+                    "peaks": [],
+                    "warnings": [f"Falha inesperada no provedor externo: {exc}"],
+                }
         result["sections"]["nmr"] = {
-            "status": "not_implemented",
-            "method": None,
-            "values": None,
-            "message": "Predição H-NMR ainda não está disponível no motor local.",
+            "status": "external",
+            "method": "NMRShiftDB2 — espectro medido quando disponível ou previsão HOSE quando não há registro",
+            "values": nmr_results,
+            "message": "Predição obtida por provedor externo; não representa dado experimental quando a proveniência for hose-predicted.",
         }
+        result["warnings"].append("A análise RMN envia a estrutura ao NMRShiftDB2 e depende de rede; verifique a proveniência de cada núcleo.")
+        result["warnings"].extend(list(dict.fromkeys(nmr_warnings)))
 
     return result

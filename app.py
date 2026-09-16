@@ -615,7 +615,14 @@ def mol_fq_report_preview():
         if report.get("status") != "ok":
             return jsonify(report), 400
         report["generated_at"] = get_report_generated_at()
-        report["engine"] = "RDKit + Dimorphite-DL quando selecionado"
+        engines = ["RDKit"]
+        if "ionization" in report.get("selected", []):
+            engines.append("Dimorphite-DL")
+        if "nmr" in report.get("selected", []):
+            engines.append("NMRShiftDB2")
+        if "geometry_3d" in report.get("selected", []):
+            engines.append("RDKit ETKDGv3 + UFF")
+        report["engine"] = " + ".join(engines)
         return render_template("mol_fq_report_preview.html", report=report, generated_at=report["generated_at"])
     except Exception:
         logger.error("Erro não tratado em /mol-fq/report-preview: %s", traceback.format_exc())

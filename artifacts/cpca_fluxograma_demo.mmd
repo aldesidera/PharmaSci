@@ -1,0 +1,38 @@
+%% Fluxograma demonstrativo do CPCA — inspirado na Figura 2 do Apêndice 2 do EMA
+flowchart TD
+    A([Início: nitrosamina analisada]) --> B{A molécula possui\nhidrogênios nos\ncarbonos alfa?}
+    B -- "Não" --> R5[Categoria 5\nAI = 1500 ng/dia]
+    B -- "Sim" --> C{Há mais de um hidrogênio\nem um ou ambos os lados\ndo grupo N-nitroso?}
+    C -- "Não" --> R5
+    C -- "Sim" --> D{Existe carbono alfa\nterciário?}
+    D -- "Sim" --> R5
+    D -- "Não" --> E[Calcular Potency Score\nConforme Anexo A]
+    E --> F{Score ≥ 4?}
+    F -- "Sim" --> R4[Categoria 4\nAI = 1500 ng/dia]
+    F -- "Não" --> G{Score = 3?}
+    G -- "Sim" --> R3[Categoria 3\nAI = 400 ng/dia]
+    G -- "Não" --> H{Score = 2?}
+    H -- "Sim" --> R2[Categoria 2\nAI = 100 ng/dia]
+    H -- "Não" --> I{Score ≤ 1?}
+    I -- "Sim" --> R1[Categoria 1\nAI = 18 ng/dia]
+    I -- "Não" --> M[Revisão manual necessária\nFora do caminho padrão]
+
+    classDef start fill:#e8f0fe,stroke:#1d4ed8,color:#0f172a,stroke-width:2px;
+    classDef decision fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-width:1.5px;
+    classDef calc fill:#ecfdf5,stroke:#047857,color:#064e3b,stroke-width:2px;
+    classDef result fill:#f1f5f9,stroke:#64748b,color:#0f172a,stroke-width:1.5px;
+    classDef selected fill:#dcfce7,stroke:#15803d,color:#14532d,stroke-width:3px;
+    classDef review fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-width:2px;
+
+    class A start;
+    class B,C,D,F,G,H,I decision;
+    class E calc;
+    class R1,R2,R4,R5 result;
+    class R3 selected;
+    class M review;
+
+    %% Caminho demonstrativo: Sim, Sim, Não, score não >=4, score=3
+    linkStyle 0,2,4,6,8,10 stroke:#15803d,stroke-width:3px;
+    linkStyle 11 stroke:#15803d,stroke-width:3px;
+
+    style A color:#0f172a

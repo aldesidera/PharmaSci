@@ -14,6 +14,7 @@ from rdkit.Chem import rdChemReactions
 from rdkit.Chem.rdchem import Mol
 
 from analysis import get_properties, mol_to_svg
+from chemo_suite.core.molecule_standardization import standardize_molecule
 
 
 NITROSAMINE_SMARTS = "[N;X3]-[N;X2]=O"
@@ -240,10 +241,14 @@ def evaluate_metabolism(smiles: str) -> Dict[str, Any]:
     """Predict CYP450 alpha-hydroxylation hypotheses for an N-nitrosamine SMILES."""
 
     raw_smiles = smiles if isinstance(smiles, str) else ""
-    mol = Chem.MolFromSmiles(raw_smiles.strip()) if raw_smiles.strip() else None
+    try:
+        mol, identity, standardization_error = standardize_molecule(raw_smiles)
+    except Exception:
+        mol, identity, standardization_error = None, {}, "Falha na padronização molecular."
     if mol is None:
         result = _empty_result(raw_smiles, "invalid_smiles", "SMILES inválido ou não sanitizável pelo RDKit.")
-        result["warnings"] = ["Não foi possível construir a estrutura para a predição metabólica."]
+        result["warnings"] = [standardization_error or "Não foi possível construir a estrutura para a predição metabólica."]
+        result["standardization"] = identity
         return result
 
     target = _target_payload(mol)
@@ -256,6 +261,7 @@ def evaluate_metabolism(smiles: str) -> Dict[str, Any]:
         )
         result["canonical_smiles"] = target["canonical_smiles"]
         result["target"] = target
+        result["standardization"] = identity
         return result
 
     sites = _find_alpha_sites(mol, matches)
@@ -267,6 +273,7 @@ def evaluate_metabolism(smiles: str) -> Dict[str, Any]:
         )
         result["canonical_smiles"] = target["canonical_smiles"]
         result["target"] = target
+        result["standardization"] = identity
         result["nitrosamine_centers"] = len(matches)
         result["warnings"] = [BASE_WARNING]
         return result
@@ -293,6 +300,7 @@ def evaluate_metabolism(smiles: str) -> Dict[str, Any]:
         "nitrosamine_smarts": [NITROSAMINE_SMARTS, AROMATIC_NITROSAMINE_SMARTS],
         "enzyme_context": ENZYME_CONTEXT,
         "target": target,
+        "standardization": identity,
         "nitrosamine_centers": len(matches),
         "alpha_sites": site_records,
         "metabolites": metabolites,

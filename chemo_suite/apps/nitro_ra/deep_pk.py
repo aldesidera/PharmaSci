@@ -17,6 +17,7 @@ from urllib import parse as urllib_parse
 from urllib import request as urllib_request
 
 from rdkit import Chem
+from chemo_suite.core.molecule_standardization import standardize_molecule
 
 
 DEEP_PK_API_URL = os.getenv(
@@ -39,10 +40,10 @@ class DeepPkError(RuntimeError):
 def _canonicalize_smiles(smiles: str) -> Optional[str]:
     if not isinstance(smiles, str) or not smiles.strip():
         return None
-    mol = Chem.MolFromSmiles(smiles.strip())
+    mol, identity, _ = standardize_molecule(smiles)
     if mol is None:
         return None
-    return Chem.MolToSmiles(mol, canonical=True, isomericSmiles=True)
+    return identity.get("canonical_smiles") or Chem.MolToSmiles(mol, canonical=True, isomericSmiles=True)
 
 
 def _decode_json_payload(raw: bytes) -> Dict[str, Any]:
@@ -184,8 +185,10 @@ def submit_deep_pk_metabolism(smiles: str) -> Dict[str, Any]:
     """Submit one canonical SMILES to Deep-PK's metabolism API."""
 
     canonical = _canonicalize_smiles(smiles)
+    _, identity, _ = standardize_molecule(smiles) if isinstance(smiles, str) else (None, {}, None)
     if canonical is None:
         result = _base_result(smiles if isinstance(smiles, str) else "", "invalid_smiles", "SMILES inválido ou não sanitizável.")
+        result["standardization"] = identity
         result["warnings"] = ["O Deep-PK não foi consultado porque o SMILES não pôde ser sanitizado localmente."]
         return result
 
@@ -196,17 +199,20 @@ def submit_deep_pk_metabolism(smiles: str) -> Dict[str, Any]:
         )
     except DeepPkError as exc:
         result = _base_result(canonical, "deep_pk_unavailable", str(exc))
+        result["standardization"] = identity
         result["http_status"] = exc.status_code
         return result
 
     job_id = payload.get("job_id")
     if not isinstance(job_id, str) or not _DEEP_PK_JOB_ID_PATTERN.fullmatch(job_id):
         result = _base_result(canonical, "deep_pk_error", "O Deep-PK não retornou um job_id válido.")
+        result["standardization"] = identity
         return result
 
     return {
         **_base_result(canonical, "running", "Consulta Deep-PK enviada; aguardando os endpoints CYP."),
         "job_id": job_id,
+        "standardization": identity,
     }
 
 

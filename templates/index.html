@@ -109,8 +109,47 @@
         .fq-result-grid div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid rgba(148,163,184,.18); padding: 7px 0; font-size: 12px; }
         .fq-result-grid span { color: #64748b; }
         .fq-result-grid strong { color: #17351f; text-align: right; overflow-wrap: anywhere; }
+        .fq-sol-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-top:8px; }
+        .fq-sol-summary > div { border:1px solid rgba(34,197,94,.16); border-radius:12px; background:rgba(240,253,244,.72); padding:9px 10px; min-width:0; }
+        .fq-sol-summary span { display:block; color:#64748b; font-size:10px; text-transform:uppercase; letter-spacing:.05em; }
+        .fq-sol-summary strong { display:block; color:#14532d; font-size:13px; margin-top:3px; overflow-wrap:anywhere; }
+        .fq-sol-summary small { font-size:9px; color:#56715f; font-weight:600; }
+        .fq-status-badge { border-radius:999px; padding:4px 9px; font-size:10px; font-weight:800; white-space:nowrap; }
+        .fq-status-badge.is-estimated { background:#fef3c7; color:#92400e; }
+        .fq-status-badge.is-calibrated { background:#dcfce7; color:#166534; }
+        .fq-sol-chart-wrap { margin-top:12px; border:1px solid rgba(34,197,94,.14); border-radius:13px; background:rgba(255,255,255,.72); padding:10px 10px 7px; }
+        .fq-sol-chart-head { display:flex; justify-content:space-between; gap:8px; color:#56715f; font-size:10px; font-weight:700; margin-bottom:5px; }
+        .fq-sol-chart { display:block; width:100%; height:120px; overflow:visible; }
+        .fq-sol-axis { stroke:#9ca3af; stroke-width:.7; }
+        .fq-sol-line { fill:none; stroke:#166534; stroke-width:2.2; vector-effect:non-scaling-stroke; }
+        .fq-sol-axis-labels { display:flex; justify-content:space-between; color:#64748b; font-size:9px; padding-top:4px; }
+        @media (max-width: 700px) { .fq-sol-summary { grid-template-columns:repeat(2,minmax(0,1fr)); } }
         .fq-structure-preview { min-height: 180px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(34,197,94,.18); border-radius: 16px; background: rgba(255,255,255,.8); }
         .fq-structure-preview svg { width: min(100%, 420px); height: 180px; }
+        .fq-nmr-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-bottom:14px; }
+        .fq-nmr-summary-item { border:1px solid rgba(34,197,94,.16); border-radius:12px; background:rgba(240,253,244,.72); padding:10px 12px; }
+        .fq-nmr-summary-item span { display:block; color:#64748b; font-size:10px; text-transform:uppercase; letter-spacing:.08em; }
+        .fq-nmr-summary-item strong { display:block; color:#14532d; font-size:14px; margin-top:3px; }
+        .fq-nmr-panel { border: 1px solid rgba(34,197,94,.22); border-radius: 16px; background: rgba(248,255,250,.78); padding: 15px; }
+        .fq-nmr-panel strong { color: #14532d; }
+        .fq-nmr-meta { color: #64748b; font-size: 11px; line-height:1.5; }
+        .fq-nmr-table { width:100%; border-collapse:collapse; margin-top:10px; font-size:11px; }
+        .fq-nmr-table th { color:#56715f; background:rgba(220,252,231,.54); font-size:10px; text-transform:uppercase; letter-spacing:.04em; padding:7px 6px; text-align:left; }
+        .fq-nmr-table td { border-top:1px solid rgba(148,163,184,.16); padding:7px 6px; color:#334155; }
+        .fq-nmr-table td:first-child { color:#14532d; font-weight:800; }
+        .fq-spectrum { margin-top:12px; padding:9px 8px 7px; border:1px solid rgba(34,197,94,.14); border-radius:11px; background:rgba(255,255,255,.72); }
+        .fq-spectrum-plot { position:relative; height:128px; border-bottom:1px solid #86a891; background:repeating-linear-gradient(to right, transparent 0, transparent calc(20% - 1px), rgba(148,163,184,.16) 20%); }
+        .fq-spectrum-stick { position:absolute; bottom:0; width:1.5px; min-height:10px; background:#166534; transform:translateX(-50%); border-radius:2px 2px 0 0; }
+        .fq-spectrum-axis { display:flex; justify-content:space-between; color:#64748b; font-size:9px; padding-top:5px; }
+        .fq-spectrum-caption { color:#64748b; font-size:9px; margin-top:3px; text-align:center; }
+        .fq-nmr-provenance, .fq-nmr-cache { border-radius: 999px; padding: 3px 8px; font-size: 10px; font-weight: 800; white-space: nowrap; }
+        .fq-nmr-provenance.measured { background: #dcfce7; color: #166534; }
+        .fq-nmr-provenance.hose-predicted { background: #fef3c7; color: #92400e; }
+        .fq-nmr-provenance.unavailable { background: #e2e8f0; color: #475569; }
+        .fq-nmr-cache.live { background:#dbeafe; color:#1d4ed8; }
+        .fq-nmr-cache.fresh-cache { background:#ede9fe; color:#6d28d9; }
+        .fq-nmr-cache.stale-cache { background:#ffedd5; color:#c2410c; }
+        @media (max-width: 700px) { .fq-nmr-summary { grid-template-columns:1fr; } }
         @media (max-width: 700px) { .fq-analysis-checks, .fq-result-grid { grid-template-columns: 1fr; } }
 
         body.theme-nitro {
@@ -962,17 +1001,10 @@
         .cpca-workflow-title { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: .9rem; }
         .cpca-workflow-title h3 { margin: 0; color: var(--text-700); font-size: .88rem; font-weight: 900; }
         .cpca-workflow-subtitle { margin: 0; color: var(--theme-muted-text); font-size: .7rem; line-height: 1.45; }
-        .cpca-workflow-steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .55rem; }
-        .cpca-workflow-step { position: relative; min-height: 5.35rem; padding: .7rem .65rem; border: 1px solid #dbeafe; border-radius: .9rem; background: rgba(255,255,255,.86); }
-        .cpca-workflow-step::after { content: '›'; position: absolute; top: 1.35rem; right: -.48rem; color: #93c5fd; font-size: 1.25rem; font-weight: 900; z-index: 2; }
-        .cpca-workflow-step:last-child::after { display: none; }
-        .cpca-workflow-step.is-complete { border-color: #bae6fd; background: #f0f9ff; }
-        .cpca-workflow-step.is-triggered { border-color: #fcd34d; background: #fffbeb; }
-        .cpca-workflow-step.is-review { border-color: #fca5a5; background: #fff1f2; }
-        .cpca-workflow-index { display: inline-grid; width: 1.35rem; height: 1.35rem; place-items: center; border-radius: 999px; background: var(--theme-accent-strong); color: white; font-size: .65rem; font-weight: 900; }
-        .cpca-workflow-step strong { display: block; margin-top: .45rem; color: var(--text-700); font-size: .72rem; line-height: 1.2; }
-        .cpca-workflow-step span { display: block; margin-top: .3rem; color: var(--theme-muted-text); font-size: .64rem; line-height: 1.35; }
-        @media (max-width: 900px) { .cpca-workflow-steps { grid-template-columns: 1fr; } .cpca-workflow-step::after { content: '↓'; top: auto; right: 50%; bottom: -.7rem; } }
+        .cpca-flowchart-svg { overflow-x: auto; overflow-y: hidden; border: 1px solid var(--line-soft); border-radius: 1rem; background: #f8fafc; padding: .4rem; }
+        .cpca-flowchart-svg svg { display: block; width: 100%; min-width: 680px; height: auto; max-height: 48rem; }
+        .cpca-flowchart-empty { display: grid; min-height: 12rem; place-items: center; color: var(--theme-muted-text); font-size: .78rem; text-align: center; }
+        @media (max-width: 640px) { .cpca-flowchart-svg { margin-inline: -.35rem; } .cpca-flowchart-svg svg { min-width: 760px; } }
         .cpca-structure-grid {
             display: grid;
             grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
@@ -1222,12 +1254,11 @@
                                 <div class="fq-analysis-checks">
                                     <label><input type="checkbox" data-fq-analysis="summary" checked><span><strong>Resumo molecular</strong><small>massa, fórmula e carga</small></span></label>
                                     <label><input type="checkbox" data-fq-analysis="structural" checked><span><strong>Descritores estruturais</strong><small>HBD, HBA, TPSA, FSP3 e anéis</small></span></label>
-                                    <label><input type="checkbox" data-fq-analysis="identifiers" checked><span><strong>Identificadores</strong><small>SMILES, InChI e composição</small></span></label>
                                     <label><input type="checkbox" data-fq-analysis="ionization"><span><strong>Ionização e pH</strong><small>pKa e microespécies</small></span></label>
                                     <label><input type="checkbox" data-fq-analysis="lipophilicity"><span><strong>Lipofilicidade</strong><small>LogP e LogD versus pH</small></span></label>
                                     <label><input type="checkbox" data-fq-analysis="solubility"><span><strong>Solubilidade</strong><small>intrínseca e dependente de pH</small></span></label>
-                                    <label><input type="checkbox" data-fq-analysis="geometry"><span><strong>Geometria</strong><small>volume e superfícies</small></span></label>
                                     <label><input type="checkbox" data-fq-analysis="nmr"><span><strong>H-NMR</strong><small>predição espectroscópica</small></span></label>
+                                    <label><input type="checkbox" data-fq-analysis="geometry_3d"><span><strong>Geometria 3D</strong><small>ETKDGv3/UFF e descritores espaciais</small></span></label>
                                 </div>
                             </div>
                         </div>
@@ -1284,7 +1315,7 @@
                                 <div id="cpca-ppm-row" class="hidden mt-4 rounded-2xl border border-slate-100 bg-white/70 px-5 py-4 text-sm text-slate-600"><strong class="theme-accent-text">Conversão para ppm:</strong> <span id="cpca-ppm"></span></div>
                                 <section class="cpca-workflow" aria-labelledby="cpca-workflow-title">
                                     <div class="cpca-workflow-title"><div><h3 id="cpca-workflow-title"><i class="fas fa-route theme-accent-text"></i> Fluxo de decisão cPCA</h3><p class="cpca-workflow-subtitle">Sequência traduzida do fluxograma regulatório; o score só é calculado quando os gates permitem.</p></div><span id="cpca-score-state" class="cpca-status">—</span></div>
-                                    <div id="cpca-workflow-steps" class="cpca-workflow-steps"></div>
+                                    <div id="cpca-flowchart-svg" class="cpca-flowchart-svg" aria-label="Fluxograma decisório CPCA"></div>
                                 </section>
                                 <div class="cpca-structure-grid mt-6">
                                     <div class="cpca-structure-card">
@@ -1757,8 +1788,16 @@
 
         function fqDisplay(value) {
             if (value === null || value === undefined || value === '') return '—';
-            if (typeof value === 'number') return Number.isInteger(value) ? String(value) : String(value).replace('.', ',');
+            const numeric = typeof value === 'number' ? value : (typeof value === 'string' && /^-?\\d+(?:\\.\\d+)?$/.test(value.trim()) ? Number(value) : null);
+            if (numeric !== null && Number.isFinite(numeric)) return numeric.toLocaleString('pt-BR', { maximumFractionDigits: 3 });
             return escapeHtml(String(value));
+        }
+
+        function fqNmrDisplay(value, nucleus) {
+            if (value === null || value === undefined || value === '') return '—';
+            const numeric = Number(value);
+            if (!Number.isFinite(numeric)) return escapeHtml(String(value));
+            return numeric.toLocaleString('pt-BR', { minimumFractionDigits: nucleus === '1H' ? 4 : 2, maximumFractionDigits: nucleus === '1H' ? 4 : 2 });
         }
 
         function renderMolFQSection(key, section, labels) {
@@ -1771,16 +1810,6 @@
                     <div><span>Massa exata</span><strong>${fqDisplay(values.exact_mass?.value)} ${fqDisplay(values.exact_mass?.unit)}</strong></div>
                     <div><span>Fórmula</span><strong>${fqDisplay(values.formula?.value)}</strong></div>
                     <div><span>Carga formal</span><strong>${fqDisplay(values.formal_charge?.value)}</strong></div>
-                </div></section>`;
-            }
-            if (key === 'identifiers') {
-                const v = section.values || {};
-                const c = section.composition || {};
-                return `<section class="fq-result-card"><h3>${escapeHtml(title)}</h3><div class="fq-result-grid">
-                    <div><span>SMILES canônico</span><strong>${fqDisplay(v.canonical_smiles)}</strong></div>
-                    <div><span>Fórmula</span><strong>${fqDisplay(c.formula)}</strong></div>
-                    <div><span>InChIKey</span><strong>${fqDisplay(v.inchikey)}</strong></div>
-                    <div><span>Elementos</span><strong>${fqDisplay(JSON.stringify(c.element_counts || {}))}</strong></div>
                 </div></section>`;
             }
             if (key === 'structural') {
@@ -1797,10 +1826,54 @@
                 return `<section class="fq-result-card"><h3>${escapeHtml(title)}</h3><div class="fq-result-grid"><div><span>LogP</span><strong>${fqDisplay(section.logp?.value)}</strong></div>${rows}</div><p class="text-xs text-slate-500 mt-3">${escapeHtml(section.method || '')}</p></section>`;
             }
             if (key === 'solubility') {
-                return `<section class="fq-result-card"><h3>${escapeHtml(title)}</h3><div class="fq-result-grid"><div><span>Solubilidade intrínseca</span><strong>Não disponível</strong></div><div><span>Solubilidade em pH 7</span><strong>${fqDisplay(section.ph7?.value)} ${fqDisplay(section.ph7?.unit)}</strong></div></div><p class="text-xs text-slate-500 mt-3">${escapeHtml(section.method || '')}</p></section>`;
+                const points = section.ph_curve?.points || [];
+                const values = points.map(point => Number(point.logS)).filter(Number.isFinite);
+                const minValue = values.length ? Math.min(...values) : 0;
+                const maxValue = values.length ? Math.max(...values) : 1;
+                const span = Math.max(maxValue - minValue, 0.001);
+                const polyline = points.map((point, index) => {
+                    const x = points.length <= 1 ? 50 : (index / (points.length - 1)) * 100;
+                    const y = 96 - ((Number(point.logS) - minValue) / span) * 82;
+                    return `${x.toFixed(2)},${y.toFixed(2)}`;
+                }).join(' ');
+                const esol = section.baselines?.esol || {};
+                const gse = section.baselines?.gse || {};
+                const calibrated = section.calibrated || {};
+                const ph7 = section.ph7 || {};
+                const line = polyline ? `<svg class="fq-sol-chart" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Curva de solubilidade em função do pH"><line x1="0" y1="96" x2="100" y2="96" class="fq-sol-axis"/><polyline points="${polyline}" class="fq-sol-line"/></svg><div class="fq-sol-axis-labels"><span>pH 0</span><span>pH 7</span><span>pH 14</span></div>` : '<div class="fq-empty-state">Curva indisponível</div>';
+                return `<section class="fq-result-card fq-solubility-card"><div class="flex items-center justify-between gap-3"><h3>${escapeHtml(title)}</h3><span class="fq-status-badge ${calibrated.status === 'calibrated' ? 'is-calibrated' : 'is-estimated'}">${calibrated.status === 'calibrated' ? 'Modelo calibrado' : 'Baseline estimativo'}</span></div><div class="fq-sol-summary"><div><span>S0 selecionada</span><strong>${fqDisplay(section.s0?.value)} <small>logS</small></strong></div><div><span>ESOL</span><strong>${fqDisplay(esol.value)} <small>logS</small></strong></div><div><span>GSE</span><strong>${gse.value == null ? 'N/D' : fqDisplay(gse.value)} <small>${gse.value == null ? '' : 'logS'}</small></strong></div><div><span>Ponto pH 7</span><strong>${ph7.logS == null ? 'N/D' : fqDisplay(ph7.logS)} <small>logS</small></strong></div></div><div class="fq-sol-chart-wrap"><div class="fq-sol-chart-head"><span>Curva de solubilidade aparente S(pH)</span><span>log10(mol/L)</span></div>${line}</div><p class="text-xs text-slate-500 mt-3">${escapeHtml(section.method || '')}</p><p class="text-xs text-amber-700 mt-2">${escapeHtml(section.ph_curve?.warning || '')}</p></section>`;
             }
-            if (key === 'geometry' || key === 'nmr') {
-                return `<section class="fq-result-card"><h3>${escapeHtml(title)}</h3><div class="rounded-xl border border-dashed border-slate-300 bg-white/60 p-4 text-sm text-slate-600">${escapeHtml(section.message || 'Esta seção está parcialmente implementada nesta versão.')}</div></section>`;
+            if (key === 'geometry_3d') {
+                const coordinates = Array.isArray(section.coordinates) ? section.coordinates : [];
+                const summary = section.distance_summary || {};
+                const rows = coordinates.filter(item => item.element !== 'H').slice(0, 16).map(item => `<tr><td>${item.atom_index}</td><td>${escapeHtml(item.element)}</td><td>${fqDisplay(item.x)}</td><td>${fqDisplay(item.y)}</td><td>${fqDisplay(item.z)}</td></tr>`).join('');
+                if (section.status === 'unavailable') return `<section class="fq-result-card"><h3>${escapeHtml(title)}</h3><p class="text-sm text-amber-700">${escapeHtml(section.message || 'Geometria 3D indisponível.')}</p><p class="text-xs text-slate-500 mt-3">Método: ${escapeHtml(section.method || 'RDKit ETKDGv3 + UFF')}</p></section>`;
+                return `<section class="fq-result-card"><div class="flex items-center justify-between gap-3"><h3>${escapeHtml(title)}</h3><span class="fq-status-badge is-estimated">${escapeHtml(section.status || 'estimada')}</span></div><div class="fq-result-grid"><div><span>Método</span><strong>${escapeHtml(section.method || '—')}</strong></div><div><span>Átomos 3D</span><strong>${fqDisplay(section.atom_count_3d)}</strong></div><div><span>Distância mínima</span><strong>${fqDisplay(summary.min_angstrom)} Å</strong></div><div><span>Distância média</span><strong>${fqDisplay(summary.mean_angstrom)} Å</strong></div></div>${rows ? `<div class="overflow-x-auto mt-4"><table class="fq-nmr-table"><thead><tr><th>Átomo</th><th>Elemento</th><th>x (Å)</th><th>y (Å)</th><th>z (Å)</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}<p class="text-xs text-amber-700 mt-3">${escapeHtml(section.warning || 'A geometria é estimativa e não representa um cálculo quântico.')}</p></section>`;
+            }
+            if (key === 'nmr') {
+                const values = section.values || {};
+                const nuclei = ['1H', '13C'];
+                const totalSignals = nuclei.reduce((sum, nucleus) => sum + (Array.isArray(values[nucleus]?.peaks) ? values[nucleus].peaks.length : 0), 0);
+                const availableNuclei = nuclei.filter(nucleus => (values[nucleus]?.peaks || []).length > 0).length;
+                const cacheStates = nuclei.map(nucleus => values[nucleus]?.cache_status).filter(Boolean);
+                const cacheSummary = cacheStates.includes('stale-cache') ? 'Fallback offline' : (cacheStates.includes('fresh-cache') ? 'Cache local' : 'Consulta atual');
+                const cards = nuclei.map(nucleus => {
+                    const prediction = values[nucleus] || {};
+                    const displayNucleus = nucleus === '1H' ? '¹H' : '¹³C';
+                    const provenance = prediction.provenance || 'unavailable';
+                    const provenanceLabel = provenance === 'measured' ? 'Dado medido' : (provenance === 'hose-predicted' ? 'Previsão HOSE' : 'Indisponível');
+                    const cacheStatus = prediction.cache_status || 'live';
+                    const cacheLabel = cacheStatus === 'fresh-cache' ? 'Cache local' : (cacheStatus === 'stale-cache' ? 'Fallback offline' : 'Consulta atual');
+                    const peaks = Array.isArray(prediction.peaks) ? prediction.peaks : [];
+                    const peakRows = peaks.slice(0, 12).map(peak => `<tr><td>${fqNmrDisplay(peak.ppm, nucleus)}</td><td>${escapeHtml(peak.multiplicity || '—')}</td><td>${escapeHtml((peak.atom_refs || []).join(', ') || '—')}</td></tr>`).join('');
+                    const more = peaks.length > 12 ? `<p class="text-xs text-slate-500 mt-3">Exibindo 12 de ${peaks.length} sinais retornados.</p>` : '';
+                    const spectrum = prediction.spectrum || {};
+                    const sticks = Array.isArray(spectrum.peaks) ? spectrum.peaks.map(peak => `<span class="fq-spectrum-stick" style="left:${Number(peak.x_pct) || 0}%;height:${Math.max(8, (Number(peak.height) || 0.08) * 100)}%;" title="${fqNmrDisplay(peak.ppm, nucleus)} ppm"></span>`).join('') : '';
+                    const spectrumMarkup = sticks ? `<div class="fq-spectrum"><div class="fq-spectrum-plot">${sticks}</div><div class="fq-spectrum-axis"><span>${fqNmrDisplay(spectrum.max_ppm, nucleus)} ppm</span><span>${fqNmrDisplay(spectrum.min_ppm, nucleus)} ppm</span></div><div class="fq-spectrum-caption">Deslocamento químico · eixo invertido convencional de RMN</div></div>` : '';
+                    const source = prediction.source_url ? `<a class="text-xs text-emerald-800 underline mt-3 inline-block" href="${escapeHtml(prediction.source_url)}" target="_blank" rel="noreferrer">Abrir fonte NMRShiftDB2</a>` : '';
+                    return `<div class="fq-nmr-panel"><div class="flex items-center justify-between gap-2 mb-3"><strong class="text-base">${displayNucleus}</strong><div class="flex flex-wrap justify-end gap-1"><span class="fq-nmr-provenance ${escapeHtml(provenance)}">${escapeHtml(provenanceLabel)}</span><span class="fq-nmr-cache ${escapeHtml(cacheStatus)}">${escapeHtml(cacheLabel)}</span></div></div><div class="fq-nmr-meta">${peaks.length} sinais${prediction.solvent ? ` · solvente ${escapeHtml(prediction.solvent)}` : ''}${prediction.field_mhz ? ` · ${escapeHtml(prediction.field_mhz)} MHz` : ''}</div>${spectrumMarkup}${peakRows ? `<div class="overflow-x-auto mt-3"><table class="fq-nmr-table"><thead><tr><th>ppm</th><th>Multiplicidade</th><th>Átomos</th></tr></thead><tbody>${peakRows}</tbody></table></div>${more}` : `<p class="text-xs text-slate-500 mt-3">Nenhum sinal retornado para este núcleo.</p>`}${source}</div>`;
+                }).join('');
+                return `<section class="fq-result-card"><div class="flex items-start justify-between gap-3"><div><h3>${escapeHtml(title)}</h3><p class="text-xs text-slate-500 mb-4">${escapeHtml(section.message || section.method || 'Predição externa de RMN.')}</p></div><span class="fq-nmr-provenance ${availableNuclei ? 'measured' : 'unavailable'}">${availableNuclei}/2 núcleos</span></div><div class="fq-nmr-summary"><div class="fq-nmr-summary-item"><span>Sinais retornados</span><strong>${totalSignals}</strong></div><div class="fq-nmr-summary-item"><span>Núcleos disponíveis</span><strong>${availableNuclei} de 2</strong></div><div class="fq-nmr-summary-item"><span>Origem temporal</span><strong>${escapeHtml(cacheSummary)}</strong></div></div><div class="grid md:grid-cols-2 gap-4">${cards}</div></section>`;
             }
             return '';
         }
@@ -1817,9 +1890,10 @@
             message.textContent = payload.status === 'ok' ? `Análise preparada para ${payload.name || payload.canonical_smiles || payload.smiles}.` : (payload.error || 'Não foi possível processar a molécula.');
             if (payload.status !== 'ok') { content.innerHTML = ''; return; }
             const structure = payload.structure_svg ? `<section class="fq-result-card"><h3>Estrutura molecular</h3><div class="fq-structure-preview">${payload.structure_svg}</div><p class="text-xs text-slate-500 mt-3">SMILES: <code>${escapeHtml(payload.canonical_smiles || payload.smiles)}</code></p></section>` : '';
+            const provenance = payload.provenance ? `<section class="fq-result-card"><h3>Proveniência da análise</h3><div class="fq-result-grid"><div><span>Modo</span><strong>${escapeHtml(payload.provenance.requested_mode || 'standard_2d')}</strong></div><div><span>Motor</span><strong>${escapeHtml(payload.provenance.engine_version || '—')}</strong></div><div><span>Normalização</span><strong>${escapeHtml(payload.provenance.normalization || '—')}</strong></div><div><span>Calculado em</span><strong>${escapeHtml(payload.provenance.calculated_at || '—')}</strong></div></div></section>` : '';
             const sections = Object.entries(payload.sections || {}).map(([key, section]) => renderMolFQSection(key, section, payload.labels)).join('');
             const warnings = (payload.warnings || []).length ? `<section class="rounded-2xl border border-amber-200 bg-amber-50/70 p-5 text-sm leading-6 text-amber-800"><strong>Observações metodológicas</strong><ul class="list-disc pl-5 mt-2">${payload.warnings.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></section>` : '';
-            content.innerHTML = structure + sections + warnings;
+            content.innerHTML = structure + provenance + sections + warnings;
         }
 
         async function calculateMolFQ() {
@@ -2062,19 +2136,10 @@
         });
 
         function renderCpcaWorkflow(result) {
-            const container = document.getElementById('cpca-workflow-steps');
+            const container = document.getElementById('cpca-flowchart-svg');
             const scoreState = document.getElementById('cpca-score-state');
             if (!container) return;
-            const trace = Array.isArray(result.decision_trace) && result.decision_trace.length ? result.decision_trace : [
-                {label: 'Estrutura', message: 'Resultado estrutural recebido.', status: result.status === 'ok' ? 'complete' : 'review'},
-                {label: 'Decisão', message: safeText(result.message, 'Sem decisão disponível.'), status: result.status === 'ok' ? 'complete' : 'review'}
-            ];
-            const labels = {scope: 'Escopo do cPCA', alpha_hydrogen_presence: 'Hidrogênios alfa', alpha_hydrogen_activation: 'Ativação alfa', tertiary_alpha_carbon: 'Carbono alfa terciário', final: 'Decisão final'};
-            container.innerHTML = trace.map((step, index) => {
-                const status = step.status === 'triggered' ? 'is-triggered' : (step.status === 'review' ? 'is-review' : 'is-complete');
-                const label = labels[step.id] || step.label || `Etapa ${index + 1}`;
-                return `<div class="cpca-workflow-step ${status}"><span class="cpca-workflow-index">${index + 1}</span><strong>${escapeHtml(label)}</strong><span>${escapeHtml(step.message || '—')}</span></div>`;
-            }).join('');
+            container.innerHTML = result.flowchart_svg || `<div class="cpca-flowchart-empty">Fluxograma indisponível para este estado: ${escapeHtml(cpcaStatusLabel(result.status))}.</div>`;
             if (scoreState) scoreState.textContent = result.score_calculated ? 'Score calculado' : (result.potency_category === 5 ? 'Gate Categoria 5' : 'Revisão necessária');
         }
 

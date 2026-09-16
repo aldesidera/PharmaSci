@@ -1,0 +1,40 @@
+{
+  "status": "approved",
+  "model_name": "Mol.FQ solubilidade híbrida",
+  "version": "0.1.0",
+  "feature_schema": "hybrid_3d_v1",
+  "target": "log10(mol/L)",
+  "units": "log10(mol/L)",
+  "training_protocol": {
+    "split": "scaffold",
+    "validation": "nested_cross_validation",
+    "external_test_set": true,
+    "random_seed": 20240916
+  },
+  "metrics": {
+    "rmse": null,
+    "mae": null,
+    "r2": null,
+    "coverage_90_percent": null
+  },
+  "domain": {
+    "status": "required",
+    "method": "to_be_defined",
+    "training_scaffolds": null
+  },
+  "feature_order": [
+    "MW",
+    "LogP",
+    "TPSA",
+    "RotB",
+    "atom_count_3d",
+    "min_distance_angstrom",
+    "mean_distance_angstrom",
+    "max_distance_angstrom"
+  ],
+  "limitations": [
+    "O modo híbrido 3D usa ETKDGv3/UFF e não representa um cálculo quântico.",
+    "O artefato só deve ser marcado como approved após validação independente.",
+    "Valores fora do domínio devem ser reportados como fora do domínio, não como previsão confiável."
+  ]
+}

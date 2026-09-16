@@ -17,6 +17,7 @@ import numpy as np
 from rdkit import Chem, DataStructs
 
 from analysis import classify_similarity, get_fingerprint, get_properties, mol_to_svg
+from chemo_suite.core.molecule_standardization import molecule_identity, standardize_molecule
 from chemo_suite.core.chemical_space import (
     DESCRIPTOR_KEYS,
     calculate_multimodal_space,
@@ -245,8 +246,9 @@ def _ema_candidates(target_canonical: Optional[str] = None) -> Tuple[Optional[Di
         record = index.get(canonical)
         if not record:
             continue
-        molecule = Chem.MolFromSmiles(canonical)
+        molecule, molecule_identity_payload, standardization_error = standardize_molecule(canonical)
         if molecule is None:
+            logger.warning("Estrutura EMA ignorada após padronização: %s", standardization_error)
             continue
         if target_canonical and _canonical(molecule) == target_canonical:
             target_excluded = True
@@ -258,6 +260,7 @@ def _ema_candidates(target_canonical: Optional[str] = None) -> Tuple[Optional[Di
             "name": record.get("name") or record.get("iupac_name") or canonical,
             "smiles": record.get("smiles") or canonical,
             "canonical_smiles": canonical,
+            "standardization": molecule_identity_payload,
             "source": "EMA Appendix 1",
             "sheet": record.get("sheet"),
             "cas_rn": record.get("cas_rn"),
@@ -279,7 +282,8 @@ def _ema_space(
     *,
     display_limit: int = DISPLAY_LIMIT,
 ) -> Dict[str, Any]:
-    target_canonical = _canonical(target_mol)
+    target_identity = molecule_identity(target_mol)
+    target_canonical = target_identity.get("canonical_smiles") or _canonical(target_mol)
     profile, candidates, molecules, target_excluded = _ema_candidates(target_canonical)
     if not profile:
         return {
@@ -311,7 +315,7 @@ def _ema_space(
         "reference_number": profile.get("reference_number") or EMA_APPENDIX_VERSION,
         "last_updated": profile.get("last_updated") or EMA_APPENDIX_UPDATED,
         "sheet": profile.get("sheet"),
-        "target": {"properties": _property_rows(target_properties)},
+        "target": {"properties": _property_rows(target_properties), "standardization": target_identity},
         "search": {
             "library_size": len(candidates),
             "source_library_size": len(profile.get("canonical_smiles", [])),
@@ -346,19 +350,20 @@ def search_nitrosamine_space(
     if not normalized:
         return _base_result(normalized, "invalid_input", "SMILES deve ser uma string não vazia.")
     try:
-        target_mol = Chem.MolFromSmiles(normalized)
+        target_mol, target_identity, standardization_error = standardize_molecule(normalized)
     except Exception:
-        target_mol = None
+        target_mol, target_identity, standardization_error = None, {}, "Falha na padronização."
     if target_mol is None:
-        return _base_result(normalized, "invalid_smiles", "O SMILES alvo não pôde ser interpretado pelo RDKit.")
+        return _base_result(normalized, "invalid_smiles", standardization_error or "O SMILES alvo não pôde ser interpretado pelo RDKit.")
 
-    target_canonical = _canonical(target_mol)
+    target_canonical = target_identity.get("canonical_smiles") or _canonical(target_mol)
     target_properties = get_properties(target_mol) or {}
     target = {
         "smiles": normalized,
         "canonical_smiles": target_canonical,
         "svg": mol_to_svg(target_mol, size=320),
         "properties": _property_rows(target_properties),
+        "standardization": target_identity,
     }
     threshold = max(1, min(int(threshold), 99))
     max_records = max(1, min(int(max_records), PUBCHEM_BATCH_LIMIT))
@@ -424,9 +429,9 @@ def search_nitrosamine_space(
         if not isinstance(candidate_smiles, str) or not candidate_smiles.strip():
             continue
         try:
-            candidate_mol = Chem.MolFromSmiles(candidate_smiles)
+            candidate_mol, candidate_identity, _ = standardize_molecule(candidate_smiles)
         except Exception:
-            candidate_mol = None
+            candidate_mol, candidate_identity = None, {}
         if candidate_mol is None or not _has_n_nitroso(candidate_mol):
             continue
         n_nitroso_candidates += 1

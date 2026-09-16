@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Relatório Mol.FQ</title>
+<style>
+@page { size: A4; margin: 18mm 16mm 18mm; }
+:root { --green:#166534; --green-dark:#14532d; --soft:#ecfdf5; --line:#d1fae5; --text:#17351f; --muted:#5b7062; }
+* { box-sizing:border-box; }
+body { margin:0; color:var(--text); font-family:Arial,Helvetica,sans-serif; font-size:10pt; background:#fff; }
+.header { display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:12px; border-bottom:2px solid var(--green); }
+.kicker { color:var(--green); font-size:8pt; font-weight:700; letter-spacing:.16em; text-transform:uppercase; }
+h1 { margin:5px 0 0; font-size:22pt; color:var(--green-dark); }
+h2 { margin:0 0 8px; color:var(--green-dark); font-size:13pt; }
+.meta { color:var(--muted); text-align:right; font-size:9pt; }
+.card { border:1px solid var(--line); border-radius:12px; padding:12px; margin-top:12px; break-inside:avoid; }
+.grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px 18px; }
+.item { display:flex; justify-content:space-between; gap:8px; border-bottom:1px solid #e5efe8; padding:6px 0; }
+.label { color:var(--muted); }
+.value { font-weight:700; text-align:right; overflow-wrap:anywhere; }
+.structure { display:flex; justify-content:center; align-items:center; min-height:190px; background:#fbfffc; border:1px solid #e2f2e7; border-radius:10px; }
+.structure svg { width:100%; max-width:450px; height:185px; }
+.note { margin-top:8px; color:var(--muted); font-size:8.5pt; line-height:1.4; }
+.nmr-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin:8px 0 12px; }
+.nmr-summary .item { display:block; background:#effaf2; border:1px solid var(--line); border-radius:8px; padding:7px 9px; }
+.nmr-summary .label { display:block; font-size:7pt; text-transform:uppercase; letter-spacing:.05em; }
+.nmr-summary .value { display:block; text-align:left; margin-top:3px; color:var(--green-dark); }
+.nmr-panel { border:1px solid #d8eee0; border-radius:9px; padding:9px; margin-top:9px; break-inside:avoid; }
+.nmr-panel h3 { margin:0 0 5px; color:var(--green-dark); font-size:10.5pt; }
+.nmr-badges { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:5px; }
+.nmr-badge { display:inline-block; border-radius:999px; padding:3px 7px; font-size:7.5pt; font-weight:700; }
+.nmr-badge.measured { background:#dcfce7; color:#166534; }
+.nmr-badge.hose { background:#fef3c7; color:#92400e; }
+.nmr-badge.cache { background:#ede9fe; color:#6d28d9; }
+.nmr-badge.stale { background:#ffedd5; color:#c2410c; }
+.nmr-spectrum { margin:8px 0 7px; padding:7px 7px 5px; border:1px solid #d8eee0; border-radius:7px; background:#fbfffc; }
+.nmr-spectrum-plot { position:relative; height:92px; border-bottom:1px solid #86a891; background:repeating-linear-gradient(to right, transparent 0, transparent calc(20% - 1px), rgba(148,163,184,.18) 20%); }
+.nmr-spectrum-stick { position:absolute; bottom:0; width:1px; min-height:6px; background:#166534; }
+.nmr-spectrum-axis { display:flex; justify-content:space-between; color:var(--muted); font-size:7pt; padding-top:4px; }
+	.nmr-spectrum-caption { color:var(--muted); font-size:7pt; text-align:center; margin-top:2px; }
+	.sol-chart { margin:8px 0 12px; border:1px solid #d9eee0; border-radius:10px; padding:5px; background:#f8fffa; }
+	.sol-chart svg { display:block; width:100%; height:auto; }
+
+.warning { background:#fff8e7; border-color:#fde68a; color:#854d0e; }
+.footer { margin-top:18px; padding-top:8px; border-top:1px solid #dbe7de; color:var(--muted); font-size:8pt; display:flex; justify-content:space-between; }
+code { font-size:8.5pt; overflow-wrap:anywhere; }
+table { width:100%; border-collapse:collapse; margin-top:8px; font-size:8.5pt; }
+th { text-align:left; color:var(--green-dark); background:#effaf2; border-bottom:1px solid var(--line); padding:5px; }
+td { border-bottom:1px solid #e5efe8; padding:5px; }
+</style>
+</head>
+<body>
+<header class="header"><div><div class="kicker">PharmaSci · Mol.FQ</div><h1>Relatório físico-químico</h1></div><div class="meta">Gerado em 16/09/2026 01:48<br>Motor: RDKit + Dimorphite-DL + NMRShiftDB2 + RDKit ETKDGv3 + UFF</div></header>
+<section class="card"><h2>Betahistina</h2><div class="grid"><div class="item"><span class="label">SMILES original</span><span class="value"><code>CNCCC1=CC=CC=N1</code></span></div><div class="item"><span class="label">SMILES canônico</span><span class="value"><code>CNCCc1ccccn1</code></span></div></div></section>
+<section class="card"><h2>Estrutura molecular</h2><div class="structure"><?xml version='1.0' encoding='iso-8859-1'?>
+<svg version='1.1' baseProfile='full'
+              xmlns='http://www.w3.org/2000/svg'
+                      xmlns:rdkit='http://www.rdkit.org/xml'
+                      xmlns:xlink='http://www.w3.org/1999/xlink'
+                  xml:space='preserve'
+width='460px' height='460px' viewBox='0 0 460 460'>
+<!-- END OF HEADER -->
+<rect style='opacity:1.0;fill:#FFFFFF;stroke:none' width='460.0' height='460.0' x='0.0' y='0.0'> </rect>
+<path class='bond-0 atom-0 atom-1' d='M 23.0,196.6 L 46.9,217.6' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-0 atom-0 atom-1' d='M 46.9,217.6 L 70.8,238.6' style='fill:none;fill-rule:evenodd;stroke:#0000FF;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-1 atom-1 atom-2' d='M 92.8,244.5 L 124.3,233.8' style='fill:none;fill-rule:evenodd;stroke:#0000FF;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-1 atom-1 atom-2' d='M 124.3,233.8 L 155.9,223.1' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-2 atom-2 atom-3' d='M 155.9,223.1 L 214.7,274.7' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-3 atom-3 atom-4' d='M 214.7,274.7 L 288.8,249.6' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-4 atom-4 atom-5' d='M 288.8,249.6 L 304.1,172.9' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-4 atom-4 atom-5' d='M 301.6,245.2 L 314.3,181.8' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-5 atom-5 atom-6' d='M 304.1,172.9 L 378.2,147.7' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-6 atom-6 atom-7' d='M 378.2,147.7 L 437.0,199.3' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-6 atom-6 atom-7' d='M 375.5,161.0 L 424.2,203.7' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-7 atom-7 atom-8' d='M 437.0,199.3 L 421.7,276.1' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-8 atom-8 atom-9' d='M 421.7,276.1 L 390.1,286.8' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-8 atom-8 atom-9' d='M 390.1,286.8 L 358.6,297.5' style='fill:none;fill-rule:evenodd;stroke:#0000FF;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-8 atom-8 atom-9' d='M 411.5,267.1 L 383.2,276.7' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-8 atom-8 atom-9' d='M 383.2,276.7 L 354.8,286.4' style='fill:none;fill-rule:evenodd;stroke:#0000FF;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-9 atom-9 atom-4' d='M 336.6,291.6 L 312.7,270.6' style='fill:none;fill-rule:evenodd;stroke:#0000FF;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-9 atom-9 atom-4' d='M 312.7,270.6 L 288.8,249.6' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path d='M 154.3,223.6 L 155.9,223.1 L 158.8,225.7' style='fill:none;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />
+<path d='M 211.8,272.1 L 214.7,274.7 L 218.4,273.4' style='fill:none;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />
+<path d='M 303.3,176.7 L 304.1,172.9 L 307.8,171.6' style='fill:none;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />
+<path d='M 374.5,149.0 L 378.2,147.7 L 381.1,150.3' style='fill:none;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />
+<path d='M 434.1,196.8 L 437.0,199.3 L 436.2,203.2' style='fill:none;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />
+<path d='M 422.5,272.2 L 421.7,276.1 L 420.1,276.6' style='fill:none;stroke:#000000;stroke-width:2.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />
+<path class='atom-1' d='M 76.9 237.1
+L 84.2 248.9
+Q 84.9 250.0, 86.0 252.1
+Q 87.2 254.2, 87.3 254.3
+L 87.3 237.1
+L 90.2 237.1
+L 90.2 259.3
+L 87.2 259.3
+L 79.4 246.5
+Q 78.5 245.0, 77.5 243.2
+Q 76.6 241.5, 76.3 241.0
+L 76.3 259.3
+L 73.4 259.3
+L 73.4 237.1
+L 76.9 237.1
+' fill='#0000FF'/>
+<path class='atom-1' d='M 73.1 261.5
+L 76.1 261.5
+L 76.1 270.9
+L 87.5 270.9
+L 87.5 261.5
+L 90.5 261.5
+L 90.5 283.7
+L 87.5 283.7
+L 87.5 273.4
+L 76.1 273.4
+L 76.1 283.7
+L 73.1 283.7
+L 73.1 261.5
+' fill='#0000FF'/>
+<path class='atom-9' d='M 342.7 290.1
+L 350.0 301.8
+Q 350.7 303.0, 351.8 305.1
+Q 353.0 307.2, 353.1 307.3
+L 353.1 290.1
+L 356.0 290.1
+L 356.0 312.3
+L 353.0 312.3
+L 345.2 299.4
+Q 344.3 297.9, 343.3 296.2
+Q 342.4 294.5, 342.1 294.0
+L 342.1 312.3
+L 339.2 312.3
+L 339.2 290.1
+L 342.7 290.1
+' fill='#0000FF'/>
+</svg>
+</div></section>
+<section class="card"><h2>Proveniência da análise</h2><div class="grid"><div class="item"><span class="label">Modo</span><span class="value">enriched_3d</span></div><div class="item"><span class="label">Versão do motor</span><span class="value">mol_fq_v4_enriched_1</span></div><div class="item"><span class="label">Normalização</span><span class="value">RDKit canonical SMILES</span></div><div class="item"><span class="label">Calculado em UTC</span><span class="value">2026-09-16T04:48:30+00:00</span></div></div></section>
+
+<section class="card"><h2>Resumo molecular</h2>
+<div class="grid"><div class="item"><span class="label">Massa molar</span><span class="value">136.198 g/mol</span></div><div class="item"><span class="label">Massa exata</span><span class="value">136.100048384 Da</span></div><div class="item"><span class="label">Fórmula</span><span class="value">C8H12N2</span></div><div class="item"><span class="label">Carga formal</span><span class="value">0 e</span></div></div>
+
+</section>
+
+<section class="card"><h2>Descritores estruturais</h2>
+<div class="grid"><div class="item"><span class="label">Átomos pesados</span><span class="value">10</span></div><div class="item"><span class="label">Átomos totais com H</span><span class="value">22</span></div><div class="item"><span class="label">Ligações rotacionáveis</span><span class="value">3</span></div><div class="item"><span class="label">Anéis</span><span class="value">1</span></div><div class="item"><span class="label">Anéis aromáticos</span><span class="value">1</span></div><div class="item"><span class="label">Anéis heterocíclicos</span><span class="value">1</span></div><div class="item"><span class="label">Fração FSP3</span><span class="value">0.375</span></div><div class="item"><span class="label">Doadores H</span><span class="value">1</span></div><div class="item"><span class="label">Aceitadores H</span><span class="value">2</span></div><div class="item"><span class="label">TPSA</span><span class="value">24.92</span></div><div class="item"><span class="label">Refratividade molar</span><span class="value">41.868</span></div></div>
+
+</section>
+
+<section class="card"><h2>Ionização e pH</h2>
+<div class="grid"><div class="item"><span class="label">pKa ácido indicativo</span><span class="value">N/A</span></div><div class="item"><span class="label">pKa básico indicativo</span><span class="value">5.2</span></div><div class="item"><span class="label">Faixa de pH</span><span class="value">[1.7, 8.0]</span></div><div class="item"><span class="label">Estados enumerados</span><span class="value">4</span></div></div><p class="note">Método/status: Dimorphite-DL 2.0.2 para enumeração de estados + heuristic_rdkit_v1 para pKa indicativo · estimated</p>
+
+</section>
+
+<section class="card"><h2>Lipofilicidade</h2>
+<div class="grid"><div class="item"><span class="label">LogP</span><span class="value">0.843</span></div><div class="item"><span class="label">LogD em pH 0</span><span class="value">1.683</span></div><div class="item"><span class="label">LogD em pH 1.7</span><span class="value">1.479</span></div><div class="item"><span class="label">LogD em pH 4.6</span><span class="value">1.131</span></div><div class="item"><span class="label">LogD em pH 6.5</span><span class="value">0.903</span></div><div class="item"><span class="label">LogD em pH 7.0</span><span class="value">0.843</span></div><div class="item"><span class="label">LogD em pH 7.4</span><span class="value">0.795</span></div><div class="item"><span class="label">LogD em pH 8.0</span><span class="value">0.723</span></div><div class="item"><span class="label">LogD em pH 10.0</span><span class="value">0.483</span></div><div class="item"><span class="label">LogD em pH 14</span><span class="value">0.003</span></div></div><p class="note">Método/status: RDKit Crippen MolLogP + curva LogD heurística · estimated</p>
+
+</section>
+
+<section class="card"><h2>Solubilidade</h2>
+<div class="grid"><div class="item"><span class="label">S0 selecionada</span><span class="value">-1.712078 logS</span></div><div class="item"><span class="label">ESOL</span><span class="value">-1.712078 logS</span></div><div class="item"><span class="label">GSE</span><span class="value">N/D logS</span></div><div class="item"><span class="label">Ponto em pH 7</span><span class="value">-1.705249 logS</span></div></div><h3>Curva de solubilidade aparente S(pH)</h3><div class="sol-chart"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 190" role="img" aria-label="Curva de solubilidade aparente em função do pH"><rect x="0" y="0" width="600" height="190" rx="10" fill="#f8fffa"/><line x1="42" y1="154" x2="560" y2="154" stroke="#94a3b8" stroke-width="1"/><line x1="42" y1="28" x2="42" y2="154" stroke="#94a3b8" stroke-width="1"/><polyline points="42.00,34.00 79.00,57.08 116.00,80.15 153.00,103.17 190.00,125.69 227.00,144.48 264.00,152.53 301.00,153.84 338.00,153.98 375.00,154.00 412.00,154.00 449.00,154.00 486.00,154.00 523.00,154.00 560.00,154.00" fill="none" stroke="#166534" stroke-width="2.5"/><circle cx="42.00" cy="34.00" r="2.2" fill="#166534"/><circle cx="79.00" cy="57.08" r="2.2" fill="#166534"/><circle cx="116.00" cy="80.15" r="2.2" fill="#166534"/><circle cx="153.00" cy="103.17" r="2.2" fill="#166534"/><circle cx="190.00" cy="125.69" r="2.2" fill="#166534"/><circle cx="227.00" cy="144.48" r="2.2" fill="#166534"/><circle cx="264.00" cy="152.53" r="2.2" fill="#166534"/><circle cx="301.00" cy="153.84" r="2.2" fill="#166534"/><circle cx="338.00" cy="153.98" r="2.2" fill="#166534"/><circle cx="375.00" cy="154.00" r="2.2" fill="#166534"/><circle cx="412.00" cy="154.00" r="2.2" fill="#166534"/><circle cx="449.00" cy="154.00" r="2.2" fill="#166534"/><circle cx="486.00" cy="154.00" r="2.2" fill="#166534"/><circle cx="523.00" cy="154.00" r="2.2" fill="#166534"/><circle cx="560.00" cy="154.00" r="2.2" fill="#166534"/><text x="42" y="177" font-size="10" fill="#64748b">pH 0</text><text x="292" y="177" font-size="10" fill="#64748b">pH 7</text><text x="535" y="177" font-size="10" fill="#64748b">pH 14</text><text x="8" y="34" font-size="9" fill="#64748b">logS</text></svg></div><table><thead><tr><th>pH</th><th>logS (mol/L)</th><th>Fator de ionização</th></tr></thead><tbody><tr><td>0.0</td><td>3.488</td><td>158490.32</td></tr><tr><td>1.0</td><td>2.488</td><td>15849.93</td></tr><tr><td>2.0</td><td>1.488</td><td>1585.89</td></tr><tr><td>3.0</td><td>0.491</td><td>159.49</td></tr><tr><td>4.0</td><td>-0.486</td><td>16.85</td></tr><tr><td>5.0</td><td>-1.300</td><td>2.58</td></tr><tr><td>6.0</td><td>-1.648</td><td>1.16</td></tr><tr><td>7.0</td><td>-1.705</td><td>1.02</td></tr><tr><td>8.0</td><td>-1.711</td><td>1.00</td></tr><tr><td>9.0</td><td>-1.712</td><td>1.00</td></tr><tr><td>10.0</td><td>-1.712</td><td>1.00</td></tr><tr><td>11.0</td><td>-1.712</td><td>1.00</td></tr><tr><td>12.0</td><td>-1.712</td><td>1.00</td></tr><tr><td>13.0</td><td>-1.712</td><td>1.00</td></tr><tr><td>14.0</td><td>-1.712</td><td>1.00</td></tr></tbody></table><p class="note">Método/status: ESOL baseline + GSE opcional + curva de ionização · estimated</p><p class="note">A curva assume pKa indicativos e não substitui um modelo quantitativo de microespécies.</p>
+
+</section>
+
+<section class="card"><h2>Geometria 3D enriquecida</h2>
+<div class="grid"><div class="item"><span class="label">Estado</span><span class="value">calculated</span></div><div class="item"><span class="label">Método</span><span class="value">RDKit ETKDGv3 + UFF</span></div><div class="item"><span class="label">Átomos 3D</span><span class="value">22</span></div><div class="item"><span class="label">Distância média</span><span class="value">2.513 Å</span></div></div><table><thead><tr><th>Átomo</th><th>Elemento</th><th>x (Å)</th><th>y (Å)</th><th>z (Å)</th></tr></thead><tbody><tr><td>0</td><td>C</td><td>-2.994</td><td>0.827</td><td>0.694</td></tr><tr><td>1</td><td>N</td><td>-1.910</td><td>0.476</td><td>-0.224</td></tr><tr><td>2</td><td>C</td><td>-1.526</td><td>-0.930</td><td>-0.045</td></tr><tr><td>3</td><td>C</td><td>-0.317</td><td>-1.274</td><td>-0.922</td></tr><tr><td>4</td><td>C</td><td>0.890</td><td>-0.472</td><td>-0.527</td></tr><tr><td>5</td><td>C</td><td>1.697</td><td>-0.874</td><td>0.549</td></tr><tr><td>6</td><td>C</td><td>2.794</td><td>-0.090</td><td>0.911</td></tr><tr><td>7</td><td>C</td><td>3.073</td><td>1.083</td><td>0.208</td></tr><tr><td>8</td><td>C</td><td>2.244</td><td>1.458</td><td>-0.851</td></tr><tr><td>9</td><td>N</td><td>1.179</td><td>0.682</td><td>-1.190</td></tr></tbody></table><p class="note">Geometria 3D gerada por ETKDGv3/UFF; não é cálculo quântico nem substitui otimização QM.</p>
+</section>
+
+<section class="card"><h2>H-NMR predito</h2>
+<p class="note">Predição obtida por provedor externo; não representa dado experimental quando a proveniência for hose-predicted.</p><div class="nmr-summary"><div class="item"><span class="label">Sinais retornados</span><span class="value">20</span></div><div class="item"><span class="label">Núcleos disponíveis</span><span class="value">¹H e ¹³C</span></div><div class="item"><span class="label">Fonte temporal</span><span class="value">Cache local</span></div></div><div class="nmr-panel"><h3>¹H</h3><div class="nmr-badges"><span class="nmr-badge hose">Previsão HOSE</span><span class="nmr-badge cache">Cache local</span></div><div class="grid"><div class="item"><span class="label">Número de sinais</span><span class="value">12</span></div><div class="item"><span class="label">Solvente</span><span class="value">—</span></div></div><div class="nmr-spectrum"><div class="nmr-spectrum-plot"><span class="nmr-spectrum-stick" style="left:83.1384%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:83.1384%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:83.1384%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:100.0%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:74.3319%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:74.3319%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:80.9989%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:80.9989%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:18.891%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:13.0572%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:16.8822%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:0.0%;height:100.0%;"></span></div><div class="nmr-spectrum-axis"><span>8.53 ppm</span><span>1.26 ppm</span></div><div class="nmr-spectrum-caption">Espectro de bastões · eixo ppm invertido</div></div><table><thead><tr><th>ppm</th><th>Multiplicidade</th><th>Átomos</th></tr></thead><tbody><tr><td>2.4905</td><td>—</td><td>a11</td></tr><tr><td>2.4905</td><td>—</td><td>a12</td></tr><tr><td>2.4905</td><td>—</td><td>a13</td></tr><tr><td>1.2650</td><td>—</td><td>a14</td></tr><tr><td>3.1306</td><td>—</td><td>a15</td></tr><tr><td>3.1306</td><td>—</td><td>a16</td></tr><tr><td>2.6460</td><td>—</td><td>a17</td></tr><tr><td>2.6460</td><td>—</td><td>a18</td></tr><tr><td>7.1600</td><td>—</td><td>a19</td></tr><tr><td>7.5840</td><td>—</td><td>a20</td></tr><tr><td>7.3060</td><td>—</td><td>a21</td></tr><tr><td>8.5330</td><td>—</td><td>a22</td></tr></tbody></table><p class="note">Fonte: NMRShiftDB2 · https://nmrshiftdb.nmr.uni-koeln.de/NmrshiftdbServlet/nmrshiftdbaction/searchorpredict/smiles/CNCCc1ccccn1/spectrumtype/1H</p></div><div class="nmr-panel"><h3>¹³C</h3><div class="nmr-badges"><span class="nmr-badge hose">Previsão HOSE</span><span class="nmr-badge cache">Cache local</span></div><div class="grid"><div class="item"><span class="label">Número de sinais</span><span class="value">8</span></div><div class="item"><span class="label">Solvente</span><span class="value">—</span></div></div><div class="nmr-spectrum"><div class="nmr-spectrum-plot"><span class="nmr-spectrum-stick" style="left:95.3523%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:88.5711%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:100.0%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:0.0%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:28.1753%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:18.2964%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:29.8282%;height:100.0%;"></span><span class="nmr-spectrum-stick" style="left:8.272%;height:100.0%;"></span></div><div class="nmr-spectrum-axis"><span>160.15 ppm</span><span>29.47 ppm</span></div><div class="nmr-spectrum-caption">Espectro de bastões · eixo ppm invertido</div></div><table><thead><tr><th>ppm</th><th>Multiplicidade</th><th>Átomos</th></tr></thead><tbody><tr><td>35.54</td><td>—</td><td>a1</td></tr><tr><td>44.40</td><td>—</td><td>a3</td></tr><tr><td>29.47</td><td>—</td><td>a4</td></tr><tr><td>160.15</td><td>—</td><td>a5</td></tr><tr><td>123.33</td><td>—</td><td>a6</td></tr><tr><td>136.24</td><td>—</td><td>a7</td></tr><tr><td>121.17</td><td>—</td><td>a8</td></tr><tr><td>149.34</td><td>—</td><td>a9</td></tr></tbody></table><p class="note">Fonte: NMRShiftDB2 · https://nmrshiftdb.nmr.uni-koeln.de/NmrshiftdbServlet/nmrshiftdbaction/searchorpredict/smiles/CNCCc1ccccn1/spectrumtype/13C</p></div>
+
+</section>
+
+<section class="card warning"><h2>Observações metodológicas</h2><ul><li>Os estados ionizados são enumerados pelo Dimorphite-DL; os valores de pKa ainda são indicativos e não substituem validação experimental ou um preditor calibrado.</li><li>LogD versus pH é uma aproximação interna e não reproduz automaticamente o Chemicalize.</li><li>A curva pH–solubilidade é uma estimativa baseada em ESOL/GSE e pKa indicativos; não representa dado experimental.</li><li>Nenhum artefato calibrado aprovado está configurado; ESOL permanece como baseline exploratório.</li><li>Geometria 3D gerada por ETKDGv3/UFF; não é cálculo quântico nem substitui otimização QM.</li><li>A análise RMN envia a estrutura ao NMRShiftDB2 e depende de rede; verifique a proveniência de cada núcleo.</li><li>O NMRShiftDB2 não encontrou registro medido; o resultado é previsão HOSE.</li></ul></section>
+<footer class="footer"><span>PharmaSci · Mol.FQ</span><span>Relatório exploratório — confirmar método e versão antes de uso regulatório</span></footer>
+</body></html>

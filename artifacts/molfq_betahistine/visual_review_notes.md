@@ -1,0 +1,6 @@
+Revisão visual inicial do relatório Mol.FQ da betahistina.
+
+Página 1: capa, identificação, estrutura molecular, resumo e descritores estruturais estão bem organizados, com paleta verde e estrutura legível. Há dois ajustes de apresentação: unidades ausentes são exibidas como “None” na fórmula/carga e alguns rótulos internos permanecem em inglês, como Atom Count Heavy, Hbd e Tpsa.
+
+Página 2: identificadores, ionização, lipofilicidade, solubilidade e geometria estão presentes. A hierarquia visual é adequada, mas o relatório imprime dicionários Python completos para LogP, LogD e valores de solubilidade, o que é rudimentar. Esses campos devem ser renderizados em tabelas/valores formatados na próxima revisão. O pKa básico aparece como 5.2 e o método Dimorphite-DL é informado, com estado estimado.
+Após a segunda renderização: página 2 passou a apresentar LogP, LogD por pH e solubilidade como valores individuais formatados, sem dicionários Python; os rótulos estão em português e a hierarquia permanece legível. A página 3 contém as observações metodológicas e o rodapé, com espaço em branco aceitável para a primeira versão exploratória. O relatório final tem 3 páginas A4 e não apresenta cortes visuais nas seções revisadas.

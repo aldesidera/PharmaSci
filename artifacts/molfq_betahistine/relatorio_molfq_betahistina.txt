@@ -1,0 +1,207 @@
+PHARMASCI · MOL.FQ
+
+Gerado em 14/09/2026 21:10
+Motor: RDKit + Dimorphite-DL quando selecionado
+
+Relatório físico-químico
+Betahistina
+SMILES original
+
+CNCCC1=CC=CC=N1
+
+SMILES canônico
+
+CNCCc1ccccn1
+
+Estrutura molecular
+
+Resumo molecular
+Massa molar
+Fórmula
+
+136.198 g/mol
+
+Massa exata
+
+136.100048384 Da
+
+C8H12N2
+
+Carga formal
+
+0e
+
+Descritores estruturais
+Átomos pesados
+
+10
+
+Átomos totais com H
+
+22
+
+Ligações rotacionáveis
+
+3
+
+Anéis
+
+1
+
+Anéis aromáticos
+
+1
+
+Anéis heterocíclicos
+
+1
+
+Doadores H
+
+1
+
+Fração FSP3
+
+0.375
+
+Aceitadores H
+
+2
+
+Refratividade molar
+
+41.868
+
+TPSA
+
+24.92
+
+Identificadores e composição
+Nome
+
+Betahistina
+
+InChI
+
+InChI=1S/C8H12N2/
+c1-9-7-5-8-4-2-3-6-10-8/h2-4,6,9H,
+5,7H2,1H3
+
+Método
+
+SMILES canônico
+
+CNCCc1ccccn1
+
+InChIKey
+
+UUQMNUMQCIQDMZ-UHFFFAOYSA-N
+
+RDKit
+
+Ionização e pH
+pKa ácido indicativo
+Faixa de pH
+
+N/A
+
+pKa básico indicativo
+
+5.2
+
+[1.7, 8.0]
+
+Estados enumerados
+
+4
+
+Método/status: Dimorphite-DL 2.0.2 para enumeração de estados + heuristic_rdkit_v1 para pKa indicativo · estimated
+
+Lipofilicidade
+LogP
+
+0.843
+
+LogD em pH 0
+
+1.683
+
+LogD em pH 1.7
+
+1.479
+
+LogD em pH 4.6
+
+1.131
+
+LogD em pH 6.5
+
+0.903
+
+LogD em pH 7.0
+
+0.843
+
+LogD em pH 7.4
+
+0.795
+
+LogD em pH 8.0
+
+0.723
+
+LogD em pH 10.0
+
+0.483
+
+LogD em pH 14
+
+0.003
+
+Método/status: RDKit Crippen MolLogP + curva LogD heurística · estimated
+
+Solubilidade
+Solubilidade intrínseca
+
+Não disponível
+
+Solubilidade em pH 7
+
+2048.19 mg/L
+
+Método/status: estimativa interna de solubilidade em água em pH 7 · estimated
+
+Geometria molecular
+Estado
+
+partial
+
+Mensagem
+
+Não disponível
+
+Método/status: RDKit MMFF conformer disponível; métricas Chemicalize ainda não implementadas · partial
+
+H-NMR predito
+Estado
+
+not_implemented
+
+Mensagem
+
+Predição H-NMR ainda não está
+disponível no motor local.
+
+Observações metodológicas
+• Os estados ionizados são enumerados pelo Dimorphite-DL; os valores de pKa ainda são indicativos e
+não substituem validação experimental ou um preditor calibrado.
+• LogD versus pH é uma aproximação interna e não reproduz automaticamente o Chemicalize.
+• Solubilidade é estimada em pH 7; a curva completa e a solubilidade intrínseca ainda não estão
+implementadas.
+• Métricas geométricas avançadas requerem implementação adicional e não são inferidas nesta versão.
+
+PharmaSci · Mol.FQ
+
+Relatório exploratório — confirmar método e versão antes de uso regulatório
+
+
