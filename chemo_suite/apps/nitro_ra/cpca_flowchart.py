@@ -12,10 +12,13 @@ W, H = 1200, 1832
 CX = 420
 DW, DH = 420, 122
 RX, RW, RH = 920, 270, 76
-LINE = "#718494"
-GREEN = "#17845b"
-ORANGE = "#b45309"
-NAVY = "#12304a"
+LINE = "#8f625b"
+ACCENT = "#f97316"
+ACCENT_STRONG = "#ea580c"
+ACCENT_TEXT = "#9a3412"
+CORAL = "#ff6f61"
+REVIEW = "#b45309"
+NAVY = "#3d2020"
 
 
 def _trace_map(result: Mapping[str, Any]) -> Dict[str, Mapping[str, Any]]:
@@ -36,8 +39,8 @@ def _cls(base: str, active: bool = False, terminal: bool = False, review: bool =
 def _diamond(cx: int, cy: int, lines: Iterable[str], node_id: str, active: bool = False) -> str:
     points = f"{cx},{cy- DH/2} {cx+DW/2},{cy} {cx},{cy+DH/2} {cx-DW/2},{cy}"
     lines = list(lines)
-    start = cy - (len(lines)-1)*13
-    text = "".join(f'<text x="{cx}" y="{start+i*26}" class="node-text">{escape(line)}</text>' for i, line in enumerate(lines))
+    start = cy - (len(lines)-1)*15
+    text = "".join(f'<text x="{cx}" y="{start+i*30}" class="node-text">{escape(line)}</text>' for i, line in enumerate(lines))
     return f'<g id="{node_id}" class="{_cls("decision", active)}"><polygon points="{points}"/>{text}</g>'
 
 
@@ -48,7 +51,8 @@ def _result(y: int, category: str, ai: str, node_id: str, active: bool = False, 
 
 def _path(points: str, path_id: str, active: bool = False, review: bool = False) -> str:
     cls = _cls("connector", active, review=review)
-    return f'<path id="{path_id}" class="{cls}" d="{points}" marker-end="url(#arrow)"/>'
+    marker = "arrow-review" if review else ("arrow-active" if active else "arrow-neutral")
+    return f'<path id="{path_id}" class="{cls}" d="{points}" marker-end="url(#{marker})"/>'
 
 
 def render_cpca_flowchart(result: Mapping[str, Any]) -> str:
@@ -75,28 +79,28 @@ def render_cpca_flowchart(result: Mapping[str, Any]) -> str:
     svg = [f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" role="img" aria-labelledby="cpca-flow-title cpca-flow-desc">
 <style>
 svg {{ background:#f8fafc; font-family:DejaVu Sans,Arial,sans-serif; }}
-.header {{ fill:{NAVY}; font-size:25px; font-weight:700; }}
-.subheader {{ fill:#526574; font-size:14px; }}
-.start {{ fill:#e7f0f8; stroke:#1d5f8a; stroke-width:2.2; }}
-.decision {{ fill:#eef3f7; stroke:{LINE}; stroke-width:2; }}
-.decision.active {{ fill:#e8f6ef; stroke:{GREEN}; stroke-width:3; }}
-.node-text {{ fill:{NAVY}; font-size:15px; font-weight:700; text-anchor:middle; dominant-baseline:middle; }}
-.result {{ fill:#fff; stroke:#9aabb8; stroke-width:1.6; }}
-.result.active {{ fill:#e8f6ef; stroke:{GREEN}; stroke-width:3; }}
-.result.review {{ fill:#fff4e5; stroke:{ORANGE}; stroke-width:2; }}
-.result-title {{ fill:{NAVY}; font-size:17px; font-weight:700; text-anchor:middle; }}
-.result-subtitle {{ fill:#526574; font-size:14px; font-weight:600; text-anchor:middle; }}
+.header {{ fill:{NAVY}; font-size:24px; font-weight:600; letter-spacing:.15px; }}
+.subheader {{ fill:#8f625b; font-size:14px; }}
+.start {{ fill:#fff1eb; stroke:{ACCENT_STRONG}; stroke-width:2.2; }}
+.decision {{ fill:#fffaf8; stroke:{LINE}; stroke-width:2; }}
+.decision.active {{ fill:#fff1eb; stroke:{ACCENT_STRONG}; stroke-width:3; }}
+.node-text {{ fill:{NAVY}; font-size:14px; font-weight:500; letter-spacing:.05px; text-anchor:middle; dominant-baseline:middle; }}
+.result {{ fill:#fff; stroke:#d8b8ad; stroke-width:1.6; }}
+.result.active {{ fill:#fff1eb; stroke:{ACCENT_STRONG}; stroke-width:3; }}
+.result.review {{ fill:#fff7ed; stroke:{REVIEW}; stroke-width:2; }}
+.result-title {{ fill:{NAVY}; font-size:16px; font-weight:600; text-anchor:middle; }}
+.result-subtitle {{ fill:#6f514b; font-size:13px; font-weight:500; text-anchor:middle; }}
 .connector {{ fill:none; stroke:{LINE}; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }}
-.connector.active {{ stroke:{GREEN}; stroke-width:3.5; }}
-.connector.review {{ stroke:{ORANGE}; }}
-.branch-label {{ fill:#526574; font-size:13px; font-weight:700; text-anchor:middle; }}
-.branch-label.active {{ fill:{GREEN}; }}
-.branch-label.review {{ fill:{ORANGE}; }}
-.footer {{ fill:#526574; font-size:11px; text-anchor:middle; }}
+.connector.active {{ stroke:{ACCENT_STRONG}; stroke-width:3.5; }}
+.connector.review {{ stroke:{REVIEW}; }}
+.branch-label {{ fill:#6f514b; font-size:12px; font-weight:500; text-anchor:middle; }}
+.branch-label.active {{ fill:{ACCENT_TEXT}; }}
+.branch-label.review {{ fill:{REVIEW}; }}
+.footer {{ fill:#8f625b; font-size:11px; text-anchor:middle; }}
 </style>
 <title id="cpca-flow-title">Fluxograma decisório CPCA</title>
 <desc id="cpca-flow-desc">Fluxograma CPCA traduzido para português e destacado conforme o caminho calculado pelo motor.</desc>
-<defs><marker id="arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Q2,3.5 0,0" fill="{LINE}"/></marker></defs>
+<defs><marker id="arrow-neutral" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Q2,3.5 0,0" fill="{LINE}"/></marker><marker id="arrow-active" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Q2,3.5 0,0" fill="{ACCENT_STRONG}"/></marker><marker id="arrow-review" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Q2,3.5 0,0" fill="{REVIEW}"/></marker></defs>
 <text x="600" y="34" class="header" text-anchor="middle">Fluxograma decisório CPCA</text>
 <text x="600" y="56" class="subheader" text-anchor="middle">Caminho calculado pelo motor cPCA do Nitro.RA</text>
 <rect x="260" y="84" width="320" height="48" rx="24" class="start"/><text x="420" y="114" class="node-text">Nitrosamina analisada</text>
